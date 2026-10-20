@@ -91,10 +91,16 @@ function Config.new(window)
 	self._motionConnection = Motion.Changed:Connect(function()
 		self:_schedule("meta")
 	end)
+	self._densityConnection = Theme.Changed:Connect(function(what)
+		if what == "density" then
+			self:_schedule("meta")
+		end
+	end)
 	window.Maid:Add(function()
 		self._storeConnection:Disconnect()
 		self._themeConnection:Disconnect()
 		self._motionConnection:Disconnect()
+		self._densityConnection:Disconnect()
 		self.Changed:DisconnectAll()
 	end)
 	return self
@@ -112,6 +118,7 @@ function Config:ApplyInterface()
 		Theme.apply(opts.Theme)
 	end
 	Motion.setMode(meta.animations or opts.Animations or "Full")
+	Theme.setDensity(meta.density or opts.Density or "compact")
 
 	local loc = window.Loc
 	if meta.language and table.find(loc.Available, meta.language) then
@@ -200,6 +207,7 @@ function Config:_writeMeta()
 	local meta = self.Meta
 	meta.theme = Theme.serialize()
 	meta.animations = Motion.Mode
+	meta.density = Theme.Density
 	meta.language = window.Loc.Current
 	meta.profile = self.Current
 	meta.ui = self.Store:Snapshot("ui")

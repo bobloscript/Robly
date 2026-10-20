@@ -422,6 +422,25 @@ function SettingsTab:_buildInterface()
 	window.Maid:Add(Motion.Changed:Connect(function(mode)
 		window.Store:Set(animations.Flag, mode, "silent")
 	end))
+	local density = section:Segmented({
+		Title = L("density"),
+		Flag = "robly:density",
+		Options = {
+			{ Value = "compact", Text = L("density_compact") },
+			{ Value = "comfortable", Text = L("density_comfortable") },
+		},
+		Default = Theme.Density,
+		Save = false,
+		VisibleWhen = pcOnly,
+		Callback = function(value)
+			Theme.setDensity(value)
+		end,
+	})
+	window.Maid:Add(Theme.Changed:Connect(function(what)
+		if what == "density" then
+			window.Store:Set(density.Flag, Theme.Density, "silent")
+		end
+	end))
 	section:Toggle({
 		Title = L("detached_hide"),
 		Flag = "robly:hideDetached",

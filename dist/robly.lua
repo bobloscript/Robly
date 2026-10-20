@@ -1,5 +1,5 @@
 --[[
-	Robly v1.2.0 — UI library for Roblox scripts by RobScript
+	Robly v1.3.0 — UI library for Roblox scripts by RobScript
 	https://robscript.com · https://github.com/bobloscript/Robly
 
 	Built file. Edit the modules in src/ and run `python3 tools/build.py`.
@@ -5746,6 +5746,7 @@ __modules["core/Strings"] = function()
 	}
 
 	S.en = {
+		density = "Density", density_compact = "Compact", density_comfortable = "Comfortable",
 		sidebar = "Sidebar", cards = "Cards", outline = "Outline", reset_overrides = "Reset hand-picked colours",
 		seconds = "{n}s", paused_short = "Paused", hud_hide_key = "Hide / show panel",
 		settings = "Settings", theme = "Theme", configs = "Configs", interface = "Interface", about = "About",
@@ -5787,6 +5788,7 @@ __modules["core/Strings"] = function()
 	}
 
 	S.ru = {
+		density = "Плотность", density_compact = "Компактно", density_comfortable = "Просторно",
 		sidebar = "Боковая панель", cards = "Карточки", outline = "Обводка", reset_overrides = "Сбросить ручные цвета",
 		seconds = "{n} с", paused_short = "Пауза", hud_hide_key = "Скрыть / показать панель",
 		settings = "Настройки", theme = "Тема", configs = "Конфиги", interface = "Интерфейс", about = "О библиотеке",
@@ -5828,6 +5830,7 @@ __modules["core/Strings"] = function()
 	}
 
 	S.es = {
+		density = "Densidad", density_compact = "Compacta", density_comfortable = "Amplia",
 		sidebar = "Barra lateral", cards = "Tarjetas", outline = "Contorno", reset_overrides = "Restablecer colores manuales",
 		seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar panel",
 		settings = "Ajustes", theme = "Tema", configs = "Configuraciones", interface = "Interfaz", about = "Acerca de",
@@ -5869,6 +5872,7 @@ __modules["core/Strings"] = function()
 	}
 
 	S.pt = {
+		density = "Densidade", density_compact = "Compacta", density_comfortable = "Espaçosa",
 		sidebar = "Barra lateral", cards = "Cartões", outline = "Contorno", reset_overrides = "Redefinir cores manuais",
 		seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar painel",
 		settings = "Configurações", theme = "Tema", configs = "Perfis", interface = "Interface", about = "Sobre",
@@ -5910,6 +5914,7 @@ __modules["core/Strings"] = function()
 	}
 
 	S.de = {
+		density = "Dichte", density_compact = "Kompakt", density_comfortable = "Großzügig",
 		sidebar = "Seitenleiste", cards = "Karten", outline = "Umriss", reset_overrides = "Eigene Farben zurücksetzen",
 		seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Panel aus- / einblenden",
 		settings = "Einstellungen", theme = "Design", configs = "Profile", interface = "Oberfläche", about = "Über",
@@ -5951,6 +5956,7 @@ __modules["core/Strings"] = function()
 	}
 
 	S.fr = {
+		density = "Densité", density_compact = "Compacte", density_comfortable = "Aérée",
 		sidebar = "Barre latérale", cards = "Cartes", outline = "Contour", reset_overrides = "Réinitialiser les couleurs perso",
 		seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Masquer / afficher le panneau",
 		settings = "Paramètres", theme = "Thème", configs = "Profils", interface = "Interface", about = "À propos",
@@ -6116,15 +6122,31 @@ __modules["core/Theme"] = function()
 
 	-- Size tokens ------------------------------------------------------------------
 
-	local PC = {
+	-- PC has two densities: "compact" (default, Obsidian-like dense rows) and
+	-- "comfortable" (the roomier original). Touch sizes keep 44 px targets.
+	local PC_COMFORTABLE = {
 		header = 56, sidebar = 200, navItem = 38, rail = 56, tabbar = 60,
-		row = 50, rowDesc = 54, control = 32, button = 36, input = 38,
+		row = 46, rowDesc = 54, control = 32, button = 34, input = 36,
 		toggleW = 44, toggleH = 26, knob = 22, checkbox = 20,
-		track = 6, sliderKnob = 20, sliderHit = 24, segment = 28, stepperBtn = 34, chip = 30, hit = 32,
-		font = 14, fontDesc = 12, fontSmall = 11, fontSection = 12, fontTitle = 22, fontHeader = 14,
-		padX = 14, padY = 8, gap = 16, contentX = 24, contentTop = 20, contentBottom = 20, sectionGap = 14,
-		rWindow = 18, rSection = 14, rControl = 10, rSmall = 9, rBadge = 6,
+		track = 6, sliderKnob = 18, sliderHit = 24, segment = 28, stepperBtn = 32, chip = 30, hit = 32,
+		font = 14, fontDesc = 12, fontSmall = 11, fontSection = 14, fontTitle = 22, fontHeader = 14,
+		padX = 14, padY = 7, gap = 14, contentX = 22, contentTop = 18, contentBottom = 20, sectionGap = 12,
+		rWindow = 16, rSection = 12, rControl = 9, rSmall = 8, rBadge = 6,
 		icon = 18, iconSmall = 16, item = 34, toastWidth = 280, scrollBar = 3,
+		groupHeader = 40, groupPad = 4, columnGap = 12, dividers = true,
+		touch = false, pageHeader = true, dropdownFlat = false,
+	}
+
+	local PC = {
+		header = 48, sidebar = 186, navItem = 34, rail = 56, tabbar = 60,
+		row = 36, rowDesc = 44, control = 26, button = 30, input = 30,
+		toggleW = 34, toggleH = 20, knob = 16, checkbox = 16,
+		track = 4, sliderKnob = 14, sliderHit = 18, segment = 24, stepperBtn = 26, chip = 24, hit = 30,
+		font = 13, fontDesc = 11, fontSmall = 11, fontSection = 13, fontTitle = 18, fontHeader = 13,
+		padX = 12, padY = 5, gap = 12, contentX = 14, contentTop = 12, contentBottom = 14, sectionGap = 10,
+		rWindow = 12, rSection = 10, rControl = 7, rSmall = 6, rBadge = 5,
+		icon = 16, iconSmall = 14, item = 28, toastWidth = 270, scrollBar = 3,
+		groupHeader = 34, groupPad = 3, columnGap = 10, dividers = false,
 		touch = false, pageHeader = true, dropdownFlat = false,
 	}
 
@@ -6133,10 +6155,11 @@ __modules["core/Theme"] = function()
 		row = 52, rowDesc = 56, control = 44, button = 44, input = 44,
 		toggleW = 51, toggleH = 31, knob = 27, checkbox = 24,
 		track = 6, sliderKnob = 28, sliderHit = 44, segment = 40, stepperBtn = 44, chip = 36, hit = 44,
-		font = 15, fontDesc = 13, fontSmall = 12, fontSection = 12, fontTitle = 16, fontHeader = 16,
+		font = 15, fontDesc = 13, fontSmall = 12, fontSection = 14, fontTitle = 16, fontHeader = 16,
 		padX = 12, padY = 4, gap = 12, contentX = 12, contentTop = 0, contentBottom = 12, sectionGap = 8,
 		rWindow = 18, rSection = 14, rControl = 10, rSmall = 10, rBadge = 6,
 		icon = 20, iconSmall = 18, item = 44, toastWidth = 300, scrollBar = 0,
+		groupHeader = 44, groupPad = 2, columnGap = 8, dividers = true,
 		touch = true, pageHeader = false, dropdownFlat = true,
 	}
 
@@ -6145,6 +6168,8 @@ __modules["core/Theme"] = function()
 		rWindow = 22, rSection = 16, padX = 14, sectionGap = 10,
 	})
 
+	Theme.Densities = { compact = PC, comfortable = PC_COMFORTABLE }
+	Theme.Density = "compact"
 	Theme.SizeSets = { pc = PC, phone = PHONE, tablet = TABLET }
 	Theme.Mode = "pc"
 	Theme.Sizes = PC
@@ -6394,6 +6419,20 @@ __modules["core/Theme"] = function()
 		return not isBase(name) and Theme.Spec[name] ~= nil
 	end
 
+	function Theme.setDensity(density)
+		local sizes = Theme.Densities[density]
+		if not sizes or Theme.Density == density then
+			return
+		end
+		Theme.Density = density
+		Theme.SizeSets.pc = sizes
+		if Theme.Mode == "pc" then
+			Theme.Sizes = sizes
+			Theme.refresh()
+			Theme.Changed:Fire("density")
+		end
+	end
+
 	function Theme.setMode(mode)
 		local sizes = Theme.SizeSets[mode]
 		if not sizes or Theme.Mode == mode then
@@ -6508,7 +6547,7 @@ __modules["init"] = function()
 	local Window = import("ui/Window")
 
 	local Robly = {
-		Version = "1.2.0",
+		Version = "1.3.0",
 		Windows = {},
 		Themes = Theme.Presets,
 		Icons = Icons.Data,
@@ -7120,10 +7159,16 @@ __modules["system/Config"] = function()
 		self._motionConnection = Motion.Changed:Connect(function()
 			self:_schedule("meta")
 		end)
+		self._densityConnection = Theme.Changed:Connect(function(what)
+			if what == "density" then
+				self:_schedule("meta")
+			end
+		end)
 		window.Maid:Add(function()
 			self._storeConnection:Disconnect()
 			self._themeConnection:Disconnect()
 			self._motionConnection:Disconnect()
+			self._densityConnection:Disconnect()
 			self.Changed:DisconnectAll()
 		end)
 		return self
@@ -7141,6 +7186,7 @@ __modules["system/Config"] = function()
 			Theme.apply(opts.Theme)
 		end
 		Motion.setMode(meta.animations or opts.Animations or "Full")
+		Theme.setDensity(meta.density or opts.Density or "compact")
 
 		local loc = window.Loc
 		if meta.language and table.find(loc.Available, meta.language) then
@@ -7229,6 +7275,7 @@ __modules["system/Config"] = function()
 		local meta = self.Meta
 		meta.theme = Theme.serialize()
 		meta.animations = Motion.Mode
+		meta.density = Theme.Density
 		meta.language = window.Loc.Current
 		meta.profile = self.Current
 		meta.ui = self.Store:Snapshot("ui")
@@ -8417,6 +8464,25 @@ __modules["system/SettingsTab"] = function()
 		window.Maid:Add(Motion.Changed:Connect(function(mode)
 			window.Store:Set(animations.Flag, mode, "silent")
 		end))
+		local density = section:Segmented({
+			Title = L("density"),
+			Flag = "robly:density",
+			Options = {
+				{ Value = "compact", Text = L("density_compact") },
+				{ Value = "comfortable", Text = L("density_comfortable") },
+			},
+			Default = Theme.Density,
+			Save = false,
+			VisibleWhen = pcOnly,
+			Callback = function(value)
+				Theme.setDensity(value)
+			end,
+		})
+		window.Maid:Add(Theme.Changed:Connect(function(what)
+			if what == "density" then
+				window.Store:Set(density.Flag, Theme.Density, "silent")
+			end
+		end))
 		section:Toggle({
 			Title = L("detached_hide"),
 			Flag = "robly:hideDetached",
@@ -8530,6 +8596,220 @@ __modules["system/SettingsTab"] = function()
 	end
 
 	return SettingsTab
+end
+
+__modules["ui/Body"] = function()
+	-- Body: the content of a tab or a sub tab.
+	--   Top      — full-width cards: controls added straight to the tab/sub tab
+	--   Columns  — groupboxes in two columns (Left / Right / balanced); they stack
+	--              into one column on narrow windows and on touch devices
+	-- (Airflow / Obsidian-style layout.)
+
+	local Theme = import("core/Theme")
+	local Create = import("core/Create")
+	local Maid = import("util/Maid")
+	local Registry = import("controls/Registry")
+
+	local New = Create.New
+
+	local Body = {}
+	Body.__index = Body
+
+	-- Single column below this content width (px).
+	local TWO_COLUMNS_MIN = 560
+
+	function Body.new(tab, parent, order, subTab)
+		local self = setmetatable({}, Body)
+		self.Tab = tab
+		self.Window = tab.Window
+		self.SubTab = subTab
+		self.Maid = Maid.new()
+		self.Sections = {}
+		self._order = 0
+		self._sides = { Left = 0, Right = 0 }
+
+		self.Frame = self.Maid:Add(New("Frame", {
+			Name = subTab and "SubBody" or "Body",
+			Size = UDim2.fromScale(1, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			LayoutOrder = order,
+			Parent = parent,
+		}, { Create.list("Vertical", "sectionGap") }))
+		self.Top = New("Frame", {
+			Name = "Top",
+			Size = UDim2.fromScale(1, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			LayoutOrder = 1,
+			Parent = self.Frame,
+		}, { Create.list("Vertical", "sectionGap") })
+		self.Columns = New("Frame", {
+			Name = "Columns",
+			Size = UDim2.fromScale(1, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			LayoutOrder = 2,
+			Parent = self.Frame,
+		})
+		self.ColumnLayout = Create.list("Horizontal", "columnGap", { valign = "Top" })
+		self.ColumnLayout.Parent = self.Columns
+		local function column(name, order2)
+			return New("Frame", {
+				Name = name,
+				Size = UDim2.fromScale(0.5, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				LayoutOrder = order2,
+				Parent = self.Columns,
+			}, { Create.list("Vertical", "sectionGap") })
+		end
+		self.Left = column("Left", 1)
+		self.Right = column("Right", 2)
+		self.Maid:Add(self.Columns:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+			self:_layout()
+		end))
+		self.Maid:Add(Theme.Changed:Connect(function(what)
+			if what ~= "colors" then
+				self:_layout()
+				for _, section in ipairs(self.Sections) do
+					if not section.Destroyed then
+						section:_updateDividers()
+					end
+				end
+			end
+		end))
+		self:_layout()
+		return self
+	end
+
+	function Body:_nextOrder()
+		self._order += 1
+		return self._order
+	end
+
+	-- Where a section goes: untitled "default" sections are full width on top,
+	-- groupboxes go to a column (explicit Side, else the one with fewer boxes).
+	function Body:_place(section, side)
+		if section.Full then
+			return self.Top
+		end
+		if side == 1 or side == "Left" or side == "left" then
+			side = "Left"
+		elseif side == 2 or side == "Right" or side == "right" then
+			side = "Right"
+		else
+			side = self._sides.Left <= self._sides.Right and "Left" or "Right"
+		end
+		self._sides[side] += 1
+		section.Side = side
+		task.defer(function()
+			self:_layout()
+		end)
+		return self[side]
+	end
+
+	function Body:_layout()
+		local width = self.Columns.AbsoluteSize.X
+		local gap = Theme.Sizes.columnGap or 10
+		local hasLeft = self._sides.Left > 0
+		local hasRight = self._sides.Right > 0
+		local two = hasLeft and hasRight and not Theme.Sizes.touch and (width <= 0 or width >= TWO_COLUMNS_MIN)
+		self.Columns.Visible = hasLeft or hasRight
+		if two then
+			self.ColumnLayout.FillDirection = Enum.FillDirection.Horizontal
+			self.Left.Size = UDim2.new(0.5, -math.floor(gap / 2), 0, 0)
+			self.Right.Size = UDim2.new(0.5, -math.ceil(gap / 2), 0, 0)
+		else
+			self.ColumnLayout.FillDirection = Enum.FillDirection.Vertical
+			self.Left.Size = UDim2.fromScale(1, 0)
+			self.Right.Size = UDim2.fromScale(1, 0)
+		end
+		self.Left.Visible = hasLeft
+		self.Right.Visible = hasRight
+	end
+
+	function Body:_newSection(opts)
+		local Section = import("ui/Section")
+		if type(opts) ~= "table" then
+			opts = { Title = opts }
+		end
+		local section = Section.new(self, opts)
+		table.insert(self.Sections, section)
+		if not self.SubTab then
+			self.Frame.Visible = true
+		end
+		return section
+	end
+
+	function Body:_defaultSection()
+		if not self._default or self._default.Destroyed then
+			local Section = import("ui/Section")
+			self._default = Section.new(self, { Full = true })
+			table.insert(self.Sections, self._default)
+			if not self.SubTab then
+				self.Frame.Visible = true
+			end
+		end
+		return self._default
+	end
+
+	function Body:Count()
+		local n = 0
+		for _, section in ipairs(self.Sections) do
+			n += section:Count()
+		end
+		return n
+	end
+
+	function Body:IsEmpty()
+		return #self.Sections == 0
+	end
+
+	function Body:Destroy()
+		for _, section in ipairs(self.Sections) do
+			section:Destroy()
+		end
+		self.Maid:Clean()
+	end
+
+	-- Shared API for Tab, SubTab and Body: sections, groupboxes and controls ------
+
+	local function sectionWith(side)
+		return function(self, opts, icon)
+			if type(opts) ~= "table" then
+				opts = { Title = opts, Icon = icon }
+			end
+			if side then
+				opts = table.clone(opts)
+				opts.Side = side
+			end
+			return self:_body():_newSection(opts)
+		end
+	end
+
+	function Body.installApi(class)
+		class.Section = sectionWith(nil)
+		class.AddSection = class.Section
+		class.CreateSection = class.Section
+		class.Groupbox = class.Section
+		class.AddGroupbox = class.Section
+		class.CreateGroupbox = class.Section
+		class.AddLeftGroupbox = sectionWith("Left")
+		class.AddRightGroupbox = sectionWith("Right")
+		for kind in pairs(Registry) do
+			local function add(self, opts)
+				local section = self:_body():_defaultSection()
+				return section[kind](section, opts)
+			end
+			class[kind] = add
+			class["Create" .. kind] = add
+			class["Add" .. kind] = add
+		end
+	end
+
+	function Body:_body()
+		return self
+	end
+	Body.installApi(Body)
+
+	return Body
 end
 
 __modules["ui/Detached"] = function()
@@ -9676,6 +9956,9 @@ __modules["ui/Search"] = function()
 			title.Text = highlight(loc:Get(control.TitleSpec), lowerQuery, Theme.Colors.accent)
 			title.Parent = texts
 			local path = loc:Get(control.Tab.TitleSpec)
+			if control.Section.SubTab then
+				path ..= " › " .. loc:Get(control.Section.SubTab.TitleSpec)
+			end
 			if control.Section.TitleSpec then
 				path ..= " › " .. loc:Get(control.Section.TitleSpec)
 			end
@@ -9725,14 +10008,15 @@ __modules["ui/Search"] = function()
 end
 
 __modules["ui/Section"] = function()
-	-- Section: collapsible group of controls inside a tab (iOS grouped list).
+	-- Section / Groupbox: a titled, collapsible card of compact rows.
+	-- Titled sections sit in the body's columns; the untitled default section
+	-- (controls added straight to a tab) is a full-width card on top.
 
 	local Theme = import("core/Theme")
 	local Create = import("core/Create")
 	local Motion = import("core/Motion")
 	local Icons = import("core/Icons")
 	local Maid = import("util/Maid")
-	local Util = import("util/Util")
 	local Registry = import("controls/Registry")
 
 	local New = Create.New
@@ -9741,65 +10025,83 @@ __modules["ui/Section"] = function()
 	local Section = {}
 	Section.__index = Section
 
-	function Section.new(tab, opts)
+	function Section.new(body, opts)
 		opts = opts or {}
 		if type(opts) ~= "table" then
 			opts = { Title = opts }
 		end
 		local self = setmetatable({}, Section)
-		local window = tab.Window
-		self.Tab = tab
+		local window = body.Window
+		self.Body = body
+		self.Tab = body.Tab
+		self.SubTab = body.SubTab
 		self.Window = window
 		self.Options = opts
 		self.Maid = Maid.new()
 		self.Controls = {}
 		self.TitleSpec = opts.Title or opts.Name
+		self.Full = opts.Full == true or (self.TitleSpec == nil and opts.Side == nil)
 		self.Collapsed = false
+		self.Destroyed = false
 		self._order = 0
 
+		local parent = body:_place(self, opts.Side)
 		self.Frame = self.Maid:Add(New("Frame", {
-			Name = "Section",
+			Name = self.TitleSpec and "Groupbox" or "Section",
 			Size = UDim2.fromScale(1, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
-			LayoutOrder = tab:_nextOrder(),
-			Parent = tab.Page,
-		}, { Create.list("Vertical", Theme.f(function(_, s)
-			return UDim.new(0, s.touch and 6 or 8)
-		end)) }))
+			BackgroundColor3 = C("surface"),
+			LayoutOrder = body:_nextOrder(),
+			Parent = parent,
+		}, {
+			Create.corner("rSection"),
+			Create.stroke("border"),
+			Create.list("Vertical", 0),
+		}))
 
 		if self.TitleSpec then
 			local header = New("TextButton", {
 				Name = "Header",
-				Size = UDim2.new(1, 0, 0, 24),
+				Size = Theme.sz(1, 0, 0, "groupHeader"),
 				LayoutOrder = 1,
 				Parent = self.Frame,
-			}, { Create.pad(0, 4), Create.list("Horizontal", 6, { valign = "Center" }) })
-			self.Chevron = Icons.new("chevronDown", 14, C("textSubtle"))
-			self.Chevron.Frame.Parent = header
+			}, { Create.pad(0, "padX"), Create.list("Horizontal", 8, { valign = "Center" }) })
+			if opts.Icon then
+				local icon = Icons.new(opts.Icon, "iconSmall", C("accent"))
+				icon.Frame.LayoutOrder = 0
+				icon.Frame.Parent = header
+			end
 			local label = New("TextLabel", {
-				AutomaticSize = Enum.AutomaticSize.X,
 				Size = UDim2.fromScale(0, 1),
-				TextColor3 = C("textSubtle"),
-				TextSize = S("fontSection"),
 				Weight = "SemiBold",
-				LayoutOrder = 2,
+				TextSize = S("fontSection"),
+				TextTruncate = Enum.TextTruncate.AtEnd,
+				LayoutOrder = 1,
 				Parent = header,
-			})
-			window.Loc:Bind(label, "Text", function()
-				return Util.upper(window.Loc:Get(self.TitleSpec))
-			end)
+			}, { Create.flex() })
+			self.TitleLabel = label
+			window.Loc:Bind(label, "Text", self.TitleSpec)
 			self.Hint = New("TextLabel", {
 				AutomaticSize = Enum.AutomaticSize.X,
 				Size = UDim2.fromScale(0, 1),
 				TextColor3 = C("textSubtle"),
-				TextSize = S("fontSection"),
-				Weight = "Medium",
+				TextSize = S("fontDesc"),
 				Visible = false,
-				LayoutOrder = 3,
+				LayoutOrder = 2,
 				Parent = header,
 			})
 			self:_refreshHint()
+			self.Chevron = Icons.new("chevronDown", 14, C("textSubtle"))
+			self.Chevron.Frame.LayoutOrder = 3
+			self.Chevron.Frame.Parent = header
 			self.Header = header
+			self.HeaderLine = New("Frame", {
+				Name = "HeaderLine",
+				Size = UDim2.new(1, 0, 0, 1),
+				BackgroundColor3 = C("divider"),
+				LayoutOrder = 2,
+				Parent = self.Frame,
+			})
 			if opts.Collapsible ~= false then
 				self.Maid:Add(header.Activated:Connect(function()
 					self:SetCollapsed(not self.Collapsed)
@@ -9809,20 +10111,19 @@ __modules["ui/Section"] = function()
 			end
 		end
 
+		-- rows
 		self.Card = New("Frame", {
-			Name = "Card",
+			Name = "Rows",
 			Size = UDim2.fromScale(1, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
-			BackgroundColor3 = C("surface"),
-			LayoutOrder = 2,
+			LayoutOrder = 3,
 			Parent = self.Frame,
 		}, {
-			Create.corner("rSection"),
-			Create.stroke("border"),
 			Create.list("Vertical", 0),
+			Create.pad("groupPad", 0),
 		})
-		self.Card.Visible = false
 
+		self:_updateDividers()
 		if opts.Collapsed then
 			self:SetCollapsed(true, true)
 		end
@@ -9832,7 +10133,7 @@ __modules["ui/Section"] = function()
 	function Section:_refreshHint()
 		if self.Hint then
 			self.Window.Loc:Bind(self.Hint, "Text", function()
-				return "· " .. self.Window.Loc:Lib("functions", { n = self:Count() })
+				return self.Window.Loc:Lib("functions", { n = self:Count() })
 			end)
 		end
 	end
@@ -9867,21 +10168,24 @@ __modules["ui/Section"] = function()
 		return n
 	end
 
-	-- Dividers between visible rows only (first visible row has none).
+	-- Row dividers (only in the comfortable / touch density), and the whole card
+	-- hides when none of its rows are visible.
 	function Section:_updateDividers()
 		local first = true
 		local any = false
+		local dividers = Theme.Sizes.dividers
 		for _, control in ipairs(self.Controls) do
 			if control.Visible then
 				any = true
-				control.Divider.Visible = not first and not control._noDivider
+				control.Divider.Visible = dividers and not first and not control._noDivider
 				first = false
 			end
 		end
 		self.Card.Visible = any and not self.Collapsed
-		if self.Header then
-			self.Header.Visible = any or #self.Controls == 0
+		if self.HeaderLine then
+			self.HeaderLine.Visible = any and not self.Collapsed
 		end
+		self.Frame.Visible = any or (#self.Controls == 0 and self.TitleSpec ~= nil)
 	end
 
 	function Section:SetCollapsed(collapsed, instant)
@@ -9901,10 +10205,27 @@ __modules["ui/Section"] = function()
 		end
 		return self
 	end
+	Section.Collapse = function(self)
+		return self:SetCollapsed(true)
+	end
+	Section.Expand = function(self)
+		return self:SetCollapsed(false)
+	end
+
+	function Section:IsCollapsed()
+		return self.Collapsed
+	end
 
 	function Section:SetTitle(spec)
 		self.TitleSpec = spec
-		self.Window.Loc:Refresh()
+		if self.TitleLabel then
+			self.Window.Loc:Bind(self.TitleLabel, "Text", spec)
+		end
+		return self
+	end
+
+	function Section:SetVisible(visible)
+		self.Frame.Visible = visible ~= false
 		return self
 	end
 
@@ -9916,14 +10237,25 @@ __modules["ui/Section"] = function()
 	end
 
 	function Section:Destroy()
+		if self.Destroyed then
+			return
+		end
+		self.Destroyed = true
 		self:Clear()
+		if self.Side and self.Body._sides[self.Side] then
+			self.Body._sides[self.Side] -= 1
+			self.Body:_layout()
+		end
 		self.Maid:Clean()
 	end
 
 	for kind, constructor in pairs(Registry) do
-		Section[kind] = function(self, opts)
+		local function add(self, opts)
 			return constructor(self, opts or {})
 		end
+		Section[kind] = add
+		Section["Create" .. kind] = add
+		Section["Add" .. kind] = add
 	end
 
 	return Section
@@ -9940,8 +10272,7 @@ __modules["ui/Tab"] = function()
 	local Maid = import("util/Maid")
 	local Signal = import("util/Signal")
 	local Util = import("util/Util")
-	local Section = import("ui/Section")
-	local Registry = import("controls/Registry")
+	local Body = import("ui/Body")
 
 	local New = Create.New
 	local C, S = Theme.c, Theme.s
@@ -9957,7 +10288,7 @@ __modules["ui/Tab"] = function()
 		self.Window = window
 		self.Options = opts
 		self.Maid = Maid.new()
-		self.Sections = {}
+		self.SubTabs = {}
 		self.Internal = internal == true
 		self.TitleSpec = opts.Title or opts.Name or "Tab"
 		self.DescSpec = opts.Description
@@ -10029,37 +10360,150 @@ __modules["ui/Tab"] = function()
 		self.PageHeader = header
 		self.Maid:Add(Create.pad(0, 0, 4, 0)).Parent = self.Page
 
+		-- Sub tab pills (hidden until the first sub tab)
+		self.SubBar = New("ScrollingFrame", {
+			Name = "SubTabs",
+			Size = Theme.f(function(_, s)
+				return UDim2.new(1, 0, 0, s.segment + 6)
+			end),
+			ScrollingDirection = Enum.ScrollingDirection.X,
+			AutomaticCanvasSize = Enum.AutomaticSize.X,
+			ScrollBarThickness = 0,
+			Visible = false,
+			LayoutOrder = 1,
+			Parent = self.Page,
+		})
+		self.SubTrack = New("Frame", {
+			AutomaticSize = Enum.AutomaticSize.X,
+			Size = UDim2.fromScale(0, 1),
+			BackgroundColor3 = C("sunken"),
+			Parent = self.SubBar,
+		}, { Create.corner("rSmall"), Create.pad(3), Create.list("Horizontal", 3, { valign = "Center" }) })
+
+		self.Main = Body.new(self, self.Page, 2)
+
 		window:_addTab(self)
 		return self
 	end
 
-	function Tab:_nextOrder()
-		self._order += 1
-		return self._order
+	function Tab:_body()
+		return self.Main
 	end
+	Body.installApi(Tab)
 
-	function Tab:Section(opts)
-		local section = Section.new(self, opts)
-		table.insert(self.Sections, section)
-		self._default = nil
-		return section
-	end
-	Tab.AddSection = Tab.Section
-	Tab.CreateSection = Tab.Section
-
-	function Tab:_defaultSection()
-		if not self._default then
-			self._default = Section.new(self, {})
-			table.insert(self.Sections, self._default)
+	function Tab:_bodies()
+		local list = { self.Main }
+		for _, sub in ipairs(self.SubTabs) do
+			table.insert(list, sub.Body)
 		end
-		return self._default
+		return list
 	end
 
-	for kind in pairs(Registry) do
-		Tab[kind] = function(self, opts)
-			local section = self:_defaultSection()
-			return section[kind](section, opts)
+	-- Sub tabs ------------------------------------------------------------------------
+
+	local SubTab = {}
+	SubTab.__index = SubTab
+
+	function SubTab:_body()
+		return self.Body
+	end
+	Body.installApi(SubTab)
+
+	function SubTab:Select()
+		self.Tab:SelectSubTab(self)
+		return self
+	end
+
+	function SubTab:SetTitle(spec)
+		self.TitleSpec = spec
+		self.Tab.Window.Loc:Bind(self.Label, "Text", spec)
+		return self
+	end
+
+	-- tab:SubTab({ Title, Icon }) · tab:SubTab("PvP", "shield")
+	function Tab:SubTab(opts, icon)
+		if type(opts) ~= "table" then
+			opts = { Title = opts, Icon = icon }
 		end
+		local window = self.Window
+		local sub = setmetatable({}, SubTab)
+		sub.Tab = self
+		sub.Window = window
+		sub.TitleSpec = opts.Title or opts.Name or ("Page " .. (#self.SubTabs + 1))
+		sub.Icon = opts.Icon
+		sub.Body = Body.new(self, self.Page, 10 + #self.SubTabs, sub)
+		sub.Body.Frame.Visible = false
+		table.insert(self.SubTabs, sub)
+
+		local button = New("TextButton", {
+			Name = "SubTab",
+			AutomaticSize = Enum.AutomaticSize.X,
+			Size = Theme.sz(0, 0, 0, "segment"),
+			BackgroundColor3 = C("segment"),
+			BackgroundTransparency = 1,
+			LayoutOrder = #self.SubTabs,
+			Parent = self.SubTrack,
+		}, { Create.corner(Theme.f(function(_, s)
+			return UDim.new(0, s.rSmall - 2)
+		end)), Create.pad(0, 12), Create.list("Horizontal", 6, { valign = "Center" }) })
+		if sub.Icon then
+			sub.IconObject = Icons.new(sub.Icon, "iconSmall", C("textMuted"))
+			sub.IconObject.Frame.Parent = button
+		end
+		local label = New("TextLabel", {
+			AutomaticSize = Enum.AutomaticSize.X,
+			Size = UDim2.fromScale(0, 1),
+			TextColor3 = C("textMuted"),
+			Weight = "Medium",
+			LayoutOrder = 2,
+			Parent = button,
+		})
+		Theme.bind(label, "TextSize", Theme.f(function(_, s)
+			return s.font - 1
+		end))
+		window.Loc:Bind(label, "Text", sub.TitleSpec)
+		sub.Button, sub.Label = button, label
+		Motion.pressable(button, nil, 0.96, self.Maid)
+		self.Maid:Add(button.Activated:Connect(function()
+			self:SelectSubTab(sub)
+		end))
+		self.SubBar.Visible = true
+		-- tab-level controls stay on top; an empty main body takes no space
+		self.Main.Frame.Visible = not self.Main:IsEmpty()
+		if not self.CurrentSubTab then
+			self:SelectSubTab(sub)
+		end
+		return sub
+	end
+	Tab.AddSubTab = Tab.SubTab
+	Tab.CreateSubTab = Tab.SubTab
+
+	function Tab:SelectSubTab(which)
+		local target = which
+		if type(which) ~= "table" then
+			for index, sub in ipairs(self.SubTabs) do
+				if index == which or sub.TitleSpec == which or self.Window.Loc:Get(sub.TitleSpec) == which then
+					target = sub
+				end
+			end
+		end
+		if type(target) ~= "table" then
+			return
+		end
+		local previous = self.CurrentSubTab
+		self.CurrentSubTab = target
+		for _, sub in ipairs(self.SubTabs) do
+			local on = sub == target
+			sub.Body.Frame.Visible = on
+			Motion.tween(sub.Button, { BackgroundTransparency = on and 0 or 1 }, "fade")
+			Theme.set(sub.Label, "TextColor3", on and C("text") or C("textMuted"))
+			sub.Label.FontFace = Theme.font(on and "SemiBold" or "Medium")
+			if sub.IconObject then
+				sub.IconObject:SetColor(on and C("accent") or C("textMuted"), true)
+			end
+		end
+		local _ = previous
+		self.Main.Frame.Visible = not self.Main:IsEmpty()
 	end
 
 	function Tab:Select()
@@ -10101,8 +10545,8 @@ __modules["ui/Tab"] = function()
 
 	function Tab:Count()
 		local n = 0
-		for _, section in ipairs(self.Sections) do
-			n += section:Count()
+		for _, body in ipairs(self:_bodies()) do
+			n += body:Count()
 		end
 		return n
 	end
@@ -10111,8 +10555,8 @@ __modules["ui/Tab"] = function()
 		if self.DetachedWindow then
 			self.DetachedWindow:Destroy(true)
 		end
-		for _, section in ipairs(self.Sections) do
-			section:Destroy()
+		for _, body in ipairs(self:_bodies()) do
+			body:Destroy()
 		end
 		self.DetachChanged:DisconnectAll()
 		self.Maid:Clean()
@@ -10327,6 +10771,12 @@ __modules["ui/Window"] = function()
 		Device.watch()
 		self.Maid:Add(Device.Changed:Connect(function(mode)
 			self:_onDevice(mode)
+		end))
+		self.Maid:Add(Theme.Changed:Connect(function(what)
+			if what == "density" and not self.Destroyed then
+				self:_applyLayout()
+				self:_fitHeader()
+			end
 		end))
 		self.Maid:Add(self.Loc.Changed:Connect(function()
 			self:_rebuildNav()
@@ -10579,7 +11029,7 @@ __modules["ui/Window"] = function()
 	local function iconButton(window, maid, icon, order, tip, callback, size)
 		local button = New("TextButton", {
 			Size = Theme.f(function(_, s)
-				local n = size or (s.touch and 44 or 34)
+				local n = size or s.hit
 				return UDim2.fromOffset(n, n)
 			end),
 			BackgroundColor3 = C("raised"),
@@ -10735,7 +11185,7 @@ __modules["ui/Window"] = function()
 		if mode == "pc" then
 			local search = New("Frame", {
 				Name = "Search",
-				Size = UDim2.fromOffset(280, 34),
+				Size = UDim2.fromOffset(280, 32),
 				BackgroundColor3 = C("overlay"),
 				LayoutOrder = 4,
 				Parent = row,
@@ -10869,7 +11319,7 @@ __modules["ui/Window"] = function()
 		if width <= 0 then
 			width = self._targetSize and self._targetSize.X or 860
 		end
-		self.SearchField.Size = UDim2.fromOffset(width < 640 and 150 or (width < 760 and 210 or 280), 34)
+		self.SearchField.Size = UDim2.fromOffset(width < 640 and 150 or (width < 760 and 210 or 260), Theme.Sizes.hit)
 	end
 
 	function Window:_openTouchSearch()
@@ -11576,6 +12026,9 @@ __modules["ui/Window"] = function()
 			tab.DetachedWindow:Focus()
 		else
 			self:SelectTab(tab)
+		end
+		if control.Section.SubTab then
+			tab:SelectSubTab(control.Section.SubTab)
 		end
 		if control.Section.Collapsed then
 			control.Section:SetCollapsed(false)

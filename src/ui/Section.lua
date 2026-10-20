@@ -1,11 +1,12 @@
--- Section: collapsible group of controls inside a tab (iOS grouped list).
+-- Section / Groupbox: a titled, collapsible card of compact rows.
+-- Titled sections sit in the body's columns; the untitled default section
+-- (controls added straight to a tab) is a full-width card on top.
 
 local Theme = import("core/Theme")
 local Create = import("core/Create")
 local Motion = import("core/Motion")
 local Icons = import("core/Icons")
 local Maid = import("util/Maid")
-local Util = import("util/Util")
 local Registry = import("controls/Registry")
 
 local New = Create.New
@@ -14,65 +15,83 @@ local C, S = Theme.c, Theme.s
 local Section = {}
 Section.__index = Section
 
-function Section.new(tab, opts)
+function Section.new(body, opts)
 	opts = opts or {}
 	if type(opts) ~= "table" then
 		opts = { Title = opts }
 	end
 	local self = setmetatable({}, Section)
-	local window = tab.Window
-	self.Tab = tab
+	local window = body.Window
+	self.Body = body
+	self.Tab = body.Tab
+	self.SubTab = body.SubTab
 	self.Window = window
 	self.Options = opts
 	self.Maid = Maid.new()
 	self.Controls = {}
 	self.TitleSpec = opts.Title or opts.Name
+	self.Full = opts.Full == true or (self.TitleSpec == nil and opts.Side == nil)
 	self.Collapsed = false
+	self.Destroyed = false
 	self._order = 0
 
+	local parent = body:_place(self, opts.Side)
 	self.Frame = self.Maid:Add(New("Frame", {
-		Name = "Section",
+		Name = self.TitleSpec and "Groupbox" or "Section",
 		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
-		LayoutOrder = tab:_nextOrder(),
-		Parent = tab.Page,
-	}, { Create.list("Vertical", Theme.f(function(_, s)
-		return UDim.new(0, s.touch and 6 or 8)
-	end)) }))
+		BackgroundColor3 = C("surface"),
+		LayoutOrder = body:_nextOrder(),
+		Parent = parent,
+	}, {
+		Create.corner("rSection"),
+		Create.stroke("border"),
+		Create.list("Vertical", 0),
+	}))
 
 	if self.TitleSpec then
 		local header = New("TextButton", {
 			Name = "Header",
-			Size = UDim2.new(1, 0, 0, 24),
+			Size = Theme.sz(1, 0, 0, "groupHeader"),
 			LayoutOrder = 1,
 			Parent = self.Frame,
-		}, { Create.pad(0, 4), Create.list("Horizontal", 6, { valign = "Center" }) })
-		self.Chevron = Icons.new("chevronDown", 14, C("textSubtle"))
-		self.Chevron.Frame.Parent = header
+		}, { Create.pad(0, "padX"), Create.list("Horizontal", 8, { valign = "Center" }) })
+		if opts.Icon then
+			local icon = Icons.new(opts.Icon, "iconSmall", C("accent"))
+			icon.Frame.LayoutOrder = 0
+			icon.Frame.Parent = header
+		end
 		local label = New("TextLabel", {
-			AutomaticSize = Enum.AutomaticSize.X,
 			Size = UDim2.fromScale(0, 1),
-			TextColor3 = C("textSubtle"),
-			TextSize = S("fontSection"),
 			Weight = "SemiBold",
-			LayoutOrder = 2,
+			TextSize = S("fontSection"),
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			LayoutOrder = 1,
 			Parent = header,
-		})
-		window.Loc:Bind(label, "Text", function()
-			return Util.upper(window.Loc:Get(self.TitleSpec))
-		end)
+		}, { Create.flex() })
+		self.TitleLabel = label
+		window.Loc:Bind(label, "Text", self.TitleSpec)
 		self.Hint = New("TextLabel", {
 			AutomaticSize = Enum.AutomaticSize.X,
 			Size = UDim2.fromScale(0, 1),
 			TextColor3 = C("textSubtle"),
-			TextSize = S("fontSection"),
-			Weight = "Medium",
+			TextSize = S("fontDesc"),
 			Visible = false,
-			LayoutOrder = 3,
+			LayoutOrder = 2,
 			Parent = header,
 		})
 		self:_refreshHint()
+		self.Chevron = Icons.new("chevronDown", 14, C("textSubtle"))
+		self.Chevron.Frame.LayoutOrder = 3
+		self.Chevron.Frame.Parent = header
 		self.Header = header
+		self.HeaderLine = New("Frame", {
+			Name = "HeaderLine",
+			Size = UDim2.new(1, 0, 0, 1),
+			BackgroundColor3 = C("divider"),
+			LayoutOrder = 2,
+			Parent = self.Frame,
+		})
 		if opts.Collapsible ~= false then
 			self.Maid:Add(header.Activated:Connect(function()
 				self:SetCollapsed(not self.Collapsed)
@@ -82,20 +101,19 @@ function Section.new(tab, opts)
 		end
 	end
 
+	-- rows
 	self.Card = New("Frame", {
-		Name = "Card",
+		Name = "Rows",
 		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
-		BackgroundColor3 = C("surface"),
-		LayoutOrder = 2,
+		LayoutOrder = 3,
 		Parent = self.Frame,
 	}, {
-		Create.corner("rSection"),
-		Create.stroke("border"),
 		Create.list("Vertical", 0),
+		Create.pad("groupPad", 0),
 	})
-	self.Card.Visible = false
 
+	self:_updateDividers()
 	if opts.Collapsed then
 		self:SetCollapsed(true, true)
 	end
@@ -105,7 +123,7 @@ end
 function Section:_refreshHint()
 	if self.Hint then
 		self.Window.Loc:Bind(self.Hint, "Text", function()
-			return "· " .. self.Window.Loc:Lib("functions", { n = self:Count() })
+			return self.Window.Loc:Lib("functions", { n = self:Count() })
 		end)
 	end
 end
@@ -140,21 +158,24 @@ function Section:Count()
 	return n
 end
 
--- Dividers between visible rows only (first visible row has none).
+-- Row dividers (only in the comfortable / touch density), and the whole card
+-- hides when none of its rows are visible.
 function Section:_updateDividers()
 	local first = true
 	local any = false
+	local dividers = Theme.Sizes.dividers
 	for _, control in ipairs(self.Controls) do
 		if control.Visible then
 			any = true
-			control.Divider.Visible = not first and not control._noDivider
+			control.Divider.Visible = dividers and not first and not control._noDivider
 			first = false
 		end
 	end
 	self.Card.Visible = any and not self.Collapsed
-	if self.Header then
-		self.Header.Visible = any or #self.Controls == 0
+	if self.HeaderLine then
+		self.HeaderLine.Visible = any and not self.Collapsed
 	end
+	self.Frame.Visible = any or (#self.Controls == 0 and self.TitleSpec ~= nil)
 end
 
 function Section:SetCollapsed(collapsed, instant)
@@ -174,10 +195,27 @@ function Section:SetCollapsed(collapsed, instant)
 	end
 	return self
 end
+Section.Collapse = function(self)
+	return self:SetCollapsed(true)
+end
+Section.Expand = function(self)
+	return self:SetCollapsed(false)
+end
+
+function Section:IsCollapsed()
+	return self.Collapsed
+end
 
 function Section:SetTitle(spec)
 	self.TitleSpec = spec
-	self.Window.Loc:Refresh()
+	if self.TitleLabel then
+		self.Window.Loc:Bind(self.TitleLabel, "Text", spec)
+	end
+	return self
+end
+
+function Section:SetVisible(visible)
+	self.Frame.Visible = visible ~= false
 	return self
 end
 
@@ -189,14 +227,25 @@ function Section:Clear()
 end
 
 function Section:Destroy()
+	if self.Destroyed then
+		return
+	end
+	self.Destroyed = true
 	self:Clear()
+	if self.Side and self.Body._sides[self.Side] then
+		self.Body._sides[self.Side] -= 1
+		self.Body:_layout()
+	end
 	self.Maid:Clean()
 end
 
 for kind, constructor in pairs(Registry) do
-	Section[kind] = function(self, opts)
+	local function add(self, opts)
 		return constructor(self, opts or {})
 	end
+	Section[kind] = add
+	Section["Create" .. kind] = add
+	Section["Add" .. kind] = add
 end
 
 return Section

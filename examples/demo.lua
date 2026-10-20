@@ -98,8 +98,16 @@ bosses:Toggle({
 bosses:Slider({ Title = { en = "Mob level", ru = "Уровень мобов" }, Flag = "mobLevel", Range = true, Min = 0, Max = 1000, Step = 50, Default = { 200, 750 } })
 
 -- Combat ---------------------------------------------------------------------------
-local Combat = Window:Tab({ Title = "tab.combat", Icon = "sword" })
-local weapons = Combat:Section({ Title = { en = "Weapons", ru = "Оружие" } })
+local Combat = Window:Tab({ Title = "tab.combat", Icon = "swords" })
+local PvE = Combat:SubTab({ Title = "PvE", Icon = "skull" })
+local PvP = Combat:SubTab({ Title = "PvP", Icon = "crosshair" })
+local aim = PvP:AddLeftGroupbox({ Title = { en = "Aim", ru = "Прицел" }, Icon = "crosshair" })
+aim:CreateToggle({ Title = "Silent Aim", Flag = "silentAim" })
+aim:CreateSlider({ Title = "FOV", Flag = "fov", Min = 30, Max = 360, Default = 180 })
+local pvpVisual = PvP:AddRightGroupbox({ Title = "ESP", Icon = "eye" })
+pvpVisual:CreateToggle({ Title = { en = "Boxes", ru = "Боксы" }, Flag = "pvpBoxes" })
+pvpVisual:CreateColorPicker({ Title = { en = "Colour", ru = "Цвет" }, Flag = "pvpColor", Default = "#4C8DFF" })
+local weapons = PvE:Section({ Title = { en = "Weapons", ru = "Оружие" }, Icon = "sword" })
 weapons:Dropdown({
 	Title = { en = "Weapons", ru = "Оружие" },
 	Flag = "weapons",

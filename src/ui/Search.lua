@@ -189,6 +189,9 @@ function Search:Render()
 		title.Text = highlight(loc:Get(control.TitleSpec), lowerQuery, Theme.Colors.accent)
 		title.Parent = texts
 		local path = loc:Get(control.Tab.TitleSpec)
+		if control.Section.SubTab then
+			path ..= " › " .. loc:Get(control.Section.SubTab.TitleSpec)
+		end
 		if control.Section.TitleSpec then
 			path ..= " › " .. loc:Get(control.Section.TitleSpec)
 		end

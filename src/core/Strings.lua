@@ -12,6 +12,7 @@ S.Names = {
 }
 
 S.en = {
+	density = "Density", density_compact = "Compact", density_comfortable = "Comfortable",
 	sidebar = "Sidebar", cards = "Cards", outline = "Outline", reset_overrides = "Reset hand-picked colours",
 	seconds = "{n}s", paused_short = "Paused", hud_hide_key = "Hide / show panel",
 	settings = "Settings", theme = "Theme", configs = "Configs", interface = "Interface", about = "About",
@@ -53,6 +54,7 @@ S.en = {
 }
 
 S.ru = {
+	density = "Плотность", density_compact = "Компактно", density_comfortable = "Просторно",
 	sidebar = "Боковая панель", cards = "Карточки", outline = "Обводка", reset_overrides = "Сбросить ручные цвета",
 	seconds = "{n} с", paused_short = "Пауза", hud_hide_key = "Скрыть / показать панель",
 	settings = "Настройки", theme = "Тема", configs = "Конфиги", interface = "Интерфейс", about = "О библиотеке",
@@ -94,6 +96,7 @@ S.ru = {
 }
 
 S.es = {
+	density = "Densidad", density_compact = "Compacta", density_comfortable = "Amplia",
 	sidebar = "Barra lateral", cards = "Tarjetas", outline = "Contorno", reset_overrides = "Restablecer colores manuales",
 	seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar panel",
 	settings = "Ajustes", theme = "Tema", configs = "Configuraciones", interface = "Interfaz", about = "Acerca de",
@@ -135,6 +138,7 @@ S.es = {
 }
 
 S.pt = {
+	density = "Densidade", density_compact = "Compacta", density_comfortable = "Espaçosa",
 	sidebar = "Barra lateral", cards = "Cartões", outline = "Contorno", reset_overrides = "Redefinir cores manuais",
 	seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar painel",
 	settings = "Configurações", theme = "Tema", configs = "Perfis", interface = "Interface", about = "Sobre",
@@ -176,6 +180,7 @@ S.pt = {
 }
 
 S.de = {
+	density = "Dichte", density_compact = "Kompakt", density_comfortable = "Großzügig",
 	sidebar = "Seitenleiste", cards = "Karten", outline = "Umriss", reset_overrides = "Eigene Farben zurücksetzen",
 	seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Panel aus- / einblenden",
 	settings = "Einstellungen", theme = "Design", configs = "Profile", interface = "Oberfläche", about = "Über",
@@ -217,6 +222,7 @@ S.de = {
 }
 
 S.fr = {
+	density = "Densité", density_compact = "Compacte", density_comfortable = "Aérée",
 	sidebar = "Barre latérale", cards = "Cartes", outline = "Contour", reset_overrides = "Réinitialiser les couleurs perso",
 	seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Masquer / afficher le panneau",
 	settings = "Paramètres", theme = "Thème", configs = "Profils", interface = "Interface", about = "À propos",

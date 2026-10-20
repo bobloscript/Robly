@@ -80,22 +80,37 @@ local Window = Robly:CreateWindow({
 | `Window:SaveConfig(name)` / `:LoadConfig(name)` | profiles |
 | `Window:SelectTab(tabOrId)` · `Window:Reveal(control)` | navigation |
 
-## Tabs and sections
+## Tabs, sub tabs and groupboxes
 
 ```lua
 local Farm = Window:Tab({
 	Title = "Farm",
 	Description = "Level, chests and weapon mastery",  -- shown on PC
-	Icon = "leaf",            -- built-in icon name or "rbxassetid://…"
+	Icon = "sprout",          -- any Lucide icon
 	Badge = "12",             -- small counter in the sidebar
 	Detachable = true,        -- false: cannot be moved to its own window
 })
 
-local Chests = Farm:Section({ Title = "Chests", Collapsed = true })
-Farm:Toggle({ … })            -- controls straight on a tab go to an untitled section
+-- Groupboxes: titled, collapsible cards in two columns (balanced, or pick a side).
+-- They stack into one column on narrow windows and on phones.
+local Mobs = Farm:Section({ Title = "Mob farm", Icon = "crosshair" })
+local Other = Farm:AddRightGroupbox({ Title = "Other", Icon = "sparkles", Collapsed = true })
+
+-- Controls added straight to a tab become a full-width card above the columns.
+Farm:Toggle({ Title = "Master switch" })
+
+-- Sub tabs: a row of pills under the page title, each with its own columns.
+local Combat = Window:Tab({ Title = "Combat", Icon = "swords" })
+local PvP = Combat:SubTab({ Title = "PvP", Icon = "crosshair" })
+PvP:AddLeftGroupbox("Aim", "crosshair"):Toggle({ Title = "Silent aim" })
+Combat:SelectSubTab("PvP")
+
 Farm:Detach() / Farm:Attach()
-Farm.DetachChanged:Connect(function(detached) end)
 ```
+
+Names from other libraries work too: `CreateTab`, `CreateSubTab`/`AddSubTab`, `CreateGroupbox`/`AddLeftGroupbox`/`AddRightGroupbox`, and every control as `CreateToggle`/`AddToggle` (options table, `Name` = `Title`).
+
+**Density (PC):** `Density = "compact"` (default — dense rows, no dividers) or `"comfortable"` in `CreateWindow`; players can switch it in Settings.
 
 ## Controls
 

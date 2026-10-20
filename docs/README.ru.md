@@ -45,6 +45,20 @@ Auto:Segmented({ Title = "Режим", Flag = "mode", Options = { "Ближни�
 - **Анимации** «Полные / Мягкие / Выкл».
 - **Иконки Lucide** (1500+, любое имя с lucide.dev/icons): спрайты загружены в Roblox, грузятся на любом экзекуторе, цвет берётся из темы. Тени — обводка 1 px.
 
+## Группбоксы, сабтабы, плотность
+
+```lua
+local Farm = Window:Tab({ Title = "Фарм", Icon = "sprout" })
+local Mobs = Farm:Section({ Title = "Мобы", Icon = "crosshair" })          -- колонка подбирается сама
+local Other = Farm:AddRightGroupbox({ Title = "Другое", Collapsed = true }) -- или явно справа
+Farm:Toggle({ Title = "Главный выключатель" })                           -- карточка на всю ширину сверху
+
+local Combat = Window:Tab({ Title = "Бой", Icon = "swords" })
+local PvP = Combat:SubTab({ Title = "PvP", Icon = "crosshair" })          -- «пилюли» под заголовком
+```
+
+Группбоксы стоят в две колонки и складываются в одну на узком окне и телефоне. Плотность на ПК: «Компактно» (по умолчанию) или «Просторно» — в Настройках или опцией `Density`. Работают и имена из других либ: `CreateToggle`, `AddLeftGroupbox`, `CreateSubTab` и т. д.
+
 ## Языки
 
 ```lua

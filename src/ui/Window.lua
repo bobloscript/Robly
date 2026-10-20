@@ -100,6 +100,12 @@ function Window.new(library, opts)
 	self.Maid:Add(Device.Changed:Connect(function(mode)
 		self:_onDevice(mode)
 	end))
+	self.Maid:Add(Theme.Changed:Connect(function(what)
+		if what == "density" and not self.Destroyed then
+			self:_applyLayout()
+			self:_fitHeader()
+		end
+	end))
 	self.Maid:Add(self.Loc.Changed:Connect(function()
 		self:_rebuildNav()
 		self:_buildHeader()
@@ -351,7 +357,7 @@ end
 local function iconButton(window, maid, icon, order, tip, callback, size)
 	local button = New("TextButton", {
 		Size = Theme.f(function(_, s)
-			local n = size or (s.touch and 44 or 34)
+			local n = size or s.hit
 			return UDim2.fromOffset(n, n)
 		end),
 		BackgroundColor3 = C("raised"),
@@ -507,7 +513,7 @@ function Window:_buildHeader()
 	if mode == "pc" then
 		local search = New("Frame", {
 			Name = "Search",
-			Size = UDim2.fromOffset(280, 34),
+			Size = UDim2.fromOffset(280, 32),
 			BackgroundColor3 = C("overlay"),
 			LayoutOrder = 4,
 			Parent = row,
@@ -641,7 +647,7 @@ function Window:_fitHeader()
 	if width <= 0 then
 		width = self._targetSize and self._targetSize.X or 860
 	end
-	self.SearchField.Size = UDim2.fromOffset(width < 640 and 150 or (width < 760 and 210 or 280), 34)
+	self.SearchField.Size = UDim2.fromOffset(width < 640 and 150 or (width < 760 and 210 or 260), Theme.Sizes.hit)
 end
 
 function Window:_openTouchSearch()
@@ -1348,6 +1354,9 @@ function Window:Reveal(control)
 		tab.DetachedWindow:Focus()
 	else
 		self:SelectTab(tab)
+	end
+	if control.Section.SubTab then
+		tab:SelectSubTab(control.Section.SubTab)
 	end
 	if control.Section.Collapsed then
 		control.Section:SetCollapsed(false)

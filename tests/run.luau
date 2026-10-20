@@ -101,6 +101,28 @@ step("lucide icons", function()
 	check("every alias points to a Lucide icon", #missing == 0, table.concat(missing, ", "))
 end)
 
+step("groupbox columns, sub tabs, density", function()
+	local farmTab = control("autoFarm").Tab
+	local auto, chests = control("autoFarm").Section, control("chestFarm").Section
+	check("groupboxes balance into two columns", auto.Side == "Left" and chests.Side == "Right", tostring(auto.Side) .. "/" .. tostring(chests.Side))
+	check("two columns side by side", farmTab.Main.ColumnLayout.FillDirection == Enum.FillDirection.Horizontal)
+	local silent = control("silentAim")
+	check("sub tab control exists", silent ~= nil and silent.Section.SubTab ~= nil)
+	local combat = silent.Tab
+	check("first sub tab selected", combat.CurrentSubTab == combat.SubTabs[1])
+	window:Reveal(silent)
+	task.wait(0.1)
+	check("reveal selects the sub tab", combat.CurrentSubTab == silent.Section.SubTab)
+	check("aliases work", silent.Section.Side == "Left")
+	window.Store:Set("robly:density", "comfortable")
+	task.wait(0.05)
+	check("comfortable density", Robly.Windows[1].Header.Size.Y.Offset == 56, window.Header.Size.Y.Offset)
+	window.Store:Set("robly:density", "compact")
+	task.wait(0.05)
+	check("compact density", window.Header.Size.Y.Offset == 48, window.Header.Size.Y.Offset)
+	window:SelectTab(window.Tabs[1])
+end)
+
 -- 2. Controls -----------------------------------------------------------------------------
 step("toggle", function()
 	local toggle = control("autoFarm")

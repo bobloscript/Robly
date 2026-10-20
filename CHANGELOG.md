@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0 — 2026-10-20
+
+New layout, a mix of Airflow and Obsidian:
+
+- Groupboxes: sections are titled cards (title + optional accent icon + collapse chevron inside the card) placed in two columns — balanced automatically or with `Side`/`AddLeftGroupbox`/`AddRightGroupbox`. Columns stack into one on narrow windows and on touch devices.
+- Controls added straight to a tab form a full-width card above the columns.
+- Sub tabs: `Tab:SubTab({ Title, Icon })` adds a pill row under the page title; each sub tab has its own columns. Search shows "Tab › Sub tab › Group" and jumps into the right sub tab.
+- Density: compact PC sizes by default (36 px rows, no row dividers, smaller controls, 48 px header); "Comfortable" brings the roomier sizes back. Setting in Settings → Interface, saved per script; `Density` window option.
+- API aliases for scripts coming from other libraries: `Create*`/`Add*` for every control, `CreateGroupbox`, `AddLeftGroupbox`, `AddRightGroupbox`, `CreateSubTab`.
+
 ## 1.2.0 — 2026-10-20
 
 - Linked colours. A theme is now a few base colours (accent, background, text, status colours); every other colour — sidebar, cards, outlines, popups, tracks, muted text… — is derived from them. Changing the background or text in the editor repaints the whole window, sidebar included (Obsidian/Airflow-style model).

@@ -119,15 +119,31 @@ Theme.Colors = Theme.derive(Theme.Spec)
 
 -- Size tokens ------------------------------------------------------------------
 
-local PC = {
+-- PC has two densities: "compact" (default, Obsidian-like dense rows) and
+-- "comfortable" (the roomier original). Touch sizes keep 44 px targets.
+local PC_COMFORTABLE = {
 	header = 56, sidebar = 200, navItem = 38, rail = 56, tabbar = 60,
-	row = 50, rowDesc = 54, control = 32, button = 36, input = 38,
+	row = 46, rowDesc = 54, control = 32, button = 34, input = 36,
 	toggleW = 44, toggleH = 26, knob = 22, checkbox = 20,
-	track = 6, sliderKnob = 20, sliderHit = 24, segment = 28, stepperBtn = 34, chip = 30, hit = 32,
-	font = 14, fontDesc = 12, fontSmall = 11, fontSection = 12, fontTitle = 22, fontHeader = 14,
-	padX = 14, padY = 8, gap = 16, contentX = 24, contentTop = 20, contentBottom = 20, sectionGap = 14,
-	rWindow = 18, rSection = 14, rControl = 10, rSmall = 9, rBadge = 6,
+	track = 6, sliderKnob = 18, sliderHit = 24, segment = 28, stepperBtn = 32, chip = 30, hit = 32,
+	font = 14, fontDesc = 12, fontSmall = 11, fontSection = 14, fontTitle = 22, fontHeader = 14,
+	padX = 14, padY = 7, gap = 14, contentX = 22, contentTop = 18, contentBottom = 20, sectionGap = 12,
+	rWindow = 16, rSection = 12, rControl = 9, rSmall = 8, rBadge = 6,
 	icon = 18, iconSmall = 16, item = 34, toastWidth = 280, scrollBar = 3,
+	groupHeader = 40, groupPad = 4, columnGap = 12, dividers = true,
+	touch = false, pageHeader = true, dropdownFlat = false,
+}
+
+local PC = {
+	header = 48, sidebar = 186, navItem = 34, rail = 56, tabbar = 60,
+	row = 36, rowDesc = 44, control = 26, button = 30, input = 30,
+	toggleW = 34, toggleH = 20, knob = 16, checkbox = 16,
+	track = 4, sliderKnob = 14, sliderHit = 18, segment = 24, stepperBtn = 26, chip = 24, hit = 30,
+	font = 13, fontDesc = 11, fontSmall = 11, fontSection = 13, fontTitle = 18, fontHeader = 13,
+	padX = 12, padY = 5, gap = 12, contentX = 14, contentTop = 12, contentBottom = 14, sectionGap = 10,
+	rWindow = 12, rSection = 10, rControl = 7, rSmall = 6, rBadge = 5,
+	icon = 16, iconSmall = 14, item = 28, toastWidth = 270, scrollBar = 3,
+	groupHeader = 34, groupPad = 3, columnGap = 10, dividers = false,
 	touch = false, pageHeader = true, dropdownFlat = false,
 }
 
@@ -136,10 +152,11 @@ local PHONE = {
 	row = 52, rowDesc = 56, control = 44, button = 44, input = 44,
 	toggleW = 51, toggleH = 31, knob = 27, checkbox = 24,
 	track = 6, sliderKnob = 28, sliderHit = 44, segment = 40, stepperBtn = 44, chip = 36, hit = 44,
-	font = 15, fontDesc = 13, fontSmall = 12, fontSection = 12, fontTitle = 16, fontHeader = 16,
+	font = 15, fontDesc = 13, fontSmall = 12, fontSection = 14, fontTitle = 16, fontHeader = 16,
 	padX = 12, padY = 4, gap = 12, contentX = 12, contentTop = 0, contentBottom = 12, sectionGap = 8,
 	rWindow = 18, rSection = 14, rControl = 10, rSmall = 10, rBadge = 6,
 	icon = 20, iconSmall = 18, item = 44, toastWidth = 300, scrollBar = 0,
+	groupHeader = 44, groupPad = 2, columnGap = 8, dividers = true,
 	touch = true, pageHeader = false, dropdownFlat = true,
 }
 
@@ -148,6 +165,8 @@ local TABLET = Util.merge(PHONE, {
 	rWindow = 22, rSection = 16, padX = 14, sectionGap = 10,
 })
 
+Theme.Densities = { compact = PC, comfortable = PC_COMFORTABLE }
+Theme.Density = "compact"
 Theme.SizeSets = { pc = PC, phone = PHONE, tablet = TABLET }
 Theme.Mode = "pc"
 Theme.Sizes = PC
@@ -395,6 +414,20 @@ end
 
 function Theme.isOverridden(name)
 	return not isBase(name) and Theme.Spec[name] ~= nil
+end
+
+function Theme.setDensity(density)
+	local sizes = Theme.Densities[density]
+	if not sizes or Theme.Density == density then
+		return
+	end
+	Theme.Density = density
+	Theme.SizeSets.pc = sizes
+	if Theme.Mode == "pc" then
+		Theme.Sizes = sizes
+		Theme.refresh()
+		Theme.Changed:Fire("density")
+	end
 end
 
 function Theme.setMode(mode)

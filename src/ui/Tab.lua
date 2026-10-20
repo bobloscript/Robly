@@ -8,8 +8,7 @@ local Icons = import("core/Icons")
 local Maid = import("util/Maid")
 local Signal = import("util/Signal")
 local Util = import("util/Util")
-local Section = import("ui/Section")
-local Registry = import("controls/Registry")
+local Body = import("ui/Body")
 
 local New = Create.New
 local C, S = Theme.c, Theme.s
@@ -25,7 +24,7 @@ function Tab.new(window, opts, internal)
 	self.Window = window
 	self.Options = opts
 	self.Maid = Maid.new()
-	self.Sections = {}
+	self.SubTabs = {}
 	self.Internal = internal == true
 	self.TitleSpec = opts.Title or opts.Name or "Tab"
 	self.DescSpec = opts.Description
@@ -97,37 +96,150 @@ function Tab.new(window, opts, internal)
 	self.PageHeader = header
 	self.Maid:Add(Create.pad(0, 0, 4, 0)).Parent = self.Page
 
+	-- Sub tab pills (hidden until the first sub tab)
+	self.SubBar = New("ScrollingFrame", {
+		Name = "SubTabs",
+		Size = Theme.f(function(_, s)
+			return UDim2.new(1, 0, 0, s.segment + 6)
+		end),
+		ScrollingDirection = Enum.ScrollingDirection.X,
+		AutomaticCanvasSize = Enum.AutomaticSize.X,
+		ScrollBarThickness = 0,
+		Visible = false,
+		LayoutOrder = 1,
+		Parent = self.Page,
+	})
+	self.SubTrack = New("Frame", {
+		AutomaticSize = Enum.AutomaticSize.X,
+		Size = UDim2.fromScale(0, 1),
+		BackgroundColor3 = C("sunken"),
+		Parent = self.SubBar,
+	}, { Create.corner("rSmall"), Create.pad(3), Create.list("Horizontal", 3, { valign = "Center" }) })
+
+	self.Main = Body.new(self, self.Page, 2)
+
 	window:_addTab(self)
 	return self
 end
 
-function Tab:_nextOrder()
-	self._order += 1
-	return self._order
+function Tab:_body()
+	return self.Main
 end
+Body.installApi(Tab)
 
-function Tab:Section(opts)
-	local section = Section.new(self, opts)
-	table.insert(self.Sections, section)
-	self._default = nil
-	return section
-end
-Tab.AddSection = Tab.Section
-Tab.CreateSection = Tab.Section
-
-function Tab:_defaultSection()
-	if not self._default then
-		self._default = Section.new(self, {})
-		table.insert(self.Sections, self._default)
+function Tab:_bodies()
+	local list = { self.Main }
+	for _, sub in ipairs(self.SubTabs) do
+		table.insert(list, sub.Body)
 	end
-	return self._default
+	return list
 end
 
-for kind in pairs(Registry) do
-	Tab[kind] = function(self, opts)
-		local section = self:_defaultSection()
-		return section[kind](section, opts)
+-- Sub tabs ------------------------------------------------------------------------
+
+local SubTab = {}
+SubTab.__index = SubTab
+
+function SubTab:_body()
+	return self.Body
+end
+Body.installApi(SubTab)
+
+function SubTab:Select()
+	self.Tab:SelectSubTab(self)
+	return self
+end
+
+function SubTab:SetTitle(spec)
+	self.TitleSpec = spec
+	self.Tab.Window.Loc:Bind(self.Label, "Text", spec)
+	return self
+end
+
+-- tab:SubTab({ Title, Icon }) · tab:SubTab("PvP", "shield")
+function Tab:SubTab(opts, icon)
+	if type(opts) ~= "table" then
+		opts = { Title = opts, Icon = icon }
 	end
+	local window = self.Window
+	local sub = setmetatable({}, SubTab)
+	sub.Tab = self
+	sub.Window = window
+	sub.TitleSpec = opts.Title or opts.Name or ("Page " .. (#self.SubTabs + 1))
+	sub.Icon = opts.Icon
+	sub.Body = Body.new(self, self.Page, 10 + #self.SubTabs, sub)
+	sub.Body.Frame.Visible = false
+	table.insert(self.SubTabs, sub)
+
+	local button = New("TextButton", {
+		Name = "SubTab",
+		AutomaticSize = Enum.AutomaticSize.X,
+		Size = Theme.sz(0, 0, 0, "segment"),
+		BackgroundColor3 = C("segment"),
+		BackgroundTransparency = 1,
+		LayoutOrder = #self.SubTabs,
+		Parent = self.SubTrack,
+	}, { Create.corner(Theme.f(function(_, s)
+		return UDim.new(0, s.rSmall - 2)
+	end)), Create.pad(0, 12), Create.list("Horizontal", 6, { valign = "Center" }) })
+	if sub.Icon then
+		sub.IconObject = Icons.new(sub.Icon, "iconSmall", C("textMuted"))
+		sub.IconObject.Frame.Parent = button
+	end
+	local label = New("TextLabel", {
+		AutomaticSize = Enum.AutomaticSize.X,
+		Size = UDim2.fromScale(0, 1),
+		TextColor3 = C("textMuted"),
+		Weight = "Medium",
+		LayoutOrder = 2,
+		Parent = button,
+	})
+	Theme.bind(label, "TextSize", Theme.f(function(_, s)
+		return s.font - 1
+	end))
+	window.Loc:Bind(label, "Text", sub.TitleSpec)
+	sub.Button, sub.Label = button, label
+	Motion.pressable(button, nil, 0.96, self.Maid)
+	self.Maid:Add(button.Activated:Connect(function()
+		self:SelectSubTab(sub)
+	end))
+	self.SubBar.Visible = true
+	-- tab-level controls stay on top; an empty main body takes no space
+	self.Main.Frame.Visible = not self.Main:IsEmpty()
+	if not self.CurrentSubTab then
+		self:SelectSubTab(sub)
+	end
+	return sub
+end
+Tab.AddSubTab = Tab.SubTab
+Tab.CreateSubTab = Tab.SubTab
+
+function Tab:SelectSubTab(which)
+	local target = which
+	if type(which) ~= "table" then
+		for index, sub in ipairs(self.SubTabs) do
+			if index == which or sub.TitleSpec == which or self.Window.Loc:Get(sub.TitleSpec) == which then
+				target = sub
+			end
+		end
+	end
+	if type(target) ~= "table" then
+		return
+	end
+	local previous = self.CurrentSubTab
+	self.CurrentSubTab = target
+	for _, sub in ipairs(self.SubTabs) do
+		local on = sub == target
+		sub.Body.Frame.Visible = on
+		Motion.tween(sub.Button, { BackgroundTransparency = on and 0 or 1 }, "fade")
+		Theme.set(sub.Label, "TextColor3", on and C("text") or C("textMuted"))
+		sub.Label.FontFace = Theme.font(on and "SemiBold" or "Medium")
+		if sub.IconObject then
+			sub.IconObject:SetColor(on and C("accent") or C("textMuted"), true)
+		end
+	end
+	local _ = previous
+	self.Main.Frame.Visible = not self.Main:IsEmpty()
 end
 
 function Tab:Select()
@@ -169,8 +281,8 @@ end
 
 function Tab:Count()
 	local n = 0
-	for _, section in ipairs(self.Sections) do
-		n += section:Count()
+	for _, body in ipairs(self:_bodies()) do
+		n += body:Count()
 	end
 	return n
 end
@@ -179,8 +291,8 @@ function Tab:Destroy()
 	if self.DetachedWindow then
 		self.DetachedWindow:Destroy(true)
 	end
-	for _, section in ipairs(self.Sections) do
-		section:Destroy()
+	for _, body in ipairs(self:_bodies()) do
+		body:Destroy()
 	end
 	self.DetachChanged:DisconnectAll()
 	self.Maid:Clean()
