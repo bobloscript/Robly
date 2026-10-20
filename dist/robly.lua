@@ -1,5 +1,5 @@
 --[[
-	Robly v1.4.0 — UI library for Roblox scripts by RobScript
+	Robly v1.4.1 — UI library for Roblox scripts by RobScript
 	https://robscript.com · https://github.com/bobloscript/Robly
 
 	Built file. Edit the modules in src/ and run `python3 tools/build.py`.
@@ -5882,7 +5882,7 @@ __modules["core/Strings"] = function()
 	S.en = {
 		density = "Density", density_compact = "Compact", density_comfortable = "Comfortable",
 		sidebar = "Sidebar", cards = "Cards", outline = "Outline", reset_overrides = "Reset hand-picked colours",
-		accent2 = "Second accent", effect = "Background effect", effect_desc = "Animated layer behind the window content", glass = "Glass", glass_desc = "Panels let the background effect show through", effect_none = "None", effect_aurora = "Aurora", effect_stars = "Stars", effect_snow = "Snow", effect_grid = "Grid", effect_gradient = "Gradient",
+		effect_strength = "Effect strength", accent2 = "Second accent", effect = "Background effect", effect_desc = "Animated layer behind the window content", glass = "Glass", glass_desc = "Panels let the background effect show through", effect_none = "None", effect_aurora = "Aurora", effect_stars = "Stars", effect_snow = "Snow", effect_grid = "Grid", effect_gradient = "Gradient",
 		seconds = "{n}s", paused_short = "Paused", hud_hide_key = "Hide / show panel",
 		settings = "Settings", theme = "Theme", configs = "Configs", interface = "Interface", about = "About",
 		language = "Language", animations = "Animations", anim_full = "Full", anim_soft = "Soft", anim_off = "Off",
@@ -5925,7 +5925,7 @@ __modules["core/Strings"] = function()
 	S.ru = {
 		density = "Плотность", density_compact = "Компактно", density_comfortable = "Просторно",
 		sidebar = "Боковая панель", cards = "Карточки", outline = "Обводка", reset_overrides = "Сбросить ручные цвета",
-		accent2 = "Второй акцент", effect = "Фоновый эффект", effect_desc = "Анимированный слой за содержимым окна", glass = "Стекло", glass_desc = "Панели пропускают фоновый эффект", effect_none = "Нет", effect_aurora = "Сияние", effect_stars = "Звёзды", effect_snow = "Снег", effect_grid = "Сетка", effect_gradient = "Градиент",
+		effect_strength = "Сила эффекта", accent2 = "Второй акцент", effect = "Фоновый эффект", effect_desc = "Анимированный слой за содержимым окна", glass = "Стекло", glass_desc = "Панели пропускают фоновый эффект", effect_none = "Нет", effect_aurora = "Сияние", effect_stars = "Звёзды", effect_snow = "Снег", effect_grid = "Сетка", effect_gradient = "Градиент",
 		seconds = "{n} с", paused_short = "Пауза", hud_hide_key = "Скрыть / показать панель",
 		settings = "Настройки", theme = "Тема", configs = "Конфиги", interface = "Интерфейс", about = "О библиотеке",
 		language = "Язык", animations = "Анимации", anim_full = "Полные", anim_soft = "Мягкие", anim_off = "Выкл",
@@ -5968,7 +5968,7 @@ __modules["core/Strings"] = function()
 	S.es = {
 		density = "Densidad", density_compact = "Compacta", density_comfortable = "Amplia",
 		sidebar = "Barra lateral", cards = "Tarjetas", outline = "Contorno", reset_overrides = "Restablecer colores manuales",
-		accent2 = "Segundo acento", effect = "Efecto de fondo", effect_desc = "Capa animada detrás del contenido", glass = "Cristal", glass_desc = "Los paneles dejan ver el efecto de fondo", effect_none = "Ninguno", effect_aurora = "Aurora", effect_stars = "Estrellas", effect_snow = "Nieve", effect_grid = "Cuadrícula", effect_gradient = "Degradado",
+		effect_strength = "Intensidad del efecto", accent2 = "Segundo acento", effect = "Efecto de fondo", effect_desc = "Capa animada detrás del contenido", glass = "Cristal", glass_desc = "Los paneles dejan ver el efecto de fondo", effect_none = "Ninguno", effect_aurora = "Aurora", effect_stars = "Estrellas", effect_snow = "Nieve", effect_grid = "Cuadrícula", effect_gradient = "Degradado",
 		seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar panel",
 		settings = "Ajustes", theme = "Tema", configs = "Configuraciones", interface = "Interfaz", about = "Acerca de",
 		language = "Idioma", animations = "Animaciones", anim_full = "Completas", anim_soft = "Suaves", anim_off = "No",
@@ -6011,7 +6011,7 @@ __modules["core/Strings"] = function()
 	S.pt = {
 		density = "Densidade", density_compact = "Compacta", density_comfortable = "Espaçosa",
 		sidebar = "Barra lateral", cards = "Cartões", outline = "Contorno", reset_overrides = "Redefinir cores manuais",
-		accent2 = "Segundo destaque", effect = "Efeito de fundo", effect_desc = "Camada animada atrás do conteúdo", glass = "Vidro", glass_desc = "Os painéis deixam ver o efeito de fundo", effect_none = "Nenhum", effect_aurora = "Aurora", effect_stars = "Estrelas", effect_snow = "Neve", effect_grid = "Grade", effect_gradient = "Gradiente",
+		effect_strength = "Intensidade do efeito", accent2 = "Segundo destaque", effect = "Efeito de fundo", effect_desc = "Camada animada atrás do conteúdo", glass = "Vidro", glass_desc = "Os painéis deixam ver o efeito de fundo", effect_none = "Nenhum", effect_aurora = "Aurora", effect_stars = "Estrelas", effect_snow = "Neve", effect_grid = "Grade", effect_gradient = "Gradiente",
 		seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar painel",
 		settings = "Configurações", theme = "Tema", configs = "Perfis", interface = "Interface", about = "Sobre",
 		language = "Idioma", animations = "Animações", anim_full = "Completas", anim_soft = "Suaves", anim_off = "Desligadas",
@@ -6054,7 +6054,7 @@ __modules["core/Strings"] = function()
 	S.de = {
 		density = "Dichte", density_compact = "Kompakt", density_comfortable = "Großzügig",
 		sidebar = "Seitenleiste", cards = "Karten", outline = "Umriss", reset_overrides = "Eigene Farben zurücksetzen",
-		accent2 = "Zweiter Akzent", effect = "Hintergrundeffekt", effect_desc = "Animierte Ebene hinter dem Inhalt", glass = "Glas", glass_desc = "Flächen lassen den Hintergrundeffekt durchscheinen", effect_none = "Keiner", effect_aurora = "Polarlicht", effect_stars = "Sterne", effect_snow = "Schnee", effect_grid = "Raster", effect_gradient = "Verlauf",
+		effect_strength = "Effektstärke", accent2 = "Zweiter Akzent", effect = "Hintergrundeffekt", effect_desc = "Animierte Ebene hinter dem Inhalt", glass = "Glas", glass_desc = "Flächen lassen den Hintergrundeffekt durchscheinen", effect_none = "Keiner", effect_aurora = "Polarlicht", effect_stars = "Sterne", effect_snow = "Schnee", effect_grid = "Raster", effect_gradient = "Verlauf",
 		seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Panel aus- / einblenden",
 		settings = "Einstellungen", theme = "Design", configs = "Profile", interface = "Oberfläche", about = "Über",
 		language = "Sprache", animations = "Animationen", anim_full = "Voll", anim_soft = "Sanft", anim_off = "Aus",
@@ -6097,7 +6097,7 @@ __modules["core/Strings"] = function()
 	S.fr = {
 		density = "Densité", density_compact = "Compacte", density_comfortable = "Aérée",
 		sidebar = "Barre latérale", cards = "Cartes", outline = "Contour", reset_overrides = "Réinitialiser les couleurs perso",
-		accent2 = "Second accent", effect = "Effet de fond", effect_desc = "Calque animé derrière le contenu", glass = "Verre", glass_desc = "Les panneaux laissent voir l'effet de fond", effect_none = "Aucun", effect_aurora = "Aurore", effect_stars = "Étoiles", effect_snow = "Neige", effect_grid = "Grille", effect_gradient = "Dégradé",
+		effect_strength = "Intensité de l'effet", accent2 = "Second accent", effect = "Effet de fond", effect_desc = "Calque animé derrière le contenu", glass = "Verre", glass_desc = "Les panneaux laissent voir l'effet de fond", effect_none = "Aucun", effect_aurora = "Aurore", effect_stars = "Étoiles", effect_snow = "Neige", effect_grid = "Grille", effect_gradient = "Dégradé",
 		seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Masquer / afficher le panneau",
 		settings = "Paramètres", theme = "Thème", configs = "Profils", interface = "Interface", about = "À propos",
 		language = "Langue", animations = "Animations", anim_full = "Complètes", anim_soft = "Douces", anim_off = "Non",
@@ -6285,6 +6285,13 @@ __modules["core/Theme"] = function()
 	Theme.Effects = { "None", "Aurora", "Stars", "Snow", "Grid", "Gradient" }
 	Theme.Effect = "Aurora"
 	Theme.Glass = true
+	-- 0.25 … 2: multiplies how opaque the effect is (1 = default)
+	Theme.EffectStrength = 1
+
+	function Theme.setEffectStrength(value)
+		Theme.EffectStrength = math.clamp(tonumber(value) or 1, 0.25, 2)
+		Theme.Changed:Fire("effect")
+	end
 
 	function Theme.setEffect(effect)
 		if not table.find(Theme.Effects, effect) then
@@ -6305,7 +6312,7 @@ __modules["core/Theme"] = function()
 	function Theme.glass(amount)
 		return Theme.f(function()
 			if Theme.Glass and Theme.Effect ~= "None" then
-				return amount or 0.22
+				return amount or 0.3
 			end
 			return 0
 		end)
@@ -6702,7 +6709,7 @@ __modules["core/Theme"] = function()
 	end
 
 	function Theme.serialize()
-		local out = { name = Theme.Name, effect = Theme.Effect, glass = Theme.Glass }
+		local out = { name = Theme.Name, effect = Theme.Effect, glass = Theme.Glass, strength = Theme.EffectStrength }
 		if Theme.Name == "Custom" then
 			out.spec = {}
 			for key, color in pairs(Theme.Spec) do
@@ -6721,6 +6728,9 @@ __modules["core/Theme"] = function()
 		end
 		if data.glass ~= nil then
 			Theme.Glass = data.glass == true
+		end
+		if tonumber(data.strength) then
+			Theme.EffectStrength = math.clamp(tonumber(data.strength), 0.25, 2)
 		end
 		local raw = data.spec or data.colors -- "colors" = 1.0 full list
 		if data.name == "Custom" and type(raw) == "table" then
@@ -6761,7 +6771,7 @@ __modules["init"] = function()
 	local Window = import("ui/Window")
 
 	local Robly = {
-		Version = "1.4.0",
+		Version = "1.4.1",
 		Windows = {},
 		Themes = Theme.Presets,
 		Effects = Theme.Effects,
@@ -6826,6 +6836,11 @@ __modules["init"] = function()
 	end
 
 	-- Glass: panels become translucent so the background effect shows through.
+	-- How visible the background effect is: 0.25 … 2 (1 = default).
+	function Robly:SetEffectStrength(value)
+		Theme.setEffectStrength(value)
+	end
+
 	function Robly:SetGlass(enabled)
 		Theme.setGlass(enabled)
 	end
@@ -8472,10 +8487,30 @@ __modules["system/SettingsTab"] = function()
 				end
 			end,
 		})
+		local strength = section:Slider({
+			Title = L("effect_strength"),
+			Flag = "robly:effectStrength",
+			Min = 25,
+			Max = 200,
+			Step = 5,
+			Suffix = "%",
+			Default = math.floor(Theme.EffectStrength * 100 + 0.5),
+			Save = false,
+			VisibleWhen = function(get)
+				return get("robly:effect") ~= "None"
+			end,
+			Callback = function(value)
+				local v = value / 100
+				if math.abs(v - Theme.EffectStrength) > 1e-3 then
+					window:SetEffectStrength(v)
+				end
+			end,
+		})
 		grid.Maid:Add(Theme.Changed:Connect(function(what)
 			if what == "effect" or what == "colors" then
 				window.Store:Set(effect.Flag, Theme.Effect, "silent")
 				window.Store:Set(glass.Flag, Theme.Glass, "silent")
+				window.Store:Set(strength.Flag, math.floor(Theme.EffectStrength * 100 + 0.5), "silent")
 			end
 		end))
 
@@ -9776,6 +9811,36 @@ __modules["ui/Effects"] = function()
 		return self
 	end
 
+	-- transparency for an opacity, scaled by the user's effect strength
+	local function alpha(opacity)
+		return 1 - math.clamp(opacity * Theme.EffectStrength, 0, 0.95)
+	end
+
+	-- Soft radial glow: concentric circles, each faint; they add up in the middle.
+	local function glow(parent, color, position, size, opacity, maid)
+		local holder = maid:Add(New("Frame", {
+			Name = "Glow",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = position,
+			Size = size,
+			Parent = parent,
+		}, { New("UIAspectRatioConstraint", { AspectRatio = 1, DominantAxis = Enum.DominantAxis.Width }) }))
+		local rings = 9
+		local each = 1 - (1 - math.clamp(opacity * Theme.EffectStrength, 0, 0.9)) ^ (1 / rings)
+		for i = 1, rings do
+			local scale = 1 - (i - 1) / rings * 0.85
+			New("Frame", {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.fromScale(scale, scale),
+				BackgroundColor3 = C(color),
+				BackgroundTransparency = 1 - each,
+				Parent = holder,
+			}, { Create.corner("full") })
+		end
+		return holder
+	end
+
 	function Effects:Build()
 		if self._maid then
 			self._maid:Clean()
@@ -9789,120 +9854,108 @@ __modules["ui/Effects"] = function()
 
 		if effect == "Aurora" then
 			local blobs = {
-				{ color = "accent", x = 0.05, y = -0.25, size = 0.75, alpha = 0.86 },
-				{ color = "accent2", x = 0.55, y = 0.35, size = 0.8, alpha = 0.88 },
-				{ color = "accent", x = 0.75, y = -0.35, size = 0.5, alpha = 0.92 },
+				{ color = "accent", x = 0.2, y = 0.1, size = 0.75, opacity = 0.5, dx = 0.18, dy = 0.12 },
+				{ color = "accent2", x = 0.8, y = 0.75, size = 0.85, opacity = 0.45, dx = -0.2, dy = -0.1 },
+				{ color = "accent2", x = 0.85, y = 0.05, size = 0.5, opacity = 0.35, dx = -0.12, dy = 0.15 },
+				{ color = "accent", x = 0.15, y = 0.95, size = 0.55, opacity = 0.3, dx = 0.15, dy = -0.12 },
 			}
 			for index, spec in ipairs(blobs) do
-				local blob = maid:Add(New("Frame", {
-					Name = "Blob",
-					AnchorPoint = Vector2.new(0.5, 0.5),
-					Position = UDim2.fromScale(spec.x + spec.size / 2, spec.y + spec.size / 2),
-					Size = UDim2.fromScale(spec.size, spec.size * 1.3),
-					BackgroundColor3 = C(spec.color),
-					BackgroundTransparency = spec.alpha,
-					Parent = holder,
-				}, {
-					Create.corner("full"),
-					New("UIGradient", {
-						Transparency = NumberSequence.new({
-							NumberSequenceKeypoint.new(0, 1),
-							NumberSequenceKeypoint.new(0.5, 0),
-							NumberSequenceKeypoint.new(1, 1),
-						}),
-						Rotation = index * 40,
-					}),
-				}))
+				local blob = glow(holder, spec.color, UDim2.fromScale(spec.x, spec.y), UDim2.fromScale(spec.size, spec.size), spec.opacity, maid)
 				maid:Add(loop(blob, {
-					Position = UDim2.fromScale(spec.x + spec.size / 2 + (index % 2 == 0 and -0.12 or 0.12), spec.y + spec.size / 2 + 0.1),
-					Rotation = index % 2 == 0 and -25 or 25,
-				}, 9 + index * 3))
+					Position = UDim2.fromScale(spec.x + spec.dx, spec.y + spec.dy),
+					Size = UDim2.fromScale(spec.size * 1.15, spec.size * 1.15),
+				}, 7 + index * 2.5))
 			end
-		elseif effect == "Stars" or effect == "Snow" then
-			local count = effect == "Stars" and 46 or 34
-			for _ = 1, count do
-				local size = effect == "Stars" and (random() < 0.8 and 2 or 3) or math.floor(2 + random() * 3)
-				local x, y = random(), random()
+		elseif effect == "Stars" then
+			glow(holder, "accent2", UDim2.fromScale(0.85, 0.15), UDim2.fromScale(0.6, 0.6), 0.22, maid)
+			glow(holder, "accent", UDim2.fromScale(0.1, 0.9), UDim2.fromScale(0.5, 0.5), 0.18, maid)
+			for _ = 1, 80 do
+				local big = random() < 0.15
+				local size = big and 4 or (random() < 0.6 and 2 or 3)
 				local dot = maid:Add(New("Frame", {
-					Name = "Dot",
+					Name = "Star",
 					AnchorPoint = Vector2.new(0.5, 0.5),
-					Position = UDim2.fromScale(x, effect == "Snow" and -0.05 + y * 0.2 or y),
+					Position = UDim2.fromScale(random(), random()),
 					Size = UDim2.fromOffset(size, size),
-					BackgroundColor3 = random() < 0.25 and C("accent") or C("text"),
-					BackgroundTransparency = 0.35 + random() * 0.45,
+					BackgroundColor3 = big and C("accent") or C("text"),
+					BackgroundTransparency = alpha(0.45 + random() * 0.5),
 					Parent = holder,
 				}, { Create.corner("full") }))
-				if effect == "Stars" then
-					maid:Add(loop(dot, { BackgroundTransparency = 0.92 }, 1.5 + random() * 3))
-				else
-					dot.Position = UDim2.fromScale(x, y)
-					local fall = Motion.Mode == "Full" and TweenInfo.new(9 + random() * 9, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1, false, random() * 6)
-					if fall then
-						dot.Position = UDim2.fromScale(x, -0.05)
-						local tween = Services.TweenService:Create(dot, fall, { Position = UDim2.fromScale(x + (random() - 0.5) * 0.15, 1.05) })
-						tween:Play()
-						maid:Add(tween)
-					end
+				maid:Add(loop(dot, { BackgroundTransparency = alpha(0.08) }, 1.2 + random() * 2.5))
+			end
+		elseif effect == "Snow" then
+			glow(holder, "accent", UDim2.fromScale(0.5, 1.05), UDim2.fromScale(1.1, 1.1), 0.2, maid)
+			for _ = 1, 60 do
+				local size = math.floor(2 + random() * 4)
+				local x, y = random(), random()
+				local dot = maid:Add(New("Frame", {
+					Name = "Flake",
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.fromScale(x, y),
+					Size = UDim2.fromOffset(size, size),
+					BackgroundColor3 = random() < 0.2 and C("accent") or C("text"),
+					BackgroundTransparency = alpha(0.4 + random() * 0.45),
+					Parent = holder,
+				}, { Create.corner("full") }))
+				if Motion.Mode == "Full" then
+					local seconds = 8 + random() * 10
+					local fall = TweenInfo.new(seconds, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1, false, 0)
+					-- start each flake somewhere along its path so the sky is never empty
+					dot.Position = UDim2.fromScale(x, -0.05)
+					local tween = Services.TweenService:Create(dot, fall, { Position = UDim2.fromScale(x + (random() - 0.5) * 0.2, 1.05) })
+					tween:Play()
+					pcall(function()
+						tween.TimePosition = y * seconds
+					end)
+					maid:Add(tween)
 				end
 			end
 		elseif effect == "Grid" then
 			local step = 28
-			for i = 0, 60 do
+			local line = alpha(0.09)
+			for i = 0, 70 do
 				maid:Add(New("Frame", {
 					Position = UDim2.fromOffset(i * step, 0),
 					Size = UDim2.new(0, 1, 1, 0),
 					BackgroundColor3 = C("text"),
-					BackgroundTransparency = 0.955,
+					BackgroundTransparency = line,
 					Parent = holder,
 				}))
 			end
-			for i = 0, 40 do
+			for i = 0, 45 do
 				maid:Add(New("Frame", {
 					Position = UDim2.fromOffset(0, i * step),
 					Size = UDim2.new(1, 0, 0, 1),
 					BackgroundColor3 = C("text"),
-					BackgroundTransparency = 0.955,
+					BackgroundTransparency = line,
 					Parent = holder,
 				}))
 			end
-			local glow = maid:Add(New("Frame", {
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.fromScale(0.95, 0.05),
-				Size = UDim2.fromScale(0.9, 0.9),
-				BackgroundColor3 = C("accent"),
-				BackgroundTransparency = 0.88,
-				Parent = holder,
-			}, {
-				Create.corner("full"),
-				New("UIGradient", {
-					Transparency = NumberSequence.new({
-						NumberSequenceKeypoint.new(0, 1),
-						NumberSequenceKeypoint.new(0.5, 0),
-						NumberSequenceKeypoint.new(1, 1),
-					}),
-					Rotation = 45,
-				}),
-			}))
-			maid:Add(loop(glow, { BackgroundTransparency = 0.94 }, 4))
+			local a = glow(holder, "accent", UDim2.fromScale(0.9, 0.1), UDim2.fromScale(0.8, 0.8), 0.4, maid)
+			local b = glow(holder, "accent2", UDim2.fromScale(0.1, 0.95), UDim2.fromScale(0.6, 0.6), 0.3, maid)
+			maid:Add(loop(a, { Position = UDim2.fromScale(0.7, 0.3) }, 9))
+			maid:Add(loop(b, { Position = UDim2.fromScale(0.3, 0.75) }, 11))
 		elseif effect == "Gradient" then
 			local wash = maid:Add(New("Frame", {
 				Size = UDim2.fromScale(1, 1),
 				BackgroundColor3 = Color3.new(1, 1, 1),
-				BackgroundTransparency = 0.86,
+				BackgroundTransparency = alpha(0.42),
 				Parent = holder,
 			}, {
 				New("UIGradient", {
 					Color = Theme.gradient(),
 					Transparency = NumberSequence.new({
 						NumberSequenceKeypoint.new(0, 0),
-						NumberSequenceKeypoint.new(0.55, 0.85),
+						NumberSequenceKeypoint.new(0.6, 0.75),
 						NumberSequenceKeypoint.new(1, 1),
 					}),
 					Rotation = 35,
 				}),
 			}))
 			local gradient = wash:FindFirstChildOfClass("UIGradient")
-			maid:Add(loop(gradient, { Rotation = 55 }, 8))
+			maid:Add(loop(gradient, { Rotation = 75 }, 7))
+			local spot = glow(holder, "accent2", UDim2.fromScale(0.8, 0.8), UDim2.fromScale(0.7, 0.7), 0.3, maid)
+			maid:Add(loop(spot, { Position = UDim2.fromScale(0.6, 0.6) }, 8))
 		end
 	end
 
@@ -11599,7 +11652,7 @@ __modules["ui/Window"] = function()
 		local radius = Theme.Sizes.rWindow
 		-- sidebar background: only its outer corners are round; translucent with Glass
 		local function navPanel(round)
-			Create.panel(nav, { color = C("nav"), transparency = Theme.glass(0.35), radius = radius, round = round })
+			Create.panel(nav, { color = C("nav"), transparency = Theme.glass(0.45), radius = radius, round = round })
 		end
 		if mode == "pc" then
 			maid:Add(Create.list("Vertical", 0)).Parent = frame
@@ -13040,6 +13093,12 @@ __modules["ui/Window"] = function()
 
 	function Window:SetEffect(effect)
 		Theme.setEffect(effect)
+		self.Config:SaveInterface()
+	end
+
+	-- 0.25 … 2 (1 = default)
+	function Window:SetEffectStrength(value)
+		Theme.setEffectStrength(value)
 		self.Config:SaveInterface()
 	end
 

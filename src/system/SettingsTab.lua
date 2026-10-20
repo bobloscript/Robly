@@ -199,10 +199,30 @@ function SettingsTab:_buildTheme()
 			end
 		end,
 	})
+	local strength = section:Slider({
+		Title = L("effect_strength"),
+		Flag = "robly:effectStrength",
+		Min = 25,
+		Max = 200,
+		Step = 5,
+		Suffix = "%",
+		Default = math.floor(Theme.EffectStrength * 100 + 0.5),
+		Save = false,
+		VisibleWhen = function(get)
+			return get("robly:effect") ~= "None"
+		end,
+		Callback = function(value)
+			local v = value / 100
+			if math.abs(v - Theme.EffectStrength) > 1e-3 then
+				window:SetEffectStrength(v)
+			end
+		end,
+	})
 	grid.Maid:Add(Theme.Changed:Connect(function(what)
 		if what == "effect" or what == "colors" then
 			window.Store:Set(effect.Flag, Theme.Effect, "silent")
 			window.Store:Set(glass.Flag, Theme.Glass, "silent")
+			window.Store:Set(strength.Flag, math.floor(Theme.EffectStrength * 100 + 0.5), "silent")
 		end
 	end))
 

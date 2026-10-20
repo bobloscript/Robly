@@ -290,7 +290,7 @@ function Window:_applyLayout()
 	local radius = Theme.Sizes.rWindow
 	-- sidebar background: only its outer corners are round; translucent with Glass
 	local function navPanel(round)
-		Create.panel(nav, { color = C("nav"), transparency = Theme.glass(0.35), radius = radius, round = round })
+		Create.panel(nav, { color = C("nav"), transparency = Theme.glass(0.45), radius = radius, round = round })
 	end
 	if mode == "pc" then
 		maid:Add(Create.list("Vertical", 0)).Parent = frame
@@ -1731,6 +1731,12 @@ end
 
 function Window:SetEffect(effect)
 	Theme.setEffect(effect)
+	self.Config:SaveInterface()
+end
+
+-- 0.25 … 2 (1 = default)
+function Window:SetEffectStrength(value)
+	Theme.setEffectStrength(value)
 	self.Config:SaveInterface()
 end
 

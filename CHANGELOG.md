@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1 — 2026-10-20
+
+- Background effects are much more visible: soft radial glows (stacked circles) instead of faint bands, more and brighter stars and snowflakes (snow is spread over the whole window from the start), a stronger grid with two drifting glows, a brighter gradient with a moving spot.
+- "Effect strength" slider (25–200 %) in Settings → Theme; `Robly:SetEffectStrength(n)` / `Window:SetEffectStrength(n)` (0.25–2). Saved with the theme.
+- Glass is a bit more transparent (cards 30 %, sidebar 45 %).
+
 ## 1.4.0 — 2026-10-20
 
 Visual hierarchy and a look of its own.

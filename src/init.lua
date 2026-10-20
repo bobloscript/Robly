@@ -74,6 +74,11 @@ function Robly:SetEffect(effect)
 end
 
 -- Glass: panels become translucent so the background effect shows through.
+-- How visible the background effect is: 0.25 … 2 (1 = default).
+function Robly:SetEffectStrength(value)
+	Theme.setEffectStrength(value)
+end
+
 function Robly:SetGlass(enabled)
 	Theme.setGlass(enabled)
 end

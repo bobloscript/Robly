@@ -142,6 +142,13 @@ end
 Theme.Effects = { "None", "Aurora", "Stars", "Snow", "Grid", "Gradient" }
 Theme.Effect = "Aurora"
 Theme.Glass = true
+-- 0.25 … 2: multiplies how opaque the effect is (1 = default)
+Theme.EffectStrength = 1
+
+function Theme.setEffectStrength(value)
+	Theme.EffectStrength = math.clamp(tonumber(value) or 1, 0.25, 2)
+	Theme.Changed:Fire("effect")
+end
 
 function Theme.setEffect(effect)
 	if not table.find(Theme.Effects, effect) then
@@ -162,7 +169,7 @@ end
 function Theme.glass(amount)
 	return Theme.f(function()
 		if Theme.Glass and Theme.Effect ~= "None" then
-			return amount or 0.22
+			return amount or 0.3
 		end
 		return 0
 	end)
@@ -559,7 +566,7 @@ function Theme.import(text)
 end
 
 function Theme.serialize()
-	local out = { name = Theme.Name, effect = Theme.Effect, glass = Theme.Glass }
+	local out = { name = Theme.Name, effect = Theme.Effect, glass = Theme.Glass, strength = Theme.EffectStrength }
 	if Theme.Name == "Custom" then
 		out.spec = {}
 		for key, color in pairs(Theme.Spec) do
@@ -578,6 +585,9 @@ function Theme.deserialize(data)
 	end
 	if data.glass ~= nil then
 		Theme.Glass = data.glass == true
+	end
+	if tonumber(data.strength) then
+		Theme.EffectStrength = math.clamp(tonumber(data.strength), 0.25, 2)
 	end
 	local raw = data.spec or data.colors -- "colors" = 1.0 full list
 	if data.name == "Custom" and type(raw) == "table" then
