@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0 — 2026-10-20
+
+- Icons are now [Lucide](https://lucide.dev/icons): 1573 icons rendered from Roblox-hosted sprite sheets (ImageLabel + ImageRectOffset), recoloured by the theme. Any Lucide name works (`Icon = "crosshair"`); the old short names (`pin`, `bolt`, `close`, …) map to Lucide icons. Fewer instances per icon (one image instead of many frames), so windows are lighter.
+- `tools/gen_lucide.py` regenerates `src/core/LucideData.lua` from the latte-soft/lucide-roblox release.
+
 ## 1.0.3 — 2026-10-20
 
 - Dragging: windows followed the pointer with a drift equal to the Roblox top-bar height, so the main window couldn't reach the bottom of the screen and detached windows flew off it. In a ScreenGui with IgnoreGuiInset, AbsolutePosition/InputObject.Position and UDim2 Position offsets differ by the top bar; the code mixed them. Pointer and AbsolutePosition now stay in one space and are converted (Device.toOffset) before setting a Position; drags move from the start position by the total pointer delta.

@@ -1,91 +1,79 @@
--- Icons: Robly's own vector icon set, drawn with plain Frames (rotated bars,
--- rings, rounded rects) on a 24×24 grid. No images, so icons render on every
--- executor, scale cleanly and recolour with the theme.
---
--- Primitive codes (24-unit grid):
---   { "l", x1, y1, x2, y2, [w] }    line with round caps
---   { "p", x1, y1, x2, y2, ..., w=} polyline with round joints
---   { "c", cx, cy, r, [w] }         ring        { "C", cx, cy, r }      dot
---   { "r", x, y, w, h, rad, [sw] }  outline box { "R", x, y, w, h, rad } filled box
--- Any "rbxassetid://…" string works as an icon too (ImageLabel).
+-- Icons: the Lucide icon set (https://lucide.dev) rendered from Roblox sprite
+-- sheets (ImageLabel + ImageRectOffset), recoloured with the theme.
+--   Icons.new("house"), Icons.new("crosshair", 18, Theme.c("accent"))
+-- Any Lucide name from LucideData works, plus Robly's short names below
+-- (pin, bolt, close, pip…) and any "rbxassetid://…" image.
+-- A few tiny shapes Lucide doesn't have (resize grip, status dots) are drawn
+-- with Frames on a 24×24 grid:
+--   { "l", x1, y1, x2, y2, [w] } line · { "c", cx, cy, r, [w] } ring · { "C", cx, cy, r } dot
 
 local Theme = import("core/Theme")
 local Create = import("core/Create")
+local Lucide = import("core/LucideData")
 
 local New = Create.New
 local Icons = {}
 
 local D = {}
 Icons.Data = D
+Icons.Lucide = Lucide
 
-D.home = { { "p", 3, 11, 12, 3.5, 21, 11 }, { "l", 5.5, 9.5, 5.5, 20 }, { "l", 18.5, 9.5, 18.5, 20 }, { "l", 5.5, 20, 18.5, 20 }, { "p", 10, 20, 10, 14.5, 14, 14.5, 14, 20 } }
-D.leaf = { { "l", 12, 21, 12, 11 }, { "p", 12, 12, 13.5, 8, 16.5, 5.5, 20, 4.5, 19.5, 8, 17, 10.5, 12, 12 }, { "p", 12, 15, 10.5, 12, 8, 10.3, 5, 9.5, 5.5, 12.5, 8, 14.3, 12, 15 } }
-D.sword = { { "p", 14.5, 17.5, 4, 7, 4, 4, 7, 4, 17.5, 14.5 }, { "l", 13, 19, 19, 13 }, { "l", 16, 16, 20, 20 } }
-D.pin = { { "p", 12, 21, 7.2, 15, 5.4, 11.5, 5.4, 9, 6.6, 6, 9, 3.8, 12, 3, 15, 3.8, 17.4, 6, 18.6, 9, 18.6, 11.5, 16.8, 15, 12, 21 }, { "c", 12, 9.5, 2.5 } }
-D.eye = { { "p", 2, 12, 4.5, 8.5, 8, 6, 12, 5, 16, 6, 19.5, 8.5, 22, 12, 19.5, 15.5, 16, 18, 12, 19, 8, 18, 4.5, 15.5, 2, 12 }, { "c", 12, 12, 3 } }
-D.user = { { "c", 12, 8, 4 }, { "p", 4, 21, 4.6, 18, 6.5, 15.8, 9, 14.5, 12, 14, 15, 14.5, 17.5, 15.8, 19.4, 18, 20, 21 } }
-D.sliders = { { "l", 4, 6, 13, 6 }, { "l", 17, 6, 20, 6 }, { "c", 15, 6, 2 }, { "l", 4, 12, 7, 12 }, { "l", 11, 12, 20, 12 }, { "c", 9, 12, 2 }, { "l", 4, 18, 15, 18 }, { "l", 19, 18, 20, 18 }, { "c", 17, 18, 2 } }
-D.search = { { "c", 11, 11, 7 }, { "l", 16.5, 16.5, 20, 20 } }
-D.globe = { { "c", 12, 12, 9 }, { "l", 3, 12, 21, 12 }, { "p", 12, 3, 14.3, 6, 15.6, 9, 15.8, 12, 15.6, 15, 14.3, 18, 12, 21, 9.7, 18, 8.4, 15, 8.2, 12, 8.4, 9, 9.7, 6, 12, 3 } }
-D.minus = { { "l", 6, 12, 18, 12 } }
-D.plus = { { "l", 5, 12, 19, 12 }, { "l", 12, 5, 12, 19 } }
-D.close = { { "l", 7, 7, 17, 17 }, { "l", 17, 7, 7, 17 } }
-D.check = { { "p", 5, 12.5, 9.5, 17, 19, 7.5, w = 2.4 } }
-D.chevronDown = { { "p", 7, 10, 12, 15, 17, 10 } }
-D.chevronUp = { { "p", 7, 14, 12, 9, 17, 14 } }
-D.chevronRight = { { "p", 9, 6, 15, 12, 9, 18 } }
-D.chevronLeft = { { "p", 15, 6, 9, 12, 15, 18 } }
-D.pip = { { "r", 3, 5, 18, 14, 2.5 }, { "R", 12, 11, 6, 5, 1 } }
-D.attach = { { "r", 3, 5, 18, 14, 2.5 }, { "p", 9, 10, 9, 15, 14, 15 }, { "l", 9, 15, 16, 8.5 } }
-D.more = { { "C", 5, 12, 1.8 }, { "C", 12, 12, 1.8 }, { "C", 19, 12, 1.8 } }
-D.bolt = { { "p", 13, 2.5, 4.5, 13.5, 11.5, 13.5, 10.5, 21.5, 19.5, 10.5, 12.5, 10.5, 13, 2.5 } }
-D.warning = { { "p", 12, 3.5, 21.5, 20, 2.5, 20, 12, 3.5 }, { "l", 12, 9.5, 12, 13.5 }, { "C", 12, 16.6, 1.2 } }
-D.info = { { "c", 12, 12, 9 }, { "l", 12, 11, 12, 16.5 }, { "C", 12, 7.8, 1.2 } }
-D.success = { { "p", 5, 12.5, 9.5, 17, 19, 7.5, w = 2.4 } }
-D.error = { { "c", 12, 12, 9 }, { "l", 9, 9, 15, 15 }, { "l", 15, 9, 9, 15 } }
-D.copy = { { "r", 8, 8, 12, 12, 2.5 }, { "p", 16, 8, 16, 6, 14.5, 4, 6, 4, 4, 6, 4, 14.5, 6, 16, 8, 16 } }
-D.keyboard = { { "r", 2.5, 6, 19, 12, 2.5 }, { "C", 6.5, 10, 0.9 }, { "C", 10, 10, 0.9 }, { "C", 13.5, 10, 0.9 }, { "C", 17, 10, 0.9 }, { "l", 8, 14.2, 16, 14.2 } }
-D.palette = { { "c", 12, 12, 9 }, { "C", 8, 10, 1.4 }, { "C", 12, 7.5, 1.4 }, { "C", 16, 10, 1.4 }, { "C", 14.5, 15, 1.4 } }
-D.folder = { { "p", 3, 6, 9.5, 6, 11.5, 8.5, 21, 8.5, 21, 19, 3, 19, 3, 6 } }
-D.trash = { { "l", 4, 6.5, 20, 6.5 }, { "p", 9, 6.5, 9, 4, 15, 4, 15, 6.5 }, { "p", 6, 6.5, 7, 20, 17, 20, 18, 6.5 } }
-D.star = { { "p", 12, 3, 14.6, 8.8, 21, 9.4, 16.2, 13.6, 17.6, 20, 12, 16.7, 6.4, 20, 7.8, 13.6, 3, 9.4, 9.4, 8.8, 12, 3 } }
-D.target = { { "c", 12, 12, 8 }, { "c", 12, 12, 3.5 } }
-D.crosshair = { { "c", 12, 12, 7.5 }, { "l", 12, 2, 12, 6 }, { "l", 12, 18, 12, 22 }, { "l", 2, 12, 6, 12 }, { "l", 18, 12, 22, 12 } }
-D.shield = { { "p", 12, 3, 19, 6, 19, 12, 16.5, 17, 12, 21, 7.5, 17, 5, 12, 5, 6, 12, 3 } }
-D.gear = { { "c", 12, 12, 3 }, { "c", 12, 12, 7 }, { "l", 12, 2, 12, 5 }, { "l", 12, 19, 12, 22 }, { "l", 2, 12, 5, 12 }, { "l", 19, 12, 22, 12 }, { "l", 4.9, 4.9, 7, 7 }, { "l", 17, 17, 19.1, 19.1 }, { "l", 4.9, 19.1, 7, 17 }, { "l", 17, 7, 19.1, 4.9 } }
-D.map = { { "p", 3, 6, 9, 3.5, 15, 6, 21, 3.5, 21, 18, 15, 20.5, 9, 18, 3, 20.5, 3, 6 }, { "l", 9, 3.5, 9, 18 }, { "l", 15, 6, 15, 20.5 } }
-D.box = { { "r", 3, 9, 18, 11, 2 }, { "p", 4.5, 9, 6.5, 4.5, 17.5, 4.5, 19.5, 9 }, { "l", 3, 13, 21, 13 }, { "R", 10.5, 12, 3, 3, 0.8 } }
-D.plane = { { "p", 2.5, 12.5, 21.5, 4, 14.5, 21, 11, 14, 2.5, 12.5 }, { "l", 11, 14, 21.5, 4 } }
-D.heart = { { "p", 12, 20, 4.5, 13, 3, 9.5, 4, 6.5, 6.5, 5, 9.5, 5.3, 12, 8, 14.5, 5.3, 17.5, 5, 20, 6.5, 21, 9.5, 19.5, 13, 12, 20 } }
-D.download = { { "l", 12, 4, 12, 15 }, { "p", 7, 10.5, 12, 15.5, 17, 10.5 }, { "l", 4, 20, 20, 20 } }
-D.upload = { { "l", 12, 15.5, 12, 4.5 }, { "p", 7, 9, 12, 4, 17, 9 }, { "l", 4, 20, 20, 20 } }
-D.save = { { "p", 4, 4, 16, 4, 20, 8, 20, 20, 4, 20, 4, 4 }, { "p", 8, 20, 8, 14, 16, 14, 16, 20 }, { "p", 8, 4, 8, 8, 14, 8 } }
-D.link = { { "p", 10, 14, 8, 16, 5.5, 16, 4, 14.5, 4, 12, 7, 9 }, { "p", 14, 10, 16, 8, 18.5, 8, 20, 9.5, 20, 12, 17, 15 }, { "l", 9.5, 14.5, 14.5, 9.5 } }
-D.refresh = { { "p", 19.5, 12, 18.6, 15.8, 16, 18.6, 12, 19.5, 8, 18.6, 5.4, 15.8, 4.5, 12, 5.4, 8.2, 8, 5.4, 12, 4.5, 16, 5.4, 18.5, 7.5 }, { "p", 19, 3.5, 19, 8, 14.5, 8 } }
 D.grip = { { "l", 21, 9, 9, 21 }, { "l", 21, 15, 15, 21 } }
 D.dot = { { "C", 12, 12, 4 } }
 D.ring = { { "c", 12, 12, 4, 2 } }
-D.question = { { "p", 9, 9, 9.6, 6.8, 12, 5.5, 14.4, 6.4, 15.2, 8.6, 14.2, 10.6, 12, 12, 12, 14 }, { "C", 12, 17.8, 1.3 } }
-D.play = { { "p", 7, 4.5, 19, 12, 7, 19.5, 7, 4.5 } }
-D.stop = { { "r", 6, 6, 12, 12, 2 } }
-D.list = { { "l", 9, 6, 20, 6 }, { "l", 9, 12, 20, 12 }, { "l", 9, 18, 20, 18 }, { "C", 4.5, 6, 1.2 }, { "C", 4.5, 12, 1.2 }, { "C", 4.5, 18, 1.2 } }
-D.coins = { { "c", 9, 9, 5.5 }, { "p", 9.5, 19.5, 12, 20.5, 15, 20.5, 18, 19, 20, 16, 20, 13, 18.5, 10.5 } }
-D.skull = { { "p", 7, 20, 7, 16.5, 4.5, 14, 4, 10.5, 5.5, 6.5, 9, 4, 12, 3.5, 15, 4, 18.5, 6.5, 20, 10.5, 19.5, 14, 17, 16.5, 17, 20, 7, 20 }, { "C", 9, 11.5, 1.8 }, { "C", 15, 11.5, 1.8 } }
-D.lock = { { "r", 5, 10.5, 14, 10, 2.5 }, { "p", 8, 10.5, 8, 7.5, 9.2, 4.8, 12, 3.8, 14.8, 4.8, 16, 7.5, 16, 10.5 } }
-D.speed = { { "p", 4, 17, 3.5, 13, 5, 8.5, 8.5, 5.5, 12, 4.5, 15.5, 5.5, 19, 8.5, 20.5, 13, 20, 17 }, { "l", 12, 14, 16, 9 } }
 
+-- Robly's names (used by the library and kept for scripts) -> Lucide names
 Icons.Aliases = {
-	farm = "leaf", fight = "sword", combat = "sword", teleport = "pin", visual = "eye", esp = "eye",
-	player = "user", settings = "sliders", x = "close", lightning = "bolt", zap = "bolt",
-	["external"] = "pip", ["return"] = "attach", fly = "plane", chest = "box", money = "coins",
-	ok = "check", danger = "warning", fav = "star", config = "folder",
+	home = "home", house = "home", leaf = "leaf", farm = "sprout", sword = "sword", fight = "swords",
+	combat = "swords", pin = "map-pin", teleport = "map-pin", eye = "eye", visual = "eye", esp = "eye",
+	user = "user", player = "user", sliders = "sliders-horizontal", settings = "settings",
+	gear = "settings", close = "x", chevronDown = "chevron-down", chevronUp = "chevron-up",
+	chevronLeft = "chevron-left", chevronRight = "chevron-right", pip = "picture-in-picture-2",
+	external = "picture-in-picture-2", attach = "minimize-2", ["return"] = "minimize-2",
+	more = "more-horizontal", bolt = "zap", lightning = "bolt", warning = "alert-triangle",
+	danger = "alert-triangle", success = "check-circle", error = "x-circle", trash = "trash-2",
+	box = "package", chest = "package", refresh = "refresh-cw", question = "help-circle",
+	stop = "square", speed = "gauge", fly = "plane", money = "coins", ok = "check", fav = "star",
+	config = "folder",
 }
+
+local warned = {}
+
+-- Resolves a name to ("image", url) | ("sprite", entry) | ("vector", def)
+function Icons.resolve(name)
+	if type(name) ~= "string" then
+		return "vector", D.dot
+	end
+	if name:find("^rbxasset") or name:find("^https?://") then
+		return "image", name
+	end
+	if D[name] then
+		return "vector", D[name]
+	end
+	local lucideName = Icons.Aliases[name] or name
+	if Icons.Aliases[lucideName] and not Lucide.Icons[lucideName] then
+		lucideName = Icons.Aliases[lucideName]
+	end
+	local entry = Lucide.Icons[lucideName]
+	if entry then
+		return "sprite", entry
+	end
+	if not warned[name] then
+		warned[name] = true
+		warn("[Robly] unknown icon: " .. name .. " (use a Lucide name from lucide.dev/icons)")
+	end
+	return "sprite", Lucide.Icons["circle"]
+end
 
 function Icons.has(name)
 	if type(name) ~= "string" then
 		return false
 	end
-	return D[name] ~= nil or Icons.Aliases[name] ~= nil or name:find("^rbxasset") ~= nil
+	if name:find("^rbxasset") or D[name] then
+		return true
+	end
+	local lucideName = Icons.Aliases[name] or name
+	return Lucide.Icons[lucideName] ~= nil or Lucide.Icons[Icons.Aliases[lucideName] or ""] ~= nil
 end
 
 local function px(size)
@@ -132,16 +120,25 @@ function Icons.new(name, size, color, props)
 		Theme.bind(instance, prop, color)
 	end
 
-	if type(name) == "string" and name:find("^rbxasset") then
+	local kind, value = Icons.resolve(name)
+	if kind == "image" or kind == "sprite" then
 		local image = New("ImageLabel", {
+			Name = "Glyph",
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
-			Image = name,
+			ScaleType = Enum.ScaleType.Fit,
 			Parent = container,
 		})
+		if kind == "image" then
+			image.Image = value
+		else
+			image.Image = "rbxassetid://" .. Lucide.Sheets[value[1]]
+			image.ImageRectOffset = Vector2.new(value[2], value[3])
+			image.ImageRectSize = Vector2.new(Lucide.Size, Lucide.Size)
+		end
 		track(image, "ImageColor3")
 	else
-		local def = D[name] or D[Icons.Aliases[name] or ""] or D.dot
+		local def = value
 		local thickness = px(size)
 
 		local function line(x1, y1, x2, y2, w)

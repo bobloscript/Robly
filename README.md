@@ -42,7 +42,7 @@ A full showcase lives in [`examples/demo.lua`](examples/demo.lua).
 - **Script localisation:** your script defines its languages and translations; the player switches language live from the header. Library texts ship in en / ru / es / pt / de / fr.
 - **Keybinds** with game-conflict checks, a keybind panel on PC, quick buttons on phones.
 - **Animations:** Full / Soft / Off for weak devices.
-- **No images required:** Robly's icon set is drawn with frames, shadows are 1 px strokes.
+- **Lucide icons** from Roblox-hosted sprite sheets (no external downloads); shadows are 1 px strokes.
 - **Clean architecture:** tokens → components, layouts only (no hand-placed coordinates), fixed layers (windows / popups / notifications / modal), one value store, strict cleanup on close.
 
 ## Window
@@ -184,7 +184,14 @@ Players can edit themes in Settings and share them as `robly1:…` strings.
 
 ## Icons
 
-`home leaf sword pin eye user sliders search globe minus plus close check chevronDown chevronUp chevronLeft chevronRight pip attach more bolt warning info error copy keyboard palette folder trash star target crosshair shield gear map box plane heart download upload save link refresh grip dot ring question play stop list coins skull lock speed` — plus aliases (`farm`, `fight`, `teleport`, `visual`, `player`, `settings`, `fly`, `chest`, …). Any `rbxassetid://` works too.
+Robly uses the [Lucide](https://lucide.dev/icons) icon set (1500+ icons, Lucide 0.363), rendered from Roblox-hosted sprite sheets — any Lucide name works:
+
+```lua
+Window:Tab({ Title = "Aim", Icon = "crosshair" })
+Section:Button({ Title = "Teleport", Icon = "map-pin" })
+```
+
+Short aliases are kept too (`pin`, `bolt`, `close`, `farm`, `teleport`, `settings`, …), and any `rbxassetid://` image works. The sprites are regular Roblox assets, so they load on every executor; colours follow the theme.
 
 ## Compatibility
 
@@ -205,3 +212,5 @@ The smoke test drives the demo through every feature against Roblox's real API d
 ## License
 
 [The Unlicense](LICENSE) — public domain. Do anything you want, no attribution required.
+
+Third-party: the Lucide icons are © Lucide Contributors (ISC License); their Roblox sprite map comes from [latte-soft/lucide-roblox](https://github.com/latte-soft/lucide-roblox) (MIT License). Regenerate it with `python3 tools/gen_lucide.py`.

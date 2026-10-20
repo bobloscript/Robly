@@ -76,6 +76,30 @@ local function textOf(root, text)
 	end)
 end
 
+step("lucide icons", function()
+	local icons = M.findAll(window.Root.Gui, function(node)
+		return node.Name == "Glyph"
+	end)
+	check("icons rendered as Lucide sprites", #icons > 10, #icons)
+	local glyph = icons[1]
+	check("sprite rect", glyph and glyph.ImageRectSize.X == 48 and tostring(glyph.Image):find("^rbxassetid://") ~= nil)
+	local missing = {}
+	local Lucide = fs.readFile("src/core/LucideData.lua")
+	local iconsSource = fs.readFile("src/core/Icons.lua")
+	local aliasBlock = iconsSource:match("Icons.Aliases = (%b{})")
+	local aliases = {}
+	for alias, target in aliasBlock:gmatch('%[?"?([%w_]+)"?%]? = "([%w%-]+)"') do
+		aliases[alias] = target
+	end
+	for alias, target in pairs(aliases) do
+		local name = aliases[target] or target
+		if not Lucide:find('["' .. name .. '"]', 1, true) then
+			table.insert(missing, alias .. "->" .. name)
+		end
+	end
+	check("every alias points to a Lucide icon", #missing == 0, table.concat(missing, ", "))
+end)
+
 -- 2. Controls -----------------------------------------------------------------------------
 step("toggle", function()
 	local toggle = control("autoFarm")
