@@ -31,6 +31,8 @@ function Root.new(name)
 	end
 	self._z = 1
 	Compat.mountGui(self.Gui)
+	local Device = import("core/Device")
+	Device.OriginLayer = self.Windows
 	return self
 end
 

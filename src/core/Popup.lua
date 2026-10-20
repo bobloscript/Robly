@@ -84,7 +84,7 @@ function Popup:Open(opts)
 		local gap = opts.gap or 6
 		local x, y
 		if opts.anchor and opts.placement ~= "center" then
-			local ap, as = opts.anchor.AbsolutePosition, opts.anchor.AbsoluteSize
+			local ap, as = Device.toOffset(opts.anchor.AbsolutePosition), opts.anchor.AbsoluteSize
 			if opts.align == "left" then
 				x = ap.X
 			elseif opts.align == "center" then

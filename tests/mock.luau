@@ -117,7 +117,12 @@ end
 
 local function absPos(p)
 	local d = data[p]
-	if d.className == "ScreenGui" or d.className == "Folder" or not d.parent then
+	-- Like Roblox: in a ScreenGui with IgnoreGuiInset, AbsolutePosition is still
+	-- measured from below the 36 px top bar, so the screen corner is at y = -36.
+	if d.className == "ScreenGui" then
+		return Vector2.new(0, d.real.IgnoreGuiInset and -36 or 0)
+	end
+	if d.className == "Folder" or not d.parent then
 		return Vector2.new(0, 0)
 	end
 	local parentPos, parentSize = absPos(d.parent), absSize(d.parent)

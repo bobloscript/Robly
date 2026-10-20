@@ -61,20 +61,21 @@ function Pill.new(window, opts)
 	}, { Create.corner("full") })
 
 	local moved = false
+	local startPosition
 	Drag.attach(button, {
 		onStart = function()
 			moved = false
+			startPosition = Device.offsetOf(button)
 			button.ZIndex = window.Root:NextZ()
 		end,
-		onMove = function(_, delta)
+		onMove = function(_, _, total)
 			moved = true
-			local p = button.AbsolutePosition + delta
-			p = Drag.clamp(p, button.AbsoluteSize)
+			local p = Drag.clamp(startPosition + total, button.AbsoluteSize)
 			button.Position = UDim2.fromOffset(p.X, p.Y)
 		end,
 		onEnd = function()
 			if moved and opts.onMoved then
-				opts.onMoved(button.AbsolutePosition)
+				opts.onMoved(Device.offsetOf(button))
 			end
 		end,
 	}, self.Maid)
@@ -118,12 +119,13 @@ function Pill:Show(from)
 end
 
 function Pill:Hide()
-	self.Position = self.Button.AbsolutePosition
+	self.Position = Device.offsetOf(self.Button)
 	self.Button.Visible = false
 end
 
 function Pill:Rect()
-	return self.Button.AbsolutePosition, self.Button.AbsoluteSize
+	-- offset space (for positioning other top-level frames)
+	return Device.offsetOf(self.Button), self.Button.AbsoluteSize
 end
 
 function Pill:Destroy()

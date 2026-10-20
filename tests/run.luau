@@ -192,6 +192,23 @@ step("color picker", function()
 		picker:Open()
 	end)
 	check("color popup opens", ok and window.Popup.Current ~= nil)
+	local square = M.find(window.Root.Popups, function(node)
+		return node.Name == "SV"
+	end)
+	if square then
+		local p, s = square.AbsolutePosition, square.AbsoluteSize
+		local click = M.input(Enum.UserInputType.MouseButton1, p.X + s.X * 0.25, p.Y + s.Y * 0.25)
+		M.fire(square, "InputBegan", click)
+		M.UIS.InputEnded:Fire(click)
+		local knob
+		for _, child in ipairs(square:GetChildren()) do
+			if child:IsA("GuiObject") and child.ZIndex == 3 then
+				knob = child
+			end
+		end
+		local kp = knob.Position
+		check("color knob under the cursor", math.abs(kp.X.Scale - 0.25) < 0.01 and math.abs(kp.Y.Scale - 0.25) < 0.01, kp.X.Scale .. "," .. kp.Y.Scale)
+	end
 	window.Popup:Close()
 end)
 
@@ -277,6 +294,28 @@ step("window drag + layout parts", function()
 	check("bindings are not weak tables", src:find('__mode = "k"', 1, true) == nil)
 end)
 
+step("drag follows the pointer and reaches the bottom edge", function()
+	local frame = window.Frame
+	local handle = window.DragHandle
+	local before = frame.Position
+	local function drag(fromY, toY)
+		local start = M.input(Enum.UserInputType.MouseButton1, 500, fromY)
+		M.fire(handle, "InputBegan", start)
+		M.UIS.InputChanged:Fire(M.input(Enum.UserInputType.MouseMovement, 500, fromY + 10))
+		M.UIS.InputChanged:Fire(M.input(Enum.UserInputType.MouseMovement, 500, toY))
+		M.UIS.InputEnded:Fire(start)
+	end
+	local y0 = frame.Position.Y.Offset
+	drag(100, 150)
+	check("moves exactly with the pointer", frame.Position.Y.Offset == y0 + 50, frame.Position.Y.Offset - y0)
+	drag(100, 3000)
+	local bottom = 1080 - frame.AbsoluteSize.Y
+	check("reaches the bottom edge", frame.Position.Y.Offset == bottom, frame.Position.Y.Offset .. " vs " .. bottom)
+	drag(500, -3000)
+	check("stops under the top bar", frame.Position.Y.Offset == 36, frame.Position.Y.Offset)
+	frame.Position = before
+end)
+
 -- 4. Search, tabs, detach -----------------------------------------------------------------
 step("search", function()
 	window.Search:SetQuery("фарм")
@@ -299,6 +338,17 @@ step("detach and attach", function()
 	check("placeholder shown", window.Placeholder and window.Placeholder.Frame.Visible)
 	window.Flags.autoFarm = true
 	check("value shared", control("autoFarm").Track.BackgroundColor3 == window.Library.Themes.RobScript.accent)
+	local detached = farm.DetachedWindow
+	local handle = M.find(detached.Frame, function(node)
+		return node.Name == "DragHandle"
+	end)
+	local start = M.input(Enum.UserInputType.MouseButton1, 900, 300)
+	M.fire(handle, "InputBegan", start)
+	M.UIS.InputChanged:Fire(M.input(Enum.UserInputType.MouseMovement, 910, 310))
+	M.UIS.InputChanged:Fire(M.input(Enum.UserInputType.MouseMovement, 5000, -4000))
+	M.UIS.InputEnded:Fire(start)
+	local dp = detached.Frame.Position
+	check("detached window stays on screen", dp.Y.Offset >= 36 and dp.X.Offset + detached.Frame.AbsoluteSize.X <= 1920, tostring(dp))
 	farm:Attach()
 	task.wait(0.4)
 	check("attached", farm.DetachedWindow == nil and farm.Page.Parent == window.PageHost)
@@ -459,7 +509,7 @@ step("phone window", function()
 	check("rail", M.find(phone.Nav, function(node)
 		return node.Name == "Rail"
 	end) ~= nil)
-	check("window under top bar", phone.Frame.AbsolutePosition.Y >= 36)
+	check("window under top bar", phone.Frame.Position.Y.Offset >= 36)
 	local quick = phone.QuickButtons
 	check("quick buttons visible", quick.Holder.Visible == true)
 	check("quick buttons count", #quick.Buttons >= 2, #quick.Buttons)

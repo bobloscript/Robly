@@ -1,5 +1,5 @@
 --[[
-	Robly v1.0.2 — UI library for Roblox scripts by RobScript
+	Robly v1.0.3 — UI library for Roblox scripts by RobScript
 	https://robscript.com · https://github.com/bobloscript/Robly
 
 	Built file. Edit the modules in src/ and run `python3 tools/build.py`.
@@ -2751,14 +2751,44 @@ __modules["core/Device"] = function()
 		return 36
 	end
 
-	-- Screen-space position of a mouse/touch InputObject (matches AbsolutePosition
-	-- of a ScreenGui with IgnoreGuiInset = true).
+	-- Two coordinate spaces exist in a ScreenGui with IgnoreGuiInset = true:
+	--   "absolute" — AbsolutePosition and InputObject.Position (they agree)
+	--   "offset"   — UDim2 Position offsets of our top-level frames (0,0 = screen corner)
+	-- They can differ by the top-bar height, so never mix them: read the pointer
+	-- and AbsolutePosition in absolute space, and convert with toOffset() before
+	-- assigning a Position.
 	function Device.pointer(input)
-		local ok, topLeft = pcall(function()
-			return Services.GuiService:GetGuiInset()
-		end)
-		local offset = (ok and typeof(topLeft) == "Vector2") and topLeft or Vector2.zero
-		return Vector2.new(input.Position.X, input.Position.Y) + offset
+		return Vector2.new(input.Position.X, input.Position.Y)
+	end
+
+	-- A full-screen layer frame at Position (0, 0); its AbsolutePosition is where
+	-- the screen's top-left corner is in absolute space.
+	Device.OriginLayer = nil
+
+	function Device.origin()
+		local layer = Device.OriginLayer
+		if layer and layer.Parent then
+			local ok, position = pcall(function()
+				return layer.AbsolutePosition
+			end)
+			if ok and typeof(position) == "Vector2" then
+				return position
+			end
+		end
+		return Vector2.zero
+	end
+
+	function Device.toOffset(absolute)
+		return absolute - Device.origin()
+	end
+
+	function Device.toAbsolute(offset)
+		return offset + Device.origin()
+	end
+
+	-- Position offsets of a top-level frame as a Vector2.
+	function Device.offsetOf(gui)
+		return Vector2.new(gui.Position.X.Offset, gui.Position.Y.Offset)
 	end
 
 	local watching = false
@@ -3745,7 +3775,7 @@ __modules["core/Popup"] = function()
 			local gap = opts.gap or 6
 			local x, y
 			if opts.anchor and opts.placement ~= "center" then
-				local ap, as = opts.anchor.AbsolutePosition, opts.anchor.AbsoluteSize
+				local ap, as = Device.toOffset(opts.anchor.AbsolutePosition), opts.anchor.AbsoluteSize
 				if opts.align == "left" then
 					x = ap.X
 				elseif opts.align == "center" then
@@ -3896,6 +3926,8 @@ __modules["core/Root"] = function()
 		end
 		self._z = 1
 		Compat.mountGui(self.Gui)
+		local Device = import("core/Device")
+		Device.OriginLayer = self.Windows
 		return self
 	end
 
@@ -4797,7 +4829,7 @@ __modules["init"] = function()
 	local Window = import("ui/Window")
 
 	local Robly = {
-		Version = "1.0.2",
+		Version = "1.0.3",
 		Windows = {},
 		Themes = Theme.Presets,
 		Icons = Icons.Data,
@@ -6838,7 +6870,7 @@ __modules["ui/Detached"] = function()
 
 	local function rectOf(gui)
 		if gui and gui.Parent and gui.AbsoluteSize.X > 0 then
-			return gui.AbsolutePosition, gui.AbsoluteSize
+			return Device.toOffset(gui.AbsolutePosition), gui.AbsoluteSize
 		end
 		return nil
 	end
@@ -6971,7 +7003,7 @@ __modules["ui/Detached"] = function()
 		local size = saved and Vector2.new(saved.w, saved.h) or Detached.defaultSize()
 		local position
 		if options.at then
-			position = options.at - Vector2.new(size.X / 2, 20)
+			position = Device.toOffset(options.at) - Vector2.new(size.X / 2, 20)
 		elseif saved then
 			position = Vector2.new(saved.x, saved.y)
 		else
@@ -7019,12 +7051,15 @@ __modules["ui/Detached"] = function()
 
 		-- Drag by header; drop on the main sidebar returns the tab (PC)
 		local overNav = false
+		local startPosition
 		Drag.attach(dragHandle, {
 			onStart = function()
 				frame.ZIndex = window.Root:NextZ()
+				startPosition = Device.offsetOf(frame)
 			end,
-			onMove = function(pointer, delta)
-				local p = frame.AbsolutePosition + delta
+			onMove = function(pointer, _, total)
+				-- keep at least the header on screen
+				local p = Drag.clamp(startPosition + total, Vector2.new(frame.AbsoluteSize.X, 44), 0)
 				frame.Position = UDim2.fromOffset(p.X, p.Y)
 				local over = window:_pointerOverNav(pointer)
 				if over ~= overNav then
@@ -7069,8 +7104,9 @@ __modules["ui/Detached"] = function()
 			end,
 			onMove = function(_, _, total)
 				local vp = Device.viewport()
-				local w = math.clamp(startSize.X + total.X, 260, math.max(260, vp.X - frame.AbsolutePosition.X - 8))
-				local h = math.clamp(startSize.Y + total.Y, 200, math.max(200, vp.Y - frame.AbsolutePosition.Y - 8))
+				local at = Device.offsetOf(frame)
+				local w = math.clamp(startSize.X + total.X, 260, math.max(260, vp.X - at.X - 8))
+				local h = math.clamp(startSize.Y + total.Y, 200, math.max(200, vp.Y - at.Y - 8))
 				frame.Size = UDim2.fromOffset(w, h)
 			end,
 			onEnd = function()
@@ -7100,7 +7136,7 @@ __modules["ui/Detached"] = function()
 	function Detached:_snap()
 		local frame = self.Frame
 		local vp = Device.viewport()
-		local p, size = frame.AbsolutePosition, frame.AbsoluteSize
+		local p, size = Device.offsetOf(frame), frame.AbsoluteSize
 		local margin, edge = 8, 20
 		local x, y = p.X, p.Y
 		if x < edge then
@@ -7119,7 +7155,7 @@ __modules["ui/Detached"] = function()
 	end
 
 	function Detached:_save()
-		local p, s = self.Frame.AbsolutePosition, self.Frame.AbsoluteSize
+		local p, s = Device.offsetOf(self.Frame), self.Frame.AbsoluteSize
 		self.Window.Config:SetDetached(self.Tab.Id, { x = p.X, y = p.Y, w = s.X, h = s.Y, open = true })
 	end
 
@@ -7168,7 +7204,7 @@ __modules["ui/Detached"] = function()
 			window:_attached(tab)
 		end
 		if target and Motion.Mode == "Full" and not self.Minimized then
-			local pos, size = target.AbsolutePosition, target.AbsoluteSize
+			local pos, size = Device.toOffset(target.AbsolutePosition), target.AbsoluteSize
 			Motion.tween(self.Frame, {
 				Position = UDim2.fromOffset(pos.X, pos.Y),
 				Size = UDim2.fromOffset(size.X, size.Y),
@@ -7685,20 +7721,21 @@ __modules["ui/Pill"] = function()
 		}, { Create.corner("full") })
 
 		local moved = false
+		local startPosition
 		Drag.attach(button, {
 			onStart = function()
 				moved = false
+				startPosition = Device.offsetOf(button)
 				button.ZIndex = window.Root:NextZ()
 			end,
-			onMove = function(_, delta)
+			onMove = function(_, _, total)
 				moved = true
-				local p = button.AbsolutePosition + delta
-				p = Drag.clamp(p, button.AbsoluteSize)
+				local p = Drag.clamp(startPosition + total, button.AbsoluteSize)
 				button.Position = UDim2.fromOffset(p.X, p.Y)
 			end,
 			onEnd = function()
 				if moved and opts.onMoved then
-					opts.onMoved(button.AbsolutePosition)
+					opts.onMoved(Device.offsetOf(button))
 				end
 			end,
 		}, self.Maid)
@@ -7742,12 +7779,13 @@ __modules["ui/Pill"] = function()
 	end
 
 	function Pill:Hide()
-		self.Position = self.Button.AbsolutePosition
+		self.Position = Device.offsetOf(self.Button)
 		self.Button.Visible = false
 	end
 
 	function Pill:Rect()
-		return self.Button.AbsolutePosition, self.Button.AbsoluteSize
+		-- offset space (for positioning other top-level frames)
+		return Device.offsetOf(self.Button), self.Button.AbsoluteSize
 	end
 
 	function Pill:Destroy()
@@ -8444,7 +8482,7 @@ __modules["ui/Tooltip"] = function()
 		task.defer(function()
 			local vp = Device.viewport()
 			local size = frame.AbsoluteSize
-			local ap, as = anchor.AbsolutePosition, anchor.AbsoluteSize
+			local ap, as = Device.toOffset(anchor.AbsolutePosition), anchor.AbsoluteSize
 			local x = math.clamp(ap.X + as.X / 2 - size.X / 2, 8, math.max(8, vp.X - size.X - 8))
 			local y = ap.Y - size.Y - 8
 			if y < Device.inset() + 4 then
@@ -8690,6 +8728,7 @@ __modules["ui/Window"] = function()
 		Drag.attach(self.DragHandle, {
 			onStart = function(pointer)
 				self.Frame.ZIndex = root:NextZ()
+				self._dragStart = Device.offsetOf(self.Frame)
 				local field = self.SearchField
 				if field and field.Parent and Theme.Mode == "pc" then
 					local p, s = field.AbsolutePosition, field.AbsoluteSize
@@ -8699,8 +8738,9 @@ __modules["ui/Window"] = function()
 				end
 				return true
 			end,
-			onMove = function(_, delta)
-				local p = Drag.clamp(self.Frame.AbsolutePosition + delta, self.Frame.AbsoluteSize, 0)
+			onMove = function(_, _, total)
+				-- move from where the drag started: no drift, no lost movement
+				local p = Drag.clamp(self._dragStart + total, self.Frame.AbsoluteSize, 0)
 				self.Frame.Position = UDim2.fromOffset(p.X, p.Y)
 			end,
 			onEnd = function(_, moved)
@@ -8731,7 +8771,7 @@ __modules["ui/Window"] = function()
 			end,
 			onMove = function(_, _, total)
 				local vp = Device.viewport()
-				local pos = self.Frame.AbsolutePosition
+				local pos = Device.offsetOf(self.Frame)
 				local w = math.clamp(startSize.X + total.X, 520, math.max(520, vp.X - pos.X - 4))
 				local h = math.clamp(startSize.Y + total.Y, 340, math.max(340, vp.Y - pos.Y - 4))
 				self.Frame.Size = UDim2.fromOffset(w, h)
@@ -9263,7 +9303,8 @@ __modules["ui/Window"] = function()
 						local label = New("TextLabel", { AutomaticSize = Enum.AutomaticSize.X, Size = UDim2.fromScale(0, 1), Weight = "SemiBold", TextSize = 13, LayoutOrder = 2, Parent = ghost })
 						self.Loc:Bind(label, "Text", tab.TitleSpec)
 					end
-					ghost.Position = UDim2.fromOffset(pointer.X + 12, pointer.Y - 18)
+					local at = Device.toOffset(pointer)
+					ghost.Position = UDim2.fromOffset(at.X + 12, at.Y - 18)
 				end,
 				onEnd = function(pointer, moved)
 					if ghost then
@@ -9799,7 +9840,7 @@ __modules["ui/Window"] = function()
 		end
 		local item = self:_navItemFor(tab)
 		if item and not options.restoring and not self.Minimized then
-			options.fromPos, options.fromSize = item.AbsolutePosition, item.AbsoluteSize
+			options.fromPos, options.fromSize = Device.toOffset(item.AbsolutePosition), item.AbsoluteSize
 		end
 		local detached = Detached.new(tab, options)
 		self.Config:SetDetached(tab.Id, { open = true }, true)
@@ -9912,7 +9953,7 @@ __modules["ui/Window"] = function()
 		if Theme.Mode ~= "pc" then
 			return
 		end
-		local p, s = self.Frame.AbsolutePosition, self.Frame.AbsoluteSize
+		local p, s = Device.offsetOf(self.Frame), self.Frame.AbsoluteSize
 		self._targetSize = s
 		self.Config:SetMeta("window", { x = p.X, y = p.Y, w = s.X, h = s.Y })
 	end
@@ -9929,7 +9970,7 @@ __modules["ui/Window"] = function()
 			self:_placeWindow(true)
 			self:_rebuildNav()
 		else
-			local p, s = self.Frame.AbsolutePosition, self.Frame.AbsoluteSize
+			local p, s = Device.offsetOf(self.Frame), self.Frame.AbsoluteSize
 			local vp = Device.viewport()
 			if s.X > vp.X - 16 or s.Y > vp.Y - Device.inset() - 16 or Theme.Mode ~= "pc" then
 				self:_placeWindow(false)

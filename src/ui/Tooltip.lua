@@ -47,7 +47,7 @@ function Tooltip:Show(anchor, spec, vars)
 	task.defer(function()
 		local vp = Device.viewport()
 		local size = frame.AbsoluteSize
-		local ap, as = anchor.AbsolutePosition, anchor.AbsoluteSize
+		local ap, as = Device.toOffset(anchor.AbsolutePosition), anchor.AbsoluteSize
 		local x = math.clamp(ap.X + as.X / 2 - size.X / 2, 8, math.max(8, vp.X - size.X - 8))
 		local y = ap.Y - size.Y - 8
 		if y < Device.inset() + 4 then

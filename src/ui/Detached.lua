@@ -24,7 +24,7 @@ Detached.__index = Detached
 
 local function rectOf(gui)
 	if gui and gui.Parent and gui.AbsoluteSize.X > 0 then
-		return gui.AbsolutePosition, gui.AbsoluteSize
+		return Device.toOffset(gui.AbsolutePosition), gui.AbsoluteSize
 	end
 	return nil
 end
@@ -157,7 +157,7 @@ function Detached.new(tab, options)
 	local size = saved and Vector2.new(saved.w, saved.h) or Detached.defaultSize()
 	local position
 	if options.at then
-		position = options.at - Vector2.new(size.X / 2, 20)
+		position = Device.toOffset(options.at) - Vector2.new(size.X / 2, 20)
 	elseif saved then
 		position = Vector2.new(saved.x, saved.y)
 	else
@@ -205,12 +205,15 @@ function Detached.new(tab, options)
 
 	-- Drag by header; drop on the main sidebar returns the tab (PC)
 	local overNav = false
+	local startPosition
 	Drag.attach(dragHandle, {
 		onStart = function()
 			frame.ZIndex = window.Root:NextZ()
+			startPosition = Device.offsetOf(frame)
 		end,
-		onMove = function(pointer, delta)
-			local p = frame.AbsolutePosition + delta
+		onMove = function(pointer, _, total)
+			-- keep at least the header on screen
+			local p = Drag.clamp(startPosition + total, Vector2.new(frame.AbsoluteSize.X, 44), 0)
 			frame.Position = UDim2.fromOffset(p.X, p.Y)
 			local over = window:_pointerOverNav(pointer)
 			if over ~= overNav then
@@ -255,8 +258,9 @@ function Detached.new(tab, options)
 		end,
 		onMove = function(_, _, total)
 			local vp = Device.viewport()
-			local w = math.clamp(startSize.X + total.X, 260, math.max(260, vp.X - frame.AbsolutePosition.X - 8))
-			local h = math.clamp(startSize.Y + total.Y, 200, math.max(200, vp.Y - frame.AbsolutePosition.Y - 8))
+			local at = Device.offsetOf(frame)
+			local w = math.clamp(startSize.X + total.X, 260, math.max(260, vp.X - at.X - 8))
+			local h = math.clamp(startSize.Y + total.Y, 200, math.max(200, vp.Y - at.Y - 8))
 			frame.Size = UDim2.fromOffset(w, h)
 		end,
 		onEnd = function()
@@ -286,7 +290,7 @@ end
 function Detached:_snap()
 	local frame = self.Frame
 	local vp = Device.viewport()
-	local p, size = frame.AbsolutePosition, frame.AbsoluteSize
+	local p, size = Device.offsetOf(frame), frame.AbsoluteSize
 	local margin, edge = 8, 20
 	local x, y = p.X, p.Y
 	if x < edge then
@@ -305,7 +309,7 @@ function Detached:_snap()
 end
 
 function Detached:_save()
-	local p, s = self.Frame.AbsolutePosition, self.Frame.AbsoluteSize
+	local p, s = Device.offsetOf(self.Frame), self.Frame.AbsoluteSize
 	self.Window.Config:SetDetached(self.Tab.Id, { x = p.X, y = p.Y, w = s.X, h = s.Y, open = true })
 end
 
@@ -354,7 +358,7 @@ function Detached:Attach()
 		window:_attached(tab)
 	end
 	if target and Motion.Mode == "Full" and not self.Minimized then
-		local pos, size = target.AbsolutePosition, target.AbsoluteSize
+		local pos, size = Device.toOffset(target.AbsolutePosition), target.AbsoluteSize
 		Motion.tween(self.Frame, {
 			Position = UDim2.fromOffset(pos.X, pos.Y),
 			Size = UDim2.fromOffset(size.X, size.Y),

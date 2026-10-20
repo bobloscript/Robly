@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.3 — 2026-10-20
+
+- Dragging: windows followed the pointer with a drift equal to the Roblox top-bar height, so the main window couldn't reach the bottom of the screen and detached windows flew off it. In a ScreenGui with IgnoreGuiInset, AbsolutePosition/InputObject.Position and UDim2 Position offsets differ by the top bar; the code mixed them. Pointer and AbsolutePosition now stay in one space and are converted (Device.toOffset) before setting a Position; drags move from the start position by the total pointer delta.
+- Detached windows and the pill are clamped to the screen while dragging (a detached window keeps its header visible).
+- Colour picker: the circle in the saturation/brightness square sits exactly under the cursor.
+- Popups, tooltips, the drag ghost and detach/return animations use the same conversion, so they line up with their anchors.
+- Tests: the Lune mock now reproduces the top-bar offset, with checks for pointer-following drags, reaching the bottom edge and the colour cursor.
+
 ## 1.0.2 — 2026-10-20
 
 Fixes from the first in-game test.

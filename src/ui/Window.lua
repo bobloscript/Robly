@@ -189,6 +189,7 @@ function Window:_build()
 	Drag.attach(self.DragHandle, {
 		onStart = function(pointer)
 			self.Frame.ZIndex = root:NextZ()
+			self._dragStart = Device.offsetOf(self.Frame)
 			local field = self.SearchField
 			if field and field.Parent and Theme.Mode == "pc" then
 				local p, s = field.AbsolutePosition, field.AbsoluteSize
@@ -198,8 +199,9 @@ function Window:_build()
 			end
 			return true
 		end,
-		onMove = function(_, delta)
-			local p = Drag.clamp(self.Frame.AbsolutePosition + delta, self.Frame.AbsoluteSize, 0)
+		onMove = function(_, _, total)
+			-- move from where the drag started: no drift, no lost movement
+			local p = Drag.clamp(self._dragStart + total, self.Frame.AbsoluteSize, 0)
 			self.Frame.Position = UDim2.fromOffset(p.X, p.Y)
 		end,
 		onEnd = function(_, moved)
@@ -230,7 +232,7 @@ function Window:_build()
 		end,
 		onMove = function(_, _, total)
 			local vp = Device.viewport()
-			local pos = self.Frame.AbsolutePosition
+			local pos = Device.offsetOf(self.Frame)
 			local w = math.clamp(startSize.X + total.X, 520, math.max(520, vp.X - pos.X - 4))
 			local h = math.clamp(startSize.Y + total.Y, 340, math.max(340, vp.Y - pos.Y - 4))
 			self.Frame.Size = UDim2.fromOffset(w, h)
@@ -762,7 +764,8 @@ function Window:_attachNavGestures(tab, button, maid)
 					local label = New("TextLabel", { AutomaticSize = Enum.AutomaticSize.X, Size = UDim2.fromScale(0, 1), Weight = "SemiBold", TextSize = 13, LayoutOrder = 2, Parent = ghost })
 					self.Loc:Bind(label, "Text", tab.TitleSpec)
 				end
-				ghost.Position = UDim2.fromOffset(pointer.X + 12, pointer.Y - 18)
+				local at = Device.toOffset(pointer)
+				ghost.Position = UDim2.fromOffset(at.X + 12, at.Y - 18)
 			end,
 			onEnd = function(pointer, moved)
 				if ghost then
@@ -1298,7 +1301,7 @@ function Window:_detach(tab, options)
 	end
 	local item = self:_navItemFor(tab)
 	if item and not options.restoring and not self.Minimized then
-		options.fromPos, options.fromSize = item.AbsolutePosition, item.AbsoluteSize
+		options.fromPos, options.fromSize = Device.toOffset(item.AbsolutePosition), item.AbsoluteSize
 	end
 	local detached = Detached.new(tab, options)
 	self.Config:SetDetached(tab.Id, { open = true }, true)
@@ -1411,7 +1414,7 @@ function Window:_saveRect()
 	if Theme.Mode ~= "pc" then
 		return
 	end
-	local p, s = self.Frame.AbsolutePosition, self.Frame.AbsoluteSize
+	local p, s = Device.offsetOf(self.Frame), self.Frame.AbsoluteSize
 	self._targetSize = s
 	self.Config:SetMeta("window", { x = p.X, y = p.Y, w = s.X, h = s.Y })
 end
@@ -1428,7 +1431,7 @@ function Window:_onDevice(mode)
 		self:_placeWindow(true)
 		self:_rebuildNav()
 	else
-		local p, s = self.Frame.AbsolutePosition, self.Frame.AbsoluteSize
+		local p, s = Device.offsetOf(self.Frame), self.Frame.AbsoluteSize
 		local vp = Device.viewport()
 		if s.X > vp.X - 16 or s.Y > vp.Y - Device.inset() - 16 or Theme.Mode ~= "pc" then
 			self:_placeWindow(false)

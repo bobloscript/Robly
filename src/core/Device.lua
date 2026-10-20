@@ -49,14 +49,44 @@ function Device.inset()
 	return 36
 end
 
--- Screen-space position of a mouse/touch InputObject (matches AbsolutePosition
--- of a ScreenGui with IgnoreGuiInset = true).
+-- Two coordinate spaces exist in a ScreenGui with IgnoreGuiInset = true:
+--   "absolute" — AbsolutePosition and InputObject.Position (they agree)
+--   "offset"   — UDim2 Position offsets of our top-level frames (0,0 = screen corner)
+-- They can differ by the top-bar height, so never mix them: read the pointer
+-- and AbsolutePosition in absolute space, and convert with toOffset() before
+-- assigning a Position.
 function Device.pointer(input)
-	local ok, topLeft = pcall(function()
-		return Services.GuiService:GetGuiInset()
-	end)
-	local offset = (ok and typeof(topLeft) == "Vector2") and topLeft or Vector2.zero
-	return Vector2.new(input.Position.X, input.Position.Y) + offset
+	return Vector2.new(input.Position.X, input.Position.Y)
+end
+
+-- A full-screen layer frame at Position (0, 0); its AbsolutePosition is where
+-- the screen's top-left corner is in absolute space.
+Device.OriginLayer = nil
+
+function Device.origin()
+	local layer = Device.OriginLayer
+	if layer and layer.Parent then
+		local ok, position = pcall(function()
+			return layer.AbsolutePosition
+		end)
+		if ok and typeof(position) == "Vector2" then
+			return position
+		end
+	end
+	return Vector2.zero
+end
+
+function Device.toOffset(absolute)
+	return absolute - Device.origin()
+end
+
+function Device.toAbsolute(offset)
+	return offset + Device.origin()
+end
+
+-- Position offsets of a top-level frame as a Vector2.
+function Device.offsetOf(gui)
+	return Vector2.new(gui.Position.X.Offset, gui.Position.Y.Offset)
 end
 
 local watching = false
