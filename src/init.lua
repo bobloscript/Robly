@@ -41,14 +41,19 @@ end
 -- Register a theme preset: colours as Color3 or "#RRGGBB"; missing tokens
 -- fall back to RobScript.
 function Robly:AddTheme(name, colors)
-	local out = table.clone(Theme.Presets.RobScript)
+	-- a theme is its base colours (accent, bg, text, …); the rest is derived,
+	-- and any token given here overrides the derived value
+	local spec = {}
+	for key, value in pairs(Theme.PresetSpecs.RobScript) do
+		if Theme.isBase(key) then
+			spec[key] = value
+		end
+	end
 	for key, value in pairs(colors) do
-		out[key] = Util.hex(value) or value
+		spec[key] = typeof(value) == "Color3" and value or Util.hex(value)
 	end
-	if colors.accent and not colors.accentInk then
-		out.accentInk = Util.inkFor(out.accent)
-		out.accentPressed = Util.darken(out.accent, 0.12)
-	end
+	Theme.PresetSpecs[name] = spec
+	local out = Theme.derive(spec)
 	Theme.Presets[name] = out
 	if not table.find(Theme.PresetOrder, name) then
 		table.insert(Theme.PresetOrder, name)

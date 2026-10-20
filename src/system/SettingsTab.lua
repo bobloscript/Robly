@@ -27,11 +27,15 @@ local function touchOnly(_, mode)
 	return mode ~= "pc"
 end
 
-local EDITABLE = {
-	{ key = "accent", text = L("accent") },
-	{ key = "bg", text = L("background") },
-	{ key = "surface", text = L("surface") },
-	{ key = "text", text = L("text") },
+-- Main editor rows: the base colours plus the most visible derived ones.
+-- Changing Background/Text/Accent re-derives every colour that wasn't set by hand.
+local LABELS = {
+	accent = L("accent"),
+	bg = L("background"),
+	nav = L("sidebar"),
+	surface = L("cards"),
+	border = L("outline"),
+	text = L("text"),
 }
 
 function SettingsTab.new(window)
@@ -151,8 +155,8 @@ function SettingsTab:_buildTheme()
 		end))
 		pickers[key] = picker
 	end
-	for _, entry in ipairs(EDITABLE) do
-		addPicker(section, entry.key, entry.text)
+	for _, key in ipairs(Theme.MainKeys) do
+		addPicker(section, key, LABELS[key])
 	end
 	section:Buttons({
 		{ Title = L("export"), Icon = "upload", Callback = function()
@@ -186,18 +190,19 @@ function SettingsTab:_buildTheme()
 
 	local more = self.Tab:Section({ Title = L("more_colors"), Collapsed = true })
 	for _, key in ipairs(Theme.TokenOrder) do
-		local editable = false
-		for _, entry in ipairs(EDITABLE) do
-			if entry.key == key then
-				editable = true
-			end
-		end
-		if not editable then
+		if not table.find(Theme.MainKeys, key) then
 			addPicker(more, key, key)
 		end
 	end
-	more:Button({ Title = L("reset_theme"), Variant = "Secondary", Icon = "refresh", Callback = function()
-		window:SetTheme("RobScript")
+	more:Button({ Title = L("reset_overrides"), Variant = "Secondary", Icon = "refresh", Callback = function()
+		-- forget hand-picked derived colours: everything follows the base again
+		for _, key in ipairs(Theme.TokenOrder) do
+			if Theme.isOverridden(key) then
+				Theme.Spec[key] = nil
+			end
+		end
+		Theme.setToken("accent", Theme.Spec.accent or Theme.Colors.accent)
+		window.Config:SaveInterface()
 	end })
 
 	self.Maid = grid.Maid

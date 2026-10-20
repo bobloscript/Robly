@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 — 2026-10-20
+
+- Linked colours. A theme is now a few base colours (accent, background, text, status colours); every other colour — sidebar, cards, outlines, popups, tracks, muted text… — is derived from them. Changing the background or text in the editor repaints the whole window, sidebar included (Obsidian/Airflow-style model).
+- Theme editor: Accent, Background, Sidebar, Cards, Outline and Text in the main list; every other token in "All colours". A colour picked by hand overrides its derived value and survives base changes; "Reset hand-picked colours" makes everything follow the base again.
+- Theme strings are now `robly2:` (base + overrides only); `robly1:` strings still import. Saved 1.x custom themes load as their base colours.
+- `Robly:AddTheme(name, { accent, bg, text, … })` needs only the base colours.
+
 ## 1.1.0 — 2026-10-20
 
 - Icons are now [Lucide](https://lucide.dev/icons): 1573 icons rendered from Roblox-hosted sprite sheets (ImageLabel + ImageRectOffset), recoloured by the theme. Any Lucide name works (`Icon = "crosshair"`); the old short names (`pin`, `bolt`, `close`, …) map to Lucide icons. Fewer instances per icon (one image instead of many frames), so windows are lighter.

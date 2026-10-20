@@ -17,70 +17,105 @@ local Theme = {}
 Theme.Changed = Signal.new()
 
 -- Colour tokens ------------------------------------------------------------
+--
+-- A theme is a few BASE colours; every other token is DERIVED from them, so
+-- changing the background (or the accent, or the text) repaints the whole
+-- window: sidebar, cards, outlines, popups, tracks… Any derived token can still
+-- be overridden on its own (theme editor, "All colours"); overrides survive
+-- base changes until the theme is reset.
 
--- Order matters: it is the order used by the export string.
+Theme.BaseKeys = { "accent", "bg", "text", "success", "warning", "danger" }
+
+-- Editable in the theme editor's main list (base + the most visible derived ones)
+Theme.MainKeys = { "accent", "bg", "nav", "surface", "border", "text" }
+
+-- Every token, in export / "All colours" order.
 Theme.TokenOrder = {
-	"accent", "bg", "nav", "surface", "raised", "overlay", "sunken", "selected", "segment",
-	"border", "borderStrong", "divider", "text", "textMuted", "textSubtle",
-	"accentInk", "accentPressed", "track", "toggleOff", "knobOn", "knobOff", "checkBorder",
-	"success", "warning", "danger", "dangerInk", "tooltip", "tooltipText", "backdrop", "code", "codeText",
+	"accent", "bg", "nav", "surface", "border", "text",
+	"raised", "overlay", "sunken", "selected", "segment", "borderStrong", "divider",
+	"textMuted", "textSubtle", "accentInk", "accentPressed", "track", "toggleOff",
+	"knobOn", "knobOff", "checkBorder", "success", "warning", "danger", "dangerInk",
+	"tooltip", "tooltipText", "backdrop", "code", "codeText",
 }
 
-local function preset(hexes)
-	local out = {}
-	for key, value in pairs(hexes) do
-		out[key] = Util.hex(value)
+local function isBase(key)
+	return table.find(Theme.BaseKeys, key) ~= nil
+end
+Theme.isBase = isBase
+
+-- Builds the full token table from a spec (base colours + optional overrides).
+function Theme.derive(spec)
+	local function get(key, fallback)
+		local value = spec[key]
+		if typeof(value) == "Color3" then
+			return value
+		end
+		return Util.hex(value) or fallback
 	end
-	return out
+	local bg = get("bg", Color3.fromRGB(18, 18, 22))
+	local text = get("text", Color3.fromRGB(242, 242, 245))
+	local accent = get("accent", Color3.fromRGB(255, 59, 127))
+	local dark = Util.luminance(bg) < 0.4
+	local black = Color3.new(0, 0, 0)
+	local white = Color3.new(1, 1, 1)
+	local c = {
+		accent = accent,
+		bg = bg,
+		text = text,
+		success = get("success", Color3.fromRGB(52, 211, 153)),
+		warning = get("warning", Color3.fromRGB(251, 191, 36)),
+		danger = get("danger", Color3.fromRGB(255, 90, 90)),
+	}
+	local function d(key, value)
+		c[key] = get(key, nil) or value
+	end
+	-- surfaces step away from the background towards the text colour
+	d("nav", dark and bg:Lerp(black, 0.18) or bg:Lerp(text, 0.045))
+	d("surface", bg:Lerp(text, dark and 0.028 or 0.035))
+	d("border", bg:Lerp(text, dark and 0.075 or 0.1))
+	d("raised", c.surface:Lerp(text, dark and 0.055 or 0.05))
+	d("overlay", dark and bg:Lerp(text, 0.045) or bg)
+	d("sunken", dark and c.nav or bg:Lerp(text, 0.07))
+	d("selected", c.nav:Lerp(text, dark and 0.085 or 0.08))
+	d("segment", dark and c.surface:Lerp(text, 0.09) or white)
+	d("borderStrong", c.border:Lerp(text, dark and 0.035 or 0.08))
+	d("divider", bg:Lerp(c.border, 0.75))
+	d("textMuted", text:Lerp(bg, 0.34))
+	d("textSubtle", text:Lerp(bg, 0.47))
+	d("accentInk", Util.inkFor(accent))
+	d("accentPressed", Util.darken(accent, 0.12))
+	d("track", c.borderStrong)
+	d("toggleOff", c.surface:Lerp(text, dark and 0.15 or 0.16))
+	-- a pale accent (Graphite) needs a dark knob to stay visible
+	d("knobOn", Util.contrast(accent, white) < 1.6 and bg or white)
+	d("knobOff", white)
+	d("checkBorder", c.surface:Lerp(text, dark and 0.22 or 0.28))
+	d("dangerInk", Util.inkFor(c.danger))
+	d("tooltip", text)
+	d("tooltipText", bg)
+	d("backdrop", bg:Lerp(black, 0.6))
+	d("code", dark and c.nav:Lerp(black, 0.2) or c.sunken)
+	d("codeText", text:Lerp(bg, 0.12))
+	return c
 end
 
-Theme.Presets = {
-	RobScript = preset({
-		accent = "FF3B7F", bg = "121216", nav = "0F0F13", surface = "18181D", raised = "24242C",
-		overlay = "1C1C22", sunken = "0F0F13", selected = "22222A", segment = "2C2C35",
-		border = "23232A", borderStrong = "2A2A33", divider = "1F1F26",
-		text = "F2F2F5", textMuted = "A3A3AE", textSubtle = "85858F",
-		accentInk = "1A0610", accentPressed = "E2306F", track = "2A2A33", toggleOff = "3A3A44",
-		knobOn = "FFFFFF", knobOff = "FFFFFF", checkBorder = "4A4A55",
-		success = "34D399", warning = "FBBF24", danger = "FF5A5A", dangerInk = "1F0505",
-		tooltip = "F2F2F5", tooltipText = "121216", backdrop = "060608", code = "0B0B0E", codeText = "D4D4DC",
-	}),
-	Light = preset({
-		accent = "E0245E", bg = "FFFFFF", nav = "F3F3F6", surface = "F6F6F8", raised = "EBEBF0",
-		overlay = "FFFFFF", sunken = "ECECF1", selected = "E4E4EA", segment = "FFFFFF",
-		border = "E4E4EA", borderStrong = "D4D4DC", divider = "EBEBF0",
-		text = "16161A", textMuted = "55555F", textSubtle = "6B6B76",
-		accentInk = "FFFFFF", accentPressed = "C81E52", track = "DCDCE3", toggleOff = "D4D4DC",
-		knobOn = "FFFFFF", knobOff = "FFFFFF", checkBorder = "B4B4BE",
-		success = "0E9F6E", warning = "B7791F", danger = "E5484D", dangerInk = "FFFFFF",
-		tooltip = "16161A", tooltipText = "FFFFFF", backdrop = "000000", code = "F3F3F6", codeText = "2A2A33",
-	}),
-	Graphite = preset({
-		accent = "E6E6E8", bg = "1B1B1D", nav = "161618", surface = "222225", raised = "2C2C2F",
-		overlay = "262629", sunken = "161618", selected = "2C2C2F", segment = "38383B",
-		border = "2C2C2F", borderStrong = "333336", divider = "28282B",
-		text = "EDEDEE", textMuted = "A1A1A6", textSubtle = "8E8E93",
-		accentInk = "161618", accentPressed = "CFCFD2", track = "333336", toggleOff = "3A3A3E",
-		knobOn = "1B1B1D", knobOff = "EDEDEE", checkBorder = "4A4A4E",
-		success = "34D399", warning = "FBBF24", danger = "FF5A5A", dangerInk = "1F0505",
-		tooltip = "EDEDEE", tooltipText = "1B1B1D", backdrop = "0A0A0B", code = "141416", codeText = "D4D4D8",
-	}),
-	Midnight = preset({
-		accent = "4C8DFF", bg = "0E1320", nav = "0A0F1A", surface = "141B2B", raised = "1C2436",
-		overlay = "172033", sunken = "0A0F1A", selected = "1C2436", segment = "25304A",
-		border = "1C2436", borderStrong = "25304A", divider = "172033",
-		text = "E8EDF7", textMuted = "A3AEC4", textSubtle = "8792A8",
-		accentInk = "06102A", accentPressed = "3B78E6", track = "25304A", toggleOff = "2A3550",
-		knobOn = "FFFFFF", knobOff = "FFFFFF", checkBorder = "3A4766",
-		success = "34D399", warning = "FBBF24", danger = "FF5A5A", dangerInk = "1F0505",
-		tooltip = "E8EDF7", tooltipText = "0E1320", backdrop = "04060C", code = "0A0F1A", codeText = "CBD5E8",
-	}),
+-- Presets are specs; Theme.Presets holds their derived colours for previews.
+Theme.PresetSpecs = {
+	RobScript = { accent = "FF3B7F", bg = "121216", text = "F2F2F5", accentInk = "1A0610" },
+	Light = { accent = "E0245E", bg = "FFFFFF", text = "16161A", success = "0E9F6E", warning = "B7791F", danger = "E5484D" },
+	Graphite = { accent = "E6E6E8", bg = "1B1B1D", text = "EDEDEE" },
+	Midnight = { accent = "4C8DFF", bg = "0E1320", text = "E8EDF7" },
 }
+Theme.Presets = {}
+for name, spec in pairs(Theme.PresetSpecs) do
+	Theme.Presets[name] = Theme.derive(spec)
+end
 
 Theme.PresetOrder = { "RobScript", "Light", "Graphite", "Midnight" }
 
 Theme.Name = "RobScript"
-Theme.Colors = table.clone(Theme.Presets.RobScript)
+Theme.Spec = table.clone(Theme.PresetSpecs.RobScript)
+Theme.Colors = Theme.derive(Theme.Spec)
 
 -- Size tokens ------------------------------------------------------------------
 
@@ -294,44 +329,72 @@ end
 
 -- Theme switching ------------------------------------------------------------------
 
-local function complete(colors)
-	local out = table.clone(Theme.Presets.RobScript)
+local function toSpec(colors)
+	local spec = {}
 	for key, value in pairs(colors) do
-		out[key] = value
+		local color = typeof(value) == "Color3" and value or Util.hex(value)
+		if color then
+			spec[key] = color
+		end
 	end
-	return out
+	return spec
 end
 
+local function commit()
+	Theme.Colors = Theme.derive(Theme.Spec)
+	Theme.refresh()
+	Theme.Changed:Fire("colors")
+end
+
+-- apply("Midnight") · apply({ accent = …, bg = … }) (missing base colours come
+-- from RobScript, everything else is derived)
 function Theme.apply(nameOrColors)
 	if type(nameOrColors) == "string" then
-		local found = Theme.Presets[nameOrColors]
+		local found = Theme.PresetSpecs[nameOrColors]
 		if not found then
 			warn("[Robly] unknown theme: " .. nameOrColors)
 			return false
 		end
 		Theme.Name = nameOrColors
-		Theme.Colors = table.clone(found)
+		Theme.Spec = toSpec(found)
 	elseif type(nameOrColors) == "table" then
+		local spec = toSpec(Theme.PresetSpecs.RobScript)
+		spec.accentInk = nil
+		for key, value in pairs(toSpec(nameOrColors)) do
+			spec[key] = value
+		end
 		Theme.Name = "Custom"
-		Theme.Colors = complete(nameOrColors)
+		Theme.Spec = spec
 	else
 		return false
 	end
-	Theme.refresh()
-	Theme.Changed:Fire("colors")
+	commit()
 	return true
 end
 
--- Change one token (theme editor). Accent edits keep readable ink colours.
+-- Change one token (theme editor). A base colour re-derives everything that
+-- isn't overridden; any other token becomes an override.
 function Theme.setToken(name, color)
-	Theme.Colors[name] = color
+	Theme.Spec[name] = color
 	if name == "accent" then
-		Theme.Colors.accentInk = Util.inkFor(color)
-		Theme.Colors.accentPressed = Util.darken(color, 0.12)
+		Theme.Spec.accentInk = nil
+		Theme.Spec.accentPressed = nil
+		Theme.Spec.knobOn = nil
 	end
 	Theme.Name = "Custom"
-	Theme.refresh()
-	Theme.Changed:Fire("colors")
+	commit()
+end
+
+-- Drop the override of a derived token (back to "follows the base colours").
+function Theme.clearToken(name)
+	if not isBase(name) then
+		Theme.Spec[name] = nil
+		commit()
+	end
+end
+
+function Theme.isOverridden(name)
+	return not isBase(name) and Theme.Spec[name] ~= nil
 end
 
 function Theme.setMode(mode)
@@ -345,19 +408,24 @@ function Theme.setMode(mode)
 	Theme.Changed:Fire("sizes")
 end
 
--- Export / import as a short string ("robly1:<base64>") to share on Discord.
-function Theme.export(colors, name)
-	colors = colors or Theme.Colors
-	local parts = { (tostring(name or Theme.Name):gsub(";", "")) }
+-- Export / import as a short string to share on Discord:
+--   robly2:<base64 of "name;key=RRGGBB;key=RRGGBB…"> — only the spec
+--   robly1:<base64 of "name;hex;hex…">            — old full list, still imported
+function Theme.export(spec, name)
+	spec = spec or Theme.Spec
+	local parts = { (tostring(name or Theme.Name):gsub("[;=]", "")) }
 	for _, key in ipairs(Theme.TokenOrder) do
-		table.insert(parts, Util.toHex(colors[key] or MISSING))
+		local value = spec[key]
+		if typeof(value) == "Color3" then
+			table.insert(parts, key .. "=" .. Util.toHex(value))
+		end
 	end
-	return "robly1:" .. Util.base64Encode(table.concat(parts, ";"))
+	return "robly2:" .. Util.base64Encode(table.concat(parts, ";"))
 end
 
 function Theme.import(text)
 	text = Util.trim(tostring(text or ""))
-	local payload = text:match("^robly1:(.+)$")
+	local version, payload = text:match("^robly([12]):(.+)$")
 	if not payload then
 		return nil, "format"
 	end
@@ -366,29 +434,40 @@ function Theme.import(text)
 		return nil, "decode"
 	end
 	local parts = string.split(decoded, ";")
-	if #parts < 4 then
-		return nil, "short"
-	end
-	local colors = {}
-	for index, key in ipairs(Theme.TokenOrder) do
-		local hex = parts[index + 1]
-		local color = hex and Util.hex(hex)
-		if color then
-			colors[key] = color
+	local spec = {}
+	if version == "2" then
+		for index = 2, #parts do
+			local key, hex = parts[index]:match("^(%w+)=(%x+)$")
+			if key and table.find(Theme.TokenOrder, key) then
+				spec[key] = Util.hex(hex)
+			end
+		end
+	else
+		local old = {
+			"accent", "bg", "nav", "surface", "raised", "overlay", "sunken", "selected", "segment",
+			"border", "borderStrong", "divider", "text", "textMuted", "textSubtle",
+			"accentInk", "accentPressed", "track", "toggleOff", "knobOn", "knobOff", "checkBorder",
+			"success", "warning", "danger", "dangerInk", "tooltip", "tooltipText", "backdrop", "code", "codeText",
+		}
+		for index, key in ipairs(old) do
+			local color = parts[index + 1] and Util.hex(parts[index + 1])
+			if color then
+				spec[key] = color
+			end
 		end
 	end
-	if not colors.accent then
-		return nil, "accent"
+	if not (spec.accent and spec.bg and spec.text) then
+		return nil, "incomplete"
 	end
-	return complete(colors), parts[1]
+	return spec, parts[1]
 end
 
 function Theme.serialize()
 	local out = { name = Theme.Name }
 	if Theme.Name == "Custom" then
-		out.colors = {}
-		for key, color in pairs(Theme.Colors) do
-			out.colors[key] = Util.toHex(color)
+		out.spec = {}
+		for key, color in pairs(Theme.Spec) do
+			out.spec[key] = Util.toHex(color)
 		end
 	end
 	return out
@@ -398,13 +477,21 @@ function Theme.deserialize(data)
 	if type(data) ~= "table" then
 		return
 	end
-	if data.name == "Custom" and type(data.colors) == "table" then
-		local colors = {}
-		for key, hex in pairs(data.colors) do
-			colors[key] = Util.hex(hex)
+	local raw = data.spec or data.colors -- "colors" = 1.0 full list
+	if data.name == "Custom" and type(raw) == "table" then
+		local spec = toSpec(raw)
+		if data.colors and not data.spec then
+			-- 1.0 saved every token; keep only the base so everything follows
+			local base = {}
+			for _, key in ipairs(Theme.BaseKeys) do
+				base[key] = spec[key]
+			end
+			spec = base
 		end
-		Theme.apply(colors)
-	elseif type(data.name) == "string" and Theme.Presets[data.name] then
+		Theme.Name = "Custom"
+		Theme.Spec = spec
+		commit()
+	elseif type(data.name) == "string" and Theme.PresetSpecs[data.name] then
 		Theme.apply(data.name)
 	end
 end

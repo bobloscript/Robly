@@ -171,9 +171,9 @@ Robly:AddTheme("Ocean", { accent = "#2EC4B6", bg = "#0B1320" })   -- missing tok
 Window:SetTheme({ accent = Color3.fromRGB(76, 141, 255) })
 ```
 
-Tokens: `accent, bg, nav, surface, raised, overlay, sunken, selected, segment, border, borderStrong, divider, text, textMuted, textSubtle, accentInk, accentPressed, track, toggleOff, knobOn, knobOff, checkBorder, success, warning, danger, dangerInk, tooltip, tooltipText, backdrop, code, codeText`.
+A theme is a few **base colours** — `accent`, `bg`, `text` (+ `success`, `warning`, `danger`). Every other token is derived from them, so changing the background repaints the sidebar, cards, outlines and popups too. Any derived token can be set explicitly to override it: `nav` (sidebar), `surface` (cards), `border`, `raised, overlay, sunken, selected, segment, borderStrong, divider, textMuted, textSubtle, accentInk, accentPressed, track, toggleOff, knobOn, knobOff, checkBorder, dangerInk, tooltip, tooltipText, backdrop, code, codeText`.
 
-Players can edit themes in Settings and share them as `robly1:…` strings.
+Players can edit themes in Settings (Accent, Background, Sidebar, Cards, Outline, Text, plus "All colours") and share them as `robly2:…` strings.
 
 ## Keybinds, panel and quick buttons
 

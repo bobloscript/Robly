@@ -8,6 +8,7 @@ local M = require("./mock")
 local task = require("@lune/task")
 
 local Enum = roblox.Enum
+local Color3 = roblox.Color3
 local failures = {}
 local passed = 0
 
@@ -396,7 +397,38 @@ step("theme export/import", function()
 	check("export button", exportButton ~= nil)
 	M.fire(exportButton.Parent, "Activated")
 	task.wait(0.05)
-	check("clipboard has theme", type(M.clipboard) == "string" and M.clipboard:find("^robly1:") ~= nil, M.clipboard)
+	check("clipboard has theme", type(M.clipboard) == "string" and M.clipboard:find("^robly2:") ~= nil, M.clipboard)
+end)
+
+step("colours are linked", function()
+	local settings = window.SettingsTab
+	local function picker(key)
+		for _, c in ipairs(window.Search.Entries) do
+			if c.Flag == "robly:color." .. key then
+				return c
+			end
+		end
+	end
+	local navBefore = window.Nav.BackgroundColor3
+	local bgPicker = picker("bg")
+	check("background picker", bgPicker ~= nil)
+	bgPicker:Set(Color3.fromRGB(40, 10, 60))
+	check("sidebar follows background", window.Nav.BackgroundColor3 ~= navBefore)
+	local card = control("autoFarm").Section.Card
+	check("cards follow background", card.BackgroundColor3 ~= Robly.Themes.RobScript.surface)
+	check("nav picker synced", picker("nav"):Get() == window.Nav.BackgroundColor3)
+	picker("nav"):Set(Color3.fromRGB(200, 0, 0))
+	check("sidebar editable", window.Nav.BackgroundColor3 == Color3.fromRGB(200, 0, 0))
+	bgPicker:Set(Color3.fromRGB(10, 10, 10))
+	check("hand-picked sidebar survives a background change", window.Nav.BackgroundColor3 == Color3.fromRGB(200, 0, 0))
+	local text = M.clipboard
+	window:SetTheme("RobScript")
+	local exportButton = textOf(settings.Tab.Page, window.Loc:Lib("export"))
+	M.fire(exportButton.Parent, "Activated")
+	task.wait(0.05)
+	check("export after reset is robly2", M.clipboard:find("^robly2:") ~= nil)
+	local _ = text
+	check("settings tab", settings ~= nil)
 end)
 
 step("language switch", function()

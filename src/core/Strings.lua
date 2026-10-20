@@ -12,6 +12,7 @@ S.Names = {
 }
 
 S.en = {
+	sidebar = "Sidebar", cards = "Cards", outline = "Outline", reset_overrides = "Reset hand-picked colours",
 	seconds = "{n}s", paused_short = "Paused", hud_hide_key = "Hide / show panel",
 	settings = "Settings", theme = "Theme", configs = "Configs", interface = "Interface", about = "About",
 	language = "Language", animations = "Animations", anim_full = "Full", anim_soft = "Soft", anim_off = "Off",
@@ -52,6 +53,7 @@ S.en = {
 }
 
 S.ru = {
+	sidebar = "Боковая панель", cards = "Карточки", outline = "Обводка", reset_overrides = "Сбросить ручные цвета",
 	seconds = "{n} с", paused_short = "Пауза", hud_hide_key = "Скрыть / показать панель",
 	settings = "Настройки", theme = "Тема", configs = "Конфиги", interface = "Интерфейс", about = "О библиотеке",
 	language = "Язык", animations = "Анимации", anim_full = "Полные", anim_soft = "Мягкие", anim_off = "Выкл",
@@ -92,6 +94,7 @@ S.ru = {
 }
 
 S.es = {
+	sidebar = "Barra lateral", cards = "Tarjetas", outline = "Contorno", reset_overrides = "Restablecer colores manuales",
 	seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar panel",
 	settings = "Ajustes", theme = "Tema", configs = "Configuraciones", interface = "Interfaz", about = "Acerca de",
 	language = "Idioma", animations = "Animaciones", anim_full = "Completas", anim_soft = "Suaves", anim_off = "No",
@@ -132,6 +135,7 @@ S.es = {
 }
 
 S.pt = {
+	sidebar = "Barra lateral", cards = "Cartões", outline = "Contorno", reset_overrides = "Redefinir cores manuais",
 	seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar painel",
 	settings = "Configurações", theme = "Tema", configs = "Perfis", interface = "Interface", about = "Sobre",
 	language = "Idioma", animations = "Animações", anim_full = "Completas", anim_soft = "Suaves", anim_off = "Desligadas",
@@ -172,6 +176,7 @@ S.pt = {
 }
 
 S.de = {
+	sidebar = "Seitenleiste", cards = "Karten", outline = "Umriss", reset_overrides = "Eigene Farben zurücksetzen",
 	seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Panel aus- / einblenden",
 	settings = "Einstellungen", theme = "Design", configs = "Profile", interface = "Oberfläche", about = "Über",
 	language = "Sprache", animations = "Animationen", anim_full = "Voll", anim_soft = "Sanft", anim_off = "Aus",
@@ -212,6 +217,7 @@ S.de = {
 }
 
 S.fr = {
+	sidebar = "Barre latérale", cards = "Cartes", outline = "Contour", reset_overrides = "Réinitialiser les couleurs perso",
 	seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Masquer / afficher le panneau",
 	settings = "Paramètres", theme = "Thème", configs = "Profils", interface = "Interface", about = "À propos",
 	language = "Langue", animations = "Animations", anim_full = "Complètes", anim_soft = "Douces", anim_off = "Non",
