@@ -96,6 +96,10 @@ function Window.new(library, opts)
 	self.SettingsTab = SettingsTab.new(self)
 	self.Hud = KeybindHud.new(self)
 	self.QuickButtons = QuickButtons.new(self)
+	if opts.Loading or opts.LoadingScreen then
+		local Splash = import("ui/Splash")
+		self.Splash = Splash.new(self, opts.Loading or opts.LoadingScreen)
+	end
 
 	Device.watch()
 	self.Maid:Add(Device.Changed:Connect(function(mode)

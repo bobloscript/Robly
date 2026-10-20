@@ -5,6 +5,7 @@
 local Robly = loadstring(game:HttpGet("https://raw.githubusercontent.com/bobloscript/Robly/main/dist/robly.lua"))()
 
 local Window = Robly:CreateWindow({
+	Loading = { Subtitle = "Blox Fruits", Duration = 1.4 },
 	Title = "RobScript Hub",
 	Subtitle = "Blox Fruits · v2.4",
 	Logo = "R",

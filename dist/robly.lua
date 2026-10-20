@@ -5882,7 +5882,7 @@ __modules["core/Strings"] = function()
 	S.en = {
 		density = "Density", density_compact = "Compact", density_comfortable = "Comfortable",
 		sidebar = "Sidebar", cards = "Cards", outline = "Outline", reset_overrides = "Reset hand-picked colours",
-		effect_strength = "Effect strength", accent2 = "Second accent", effect = "Background effect", effect_desc = "Animated layer behind the window content", glass = "Glass", glass_desc = "Panels let the background effect show through", effect_none = "None", effect_aurora = "Aurora", effect_stars = "Stars", effect_snow = "Snow", effect_grid = "Grid", effect_gradient = "Gradient",
+		loading = "Loading…", effect_strength = "Effect strength", accent2 = "Second accent", effect = "Background effect", effect_desc = "Animated layer behind the window content", glass = "Glass", glass_desc = "Panels let the background effect show through", effect_none = "None", effect_aurora = "Aurora", effect_stars = "Stars", effect_snow = "Snow", effect_grid = "Grid", effect_gradient = "Gradient",
 		seconds = "{n}s", paused_short = "Paused", hud_hide_key = "Hide / show panel",
 		settings = "Settings", theme = "Theme", configs = "Configs", interface = "Interface", about = "About",
 		language = "Language", animations = "Animations", anim_full = "Full", anim_soft = "Soft", anim_off = "Off",
@@ -5925,7 +5925,7 @@ __modules["core/Strings"] = function()
 	S.ru = {
 		density = "Плотность", density_compact = "Компактно", density_comfortable = "Просторно",
 		sidebar = "Боковая панель", cards = "Карточки", outline = "Обводка", reset_overrides = "Сбросить ручные цвета",
-		effect_strength = "Сила эффекта", accent2 = "Второй акцент", effect = "Фоновый эффект", effect_desc = "Анимированный слой за содержимым окна", glass = "Стекло", glass_desc = "Панели пропускают фоновый эффект", effect_none = "Нет", effect_aurora = "Сияние", effect_stars = "Звёзды", effect_snow = "Снег", effect_grid = "Сетка", effect_gradient = "Градиент",
+		loading = "Загрузка…", effect_strength = "Сила эффекта", accent2 = "Второй акцент", effect = "Фоновый эффект", effect_desc = "Анимированный слой за содержимым окна", glass = "Стекло", glass_desc = "Панели пропускают фоновый эффект", effect_none = "Нет", effect_aurora = "Сияние", effect_stars = "Звёзды", effect_snow = "Снег", effect_grid = "Сетка", effect_gradient = "Градиент",
 		seconds = "{n} с", paused_short = "Пауза", hud_hide_key = "Скрыть / показать панель",
 		settings = "Настройки", theme = "Тема", configs = "Конфиги", interface = "Интерфейс", about = "О библиотеке",
 		language = "Язык", animations = "Анимации", anim_full = "Полные", anim_soft = "Мягкие", anim_off = "Выкл",
@@ -5968,7 +5968,7 @@ __modules["core/Strings"] = function()
 	S.es = {
 		density = "Densidad", density_compact = "Compacta", density_comfortable = "Amplia",
 		sidebar = "Barra lateral", cards = "Tarjetas", outline = "Contorno", reset_overrides = "Restablecer colores manuales",
-		effect_strength = "Intensidad del efecto", accent2 = "Segundo acento", effect = "Efecto de fondo", effect_desc = "Capa animada detrás del contenido", glass = "Cristal", glass_desc = "Los paneles dejan ver el efecto de fondo", effect_none = "Ninguno", effect_aurora = "Aurora", effect_stars = "Estrellas", effect_snow = "Nieve", effect_grid = "Cuadrícula", effect_gradient = "Degradado",
+		loading = "Cargando…", effect_strength = "Intensidad del efecto", accent2 = "Segundo acento", effect = "Efecto de fondo", effect_desc = "Capa animada detrás del contenido", glass = "Cristal", glass_desc = "Los paneles dejan ver el efecto de fondo", effect_none = "Ninguno", effect_aurora = "Aurora", effect_stars = "Estrellas", effect_snow = "Nieve", effect_grid = "Cuadrícula", effect_gradient = "Degradado",
 		seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar panel",
 		settings = "Ajustes", theme = "Tema", configs = "Configuraciones", interface = "Interfaz", about = "Acerca de",
 		language = "Idioma", animations = "Animaciones", anim_full = "Completas", anim_soft = "Suaves", anim_off = "No",
@@ -6011,7 +6011,7 @@ __modules["core/Strings"] = function()
 	S.pt = {
 		density = "Densidade", density_compact = "Compacta", density_comfortable = "Espaçosa",
 		sidebar = "Barra lateral", cards = "Cartões", outline = "Contorno", reset_overrides = "Redefinir cores manuais",
-		effect_strength = "Intensidade do efeito", accent2 = "Segundo destaque", effect = "Efeito de fundo", effect_desc = "Camada animada atrás do conteúdo", glass = "Vidro", glass_desc = "Os painéis deixam ver o efeito de fundo", effect_none = "Nenhum", effect_aurora = "Aurora", effect_stars = "Estrelas", effect_snow = "Neve", effect_grid = "Grade", effect_gradient = "Gradiente",
+		loading = "Carregando…", effect_strength = "Intensidade do efeito", accent2 = "Segundo destaque", effect = "Efeito de fundo", effect_desc = "Camada animada atrás do conteúdo", glass = "Vidro", glass_desc = "Os painéis deixam ver o efeito de fundo", effect_none = "Nenhum", effect_aurora = "Aurora", effect_stars = "Estrelas", effect_snow = "Neve", effect_grid = "Grade", effect_gradient = "Gradiente",
 		seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar painel",
 		settings = "Configurações", theme = "Tema", configs = "Perfis", interface = "Interface", about = "Sobre",
 		language = "Idioma", animations = "Animações", anim_full = "Completas", anim_soft = "Suaves", anim_off = "Desligadas",
@@ -6054,7 +6054,7 @@ __modules["core/Strings"] = function()
 	S.de = {
 		density = "Dichte", density_compact = "Kompakt", density_comfortable = "Großzügig",
 		sidebar = "Seitenleiste", cards = "Karten", outline = "Umriss", reset_overrides = "Eigene Farben zurücksetzen",
-		effect_strength = "Effektstärke", accent2 = "Zweiter Akzent", effect = "Hintergrundeffekt", effect_desc = "Animierte Ebene hinter dem Inhalt", glass = "Glas", glass_desc = "Flächen lassen den Hintergrundeffekt durchscheinen", effect_none = "Keiner", effect_aurora = "Polarlicht", effect_stars = "Sterne", effect_snow = "Schnee", effect_grid = "Raster", effect_gradient = "Verlauf",
+		loading = "Wird geladen…", effect_strength = "Effektstärke", accent2 = "Zweiter Akzent", effect = "Hintergrundeffekt", effect_desc = "Animierte Ebene hinter dem Inhalt", glass = "Glas", glass_desc = "Flächen lassen den Hintergrundeffekt durchscheinen", effect_none = "Keiner", effect_aurora = "Polarlicht", effect_stars = "Sterne", effect_snow = "Schnee", effect_grid = "Raster", effect_gradient = "Verlauf",
 		seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Panel aus- / einblenden",
 		settings = "Einstellungen", theme = "Design", configs = "Profile", interface = "Oberfläche", about = "Über",
 		language = "Sprache", animations = "Animationen", anim_full = "Voll", anim_soft = "Sanft", anim_off = "Aus",
@@ -6097,7 +6097,7 @@ __modules["core/Strings"] = function()
 	S.fr = {
 		density = "Densité", density_compact = "Compacte", density_comfortable = "Aérée",
 		sidebar = "Barre latérale", cards = "Cartes", outline = "Contour", reset_overrides = "Réinitialiser les couleurs perso",
-		effect_strength = "Intensité de l'effet", accent2 = "Second accent", effect = "Effet de fond", effect_desc = "Calque animé derrière le contenu", glass = "Verre", glass_desc = "Les panneaux laissent voir l'effet de fond", effect_none = "Aucun", effect_aurora = "Aurore", effect_stars = "Étoiles", effect_snow = "Neige", effect_grid = "Grille", effect_gradient = "Dégradé",
+		loading = "Chargement…", effect_strength = "Intensité de l'effet", accent2 = "Second accent", effect = "Effet de fond", effect_desc = "Calque animé derrière le contenu", glass = "Verre", glass_desc = "Les panneaux laissent voir l'effet de fond", effect_none = "Aucun", effect_aurora = "Aurore", effect_stars = "Étoiles", effect_snow = "Neige", effect_grid = "Grille", effect_gradient = "Dégradé",
 		seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Masquer / afficher le panneau",
 		settings = "Paramètres", theme = "Thème", configs = "Profils", interface = "Interface", about = "À propos",
 		language = "Langue", animations = "Animations", anim_full = "Complètes", anim_soft = "Douces", anim_off = "Non",
@@ -10897,6 +10897,168 @@ __modules["ui/Section"] = function()
 	return Section
 end
 
+__modules["ui/Splash"] = function()
+	-- Splash: loading screen shown over the window while the script starts.
+	--   CreateWindow({ Loading = true })                       -- 1.6 s, automatic
+	--   CreateWindow({ Loading = { Title, Subtitle, Duration } })
+	--   Window.Splash:Set(0.4, "Loading modules…")  · Window.Splash:Done()
+	-- With Duration = false the bar waits for Set/Done calls from the script.
+
+	local Theme = import("core/Theme")
+	local Create = import("core/Create")
+	local Motion = import("core/Motion")
+	local Maid = import("util/Maid")
+
+	local New = Create.New
+	local C = Theme.c
+
+	local Splash = {}
+	Splash.__index = Splash
+
+	function Splash.new(window, opts)
+		if opts == true then
+			opts = {}
+		end
+		local self = setmetatable({}, Splash)
+		self.Window = window
+		self.Maid = Maid.new()
+		self.Progress = 0
+		self.Finished = false
+		local loc = window.Loc
+
+		local group = self.Maid:Add(New("CanvasGroup", {
+			Name = "Splash",
+			Size = UDim2.fromScale(1, 1),
+			BackgroundColor3 = C("bg"),
+			ZIndex = 50,
+			Parent = window.Frame,
+		}))
+		self.Group = group
+		-- its own background effect, so the splash already looks like the brand
+		local Effects = import("ui/Effects")
+		self.Effects = self.Maid:Add(Effects.new(group, 50))
+
+		local center = New("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = UDim2.fromOffset(280, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			ZIndex = 51,
+			Parent = group,
+		}, { Create.list("Vertical", 10, { align = "Center" }) })
+		local logo = window:_logo(64)
+		logo.LayoutOrder = 1
+		logo.Parent = center
+		local logoScale = New("UIScale", { Scale = 0.7, Parent = logo })
+		New("UIGradient", { Color = Theme.gradient(), Rotation = 45, Parent = logo })
+		logo.BackgroundColor3 = Color3.new(1, 1, 1)
+		Motion.tween(logoScale, { Scale = 1 }, "spring")
+
+		local title = New("TextLabel", {
+			Size = UDim2.new(1, 0, 0, 26),
+			TextSize = 22,
+			Weight = "Bold",
+			TextXAlignment = Enum.TextXAlignment.Center,
+			LayoutOrder = 2,
+			Parent = center,
+		})
+		title.TextXAlignment = Enum.TextXAlignment.Center
+		loc:Bind(title, "Text", opts.Title or window.TitleSpec or "")
+		local subtitle = New("TextLabel", {
+			Size = UDim2.new(1, 0, 0, 16),
+			TextColor3 = C("textMuted"),
+			TextSize = 13,
+			TextXAlignment = Enum.TextXAlignment.Center,
+			LayoutOrder = 3,
+			Parent = center,
+		})
+		subtitle.TextXAlignment = Enum.TextXAlignment.Center
+		loc:Bind(subtitle, "Text", opts.Subtitle or window.SubtitleSpec or "")
+
+		local track = New("Frame", {
+			Size = UDim2.new(1, 0, 0, 4),
+			BackgroundColor3 = C("track"),
+			LayoutOrder = 4,
+			Parent = center,
+		}, { Create.corner("full") })
+		self.Fill = New("Frame", {
+			Size = UDim2.fromScale(0, 1),
+			BackgroundColor3 = Color3.new(1, 1, 1),
+			Parent = track,
+		}, { Create.corner("full"), New("UIGradient", { Color = Theme.gradient() }) })
+		self.Status = New("TextLabel", {
+			Size = UDim2.new(1, 0, 0, 14),
+			TextColor3 = C("textSubtle"),
+			TextSize = 11,
+			Weight = "Medium",
+			TextXAlignment = Enum.TextXAlignment.Center,
+			LayoutOrder = 5,
+			Parent = center,
+		})
+		self.Status.TextXAlignment = Enum.TextXAlignment.Center
+		loc:Bind(self.Status, "Text", opts.Status or { __lib = "loading" })
+
+		local duration = opts.Duration
+		if duration == nil then
+			duration = 1.6
+		end
+		if duration then
+			task.spawn(function()
+				local steps = 20
+				for i = 1, steps do
+					task.wait(duration / steps)
+					if self.Finished then
+						return
+					end
+					self:Set(math.max(self.Progress, i / steps))
+				end
+				self:Done()
+			end)
+		end
+		return self
+	end
+
+	-- ratio 0…1, optional status text (string or localized spec)
+	function Splash:Set(ratio, status)
+		if self.Finished then
+			return self
+		end
+		self.Progress = math.clamp(tonumber(ratio) or 0, 0, 1)
+		Motion.tween(self.Fill, { Size = UDim2.fromScale(self.Progress, 1) }, "window")
+		if status then
+			self.Window.Loc:Bind(self.Status, "Text", status)
+		end
+		return self
+	end
+
+	function Splash:Done()
+		if self.Finished then
+			return
+		end
+		self.Finished = true
+		self.Fill.Size = UDim2.fromScale(1, 1)
+		if Motion.Mode == "Off" then
+			self:Destroy()
+			return
+		end
+		task.delay(0.15, function()
+			Motion.tween(self.Group, { GroupTransparency = 1 }, "window")
+			task.wait(0.35)
+			self:Destroy()
+		end)
+	end
+
+	function Splash:Destroy()
+		self.Finished = true
+		self.Maid:Clean()
+		if self.Window.Splash == self then
+			self.Window.Splash = nil
+		end
+	end
+
+	return Splash
+end
+
 __modules["ui/Tab"] = function()
 	-- Tab: a page of sections. Any tab (except Settings) can be detached into its
 	-- own window and returned by the same gesture (brief §14).
@@ -11458,6 +11620,10 @@ __modules["ui/Window"] = function()
 		self.SettingsTab = SettingsTab.new(self)
 		self.Hud = KeybindHud.new(self)
 		self.QuickButtons = QuickButtons.new(self)
+		if opts.Loading or opts.LoadingScreen then
+			local Splash = import("ui/Splash")
+			self.Splash = Splash.new(self, opts.Loading or opts.LoadingScreen)
+		end
 
 		Device.watch()
 		self.Maid:Add(Device.Changed:Connect(function(mode)

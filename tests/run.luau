@@ -520,6 +520,12 @@ step("phone layout", function()
 end)
 
 -- 7. Configs -------------------------------------------------------------------------------
+step("loading screen", function()
+	check("splash shown", window.Splash ~= nil or window.Frame:FindFirstChild("Splash") == nil)
+	task.wait(2)
+	check("splash gone", window.Frame:FindFirstChild("Splash") == nil)
+end)
+
 step("1.4 hierarchy, effects, themes", function()
 	-- categories + sub tab tree in the sidebar
 	local combat
