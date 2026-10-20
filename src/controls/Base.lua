@@ -154,16 +154,59 @@ function Control.new(section, opts, spec)
 			Parent = self.Row,
 		})
 	end
+	-- Nesting: opts.Parent = flag or control → indented under it with a guide
+	-- line, and (unless VisibleWhen is given) only shown while the parent is on.
+	local parentFlag = opts.Parent
+	if type(parentFlag) == "table" then
+		parentFlag = parentFlag.Flag
+	end
+	self.ParentFlag = parentFlag
+	local indent = parentFlag and 18 or 0
 	self.Inner = New("Frame", {
 		Name = "Inner",
 		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		ZIndex = 2,
 		Parent = self.Row,
-	}, {
-		Create.pad("padY", "padX"),
-		Create.minSize(0, self.DescSpec and "rowDesc" or "row"),
-	})
+	}, { Create.minSize(0, self.DescSpec and "rowDesc" or "row") })
+	local padding = New("UIPadding", { Parent = self.Inner })
+	Theme.bind(padding, "PaddingTop", Theme.f(function(_, s)
+		return UDim.new(0, s.padY)
+	end))
+	Theme.bind(padding, "PaddingBottom", Theme.f(function(_, s)
+		return UDim.new(0, s.padY)
+	end))
+	Theme.bind(padding, "PaddingRight", Theme.f(function(_, s)
+		return UDim.new(0, s.padX)
+	end))
+	Theme.bind(padding, "PaddingLeft", Theme.f(function(_, s)
+		return UDim.new(0, s.padX + indent)
+	end))
+	if parentFlag then
+		New("Frame", {
+			Name = "Guide",
+			Position = Theme.f(function(_, s)
+				return UDim2.new(0, s.padX + 5, 0, 0)
+			end),
+			Size = UDim2.new(0, 1, 1, 0),
+			BackgroundColor3 = C("borderStrong"),
+			Parent = self.Row,
+		})
+		if opts.VisibleWhen == nil then
+			opts.VisibleWhen = { Flag = parentFlag }
+		end
+	end
+	-- accent bar on the left edge while the control is "on" (toggles, checkboxes)
+	self.ActiveBar = New("Frame", {
+		Name = "ActiveBar",
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(0, 0, 0.5, 0),
+		Size = UDim2.new(0, 2, 0.6, 0),
+		BackgroundColor3 = Color3.new(1, 1, 1),
+		BackgroundTransparency = 1,
+		ZIndex = 3,
+		Parent = self.Row,
+	}, { Create.corner("full"), New("UIGradient", { Color = Theme.gradient(), Rotation = 90 }) })
 
 	local layout = spec.layout or "row"
 	self.Layout = layout
@@ -276,6 +319,22 @@ function Control:_finish()
 end
 
 function Control:_render() end
+
+-- Visual "on" state shared by toggles and checkboxes: accent bar + bolder title.
+function Control:_setActive(on, animate)
+	if self.Options.Highlight == false then
+		on = false
+	end
+	if animate then
+		Motion.tween(self.ActiveBar, { BackgroundTransparency = on and 0 or 1 }, "fade")
+	else
+		self.ActiveBar.BackgroundTransparency = on and 0 or 1
+	end
+	if self.TitleLabel then
+		self.TitleLabel.FontFace = Theme.font(on and "SemiBold" or "Medium")
+		Theme.set(self.TitleLabel, "TextColor3", on and C("text") or C("textMuted"))
+	end
+end
 
 function Control:_ensureDescription()
 	if self.DescLabel or not self.Texts then

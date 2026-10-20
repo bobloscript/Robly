@@ -65,11 +65,15 @@ function Controls.Slider(section, opts)
 	self.ValueLabel = New("TextLabel", {
 		AutomaticSize = Enum.AutomaticSize.X,
 		Size = UDim2.fromOffset(0, 20),
-		TextColor3 = C("textMuted"),
+		BackgroundColor3 = C("accent"),
+		BackgroundTransparency = 0.86,
+		TextColor3 = C("accent"),
+		Weight = "SemiBold",
 		TextSize = S("fontDesc"),
 		LayoutOrder = 5,
 		Parent = self.Right,
-	})
+	}, { Create.corner(6), Create.pad(0, 7) })
+	self.ValueLabel.TextXAlignment = Enum.TextXAlignment.Center
 	Theme.bind(self.ValueLabel, "TextSize", Theme.f(function(_, s)
 		return s.font - 1
 	end))
@@ -92,9 +96,9 @@ function Controls.Slider(section, opts)
 		AnchorPoint = Vector2.new(0, 0.5),
 		Position = UDim2.fromScale(0, 0.5),
 		Size = UDim2.fromScale(0, 1),
-		BackgroundColor3 = C("accent"),
+		BackgroundColor3 = Color3.new(1, 1, 1),
 		Parent = track,
-	}, { Create.corner("full") })
+	}, { Create.corner("full"), New("UIGradient", { Color = Theme.gradient() }) })
 
 	local function knob()
 		local k = New("Frame", {

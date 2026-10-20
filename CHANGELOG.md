@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.4.0 — 2026-10-20
+
+Visual hierarchy and a look of its own.
+
+- Sidebar: tabs can be grouped with `Category` (small caption above each group). The open tab gets an accent tile behind its icon and a gradient marker on the left edge; its sub tabs unfold underneath as a tree (guide line, dot on the current one), like a quick-nav. On PC sub tabs live in the sidebar; the pill row stays on touch devices.
+- Page header: icon tile and a "Tab › Sub tab" breadcrumb; the title follows the selected sub tab.
+- Groupboxes: icon in an accent tile, bold title, optional `Description`, accent gradient line under the header, count chip when collapsed. `Section:Header(text)` adds a sub heading inside a groupbox.
+- Rows: a toggle or checkbox that is on marks its row with an accent bar and a bolder title (`Highlight = false` to opt out). `Parent = flag` nests a control under another one: indented with a guide line and shown only while the parent is on (unless `VisibleWhen` is given).
+- Second accent colour `accent2`: toggles, checkboxes, slider and progress fills, primary buttons and the sidebar marker use an accent → accent2 gradient. Slider values sit in an accent chip.
+- Background effects inside the window (and detached windows): Aurora, Stars, Snow, Grid, Gradient or None — animated with "Full" animations, still otherwise. Glass mode makes the sidebar and cards translucent so the effect shows through. Settings → Theme has an effect picker and a Glass switch; `Robly:SetEffect`, `Robly:SetGlass`, `Window:SetEffect`, `Window:SetGlass`. Saved with the theme.
+- 18 theme presets (RobScript, Light, Graphite, Midnight, Sakura, Ocean, Matcha, Sunset, Amber, Crimson, Cyber, Synthwave, Dracula, Nord, Frost, Lavender, Coffee, Mono), each with its own effect, shown as a grid in Settings. `AddTheme` accepts `accent2` and `Effect`.
+- Sidebar keeps its scroll position when it is rebuilt.
+
 ## 1.3.0 — 2026-10-20
 
 New layout, a mix of Airflow and Obsidian:

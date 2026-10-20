@@ -32,6 +32,7 @@ function Controls.Toggle(section, opts)
 		LayoutOrder = 5,
 		Parent = self.Right,
 	}, { Create.corner("full") })
+	self.TrackGradient = New("UIGradient", { Color = Theme.gradient(), Enabled = false, Parent = track })
 	self.Knob = New("Frame", {
 		Name = "Knob",
 		AnchorPoint = Vector2.new(0, 0.5),
@@ -56,7 +57,12 @@ function Toggle:_validate(v)
 end
 
 function Toggle:_render(on, animate)
-	local trackColor = on and C("accent") or C("toggleOff")
+	-- on: white base × accent→accent2 gradient
+	self.TrackGradient.Enabled = on == true
+	self:_setActive(on == true, animate)
+	local trackColor = on and Theme.f(function()
+		return Color3.new(1, 1, 1)
+	end) or C("toggleOff")
 	local knobColor = on and C("knobOn") or C("knobOff")
 	local anchor = on and Vector2.new(1, 0.5) or Vector2.new(0, 0.5)
 	local position = on and UDim2.new(1, -2, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
@@ -103,7 +109,8 @@ function Controls.Checkbox(section, opts)
 		BackgroundColor3 = C("accent"),
 		BackgroundTransparency = 1,
 		Parent = self.Left,
-	}, { Create.corner(6) })
+	}, { Create.corner(6), New("UIGradient", { Color = Theme.gradient(), Rotation = 45 }) })
+	box.BackgroundColor3 = Color3.new(1, 1, 1)
 	self.Stroke = Create.stroke("checkBorder", 1.5)
 	self.Stroke.Parent = box
 	self.Check = Icons.new("check", Theme.Sizes.touch and 18 or 14, C("accentInk"), {
@@ -133,6 +140,7 @@ function Checkbox:_render(on, animate)
 			instance[k] = v
 		end
 	end
+	self:_setActive(on == true, animate)
 	tween(self.Box, { BackgroundTransparency = on and 0 or 1 }, "fade")
 	tween(self.Stroke, { Transparency = on and 1 or 0 }, "fade")
 	self.Check.Frame.Visible = on
@@ -151,7 +159,7 @@ Checkbox.QuickActivate = Toggle.QuickActivate
 -- Button ------------------------------------------------------------------------------
 
 local VARIANTS = {
-	Primary = { bg = "accent", fg = "accentInk", pressed = "accentPressed", weight = "SemiBold" },
+	Primary = { bg = "accent", fg = "accentInk", weight = "SemiBold", gradient = true },
 	Secondary = { bg = "raised", fg = "text", pressed = "segment", weight = "Medium" },
 	Text = { bg = nil, fg = "accent", weight = "SemiBold" },
 	Danger = { bg = "danger", fg = "dangerInk", weight = "SemiBold" },
@@ -172,6 +180,10 @@ local function makeButton(control, spec, parent, order)
 		Create.pad(0, 12),
 		Create.list("Horizontal", 8, { align = "Center", valign = "Center" }),
 	})
+	if variant.gradient then
+		button.BackgroundColor3 = Color3.new(1, 1, 1)
+		New("UIGradient", { Color = Theme.gradient(), Parent = button })
+	end
 	if spec.Icon then
 		local icon = Icons.new(spec.Icon, "iconSmall", C(variant.fg))
 		icon.Frame.LayoutOrder = 1
@@ -419,9 +431,9 @@ function Controls.ProgressBar(section, opts)
 	}, { Create.corner("full") })
 	self.Fill = New("Frame", {
 		Size = UDim2.fromScale(0, 1),
-		BackgroundColor3 = C("accent"),
+		BackgroundColor3 = Color3.new(1, 1, 1),
 		Parent = track,
-	}, { Create.corner("full") })
+	}, { Create.corner("full"), New("UIGradient", { Color = Theme.gradient() }) })
 	self.Value = 0
 	self:SetValue(opts.Value or opts.Default or 0, false)
 	return self

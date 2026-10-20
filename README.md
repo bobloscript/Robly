@@ -88,18 +88,24 @@ local Farm = Window:Tab({
 	Description = "Level, chests and weapon mastery",  -- shown on PC
 	Icon = "sprout",          -- any Lucide icon
 	Badge = "12",             -- small counter in the sidebar
+	Category = "Game",        -- sidebar caption; consecutive tabs with one category are grouped
 	Detachable = true,        -- false: cannot be moved to its own window
 })
 
 -- Groupboxes: titled, collapsible cards in two columns (balanced, or pick a side).
 -- They stack into one column on narrow windows and on phones.
-local Mobs = Farm:Section({ Title = "Mob farm", Icon = "crosshair" })
+local Mobs = Farm:Section({ Title = "Mob farm", Icon = "crosshair", Description = "Quests and mobs" })
+Mobs:Toggle({ Title = "Fast attack", Flag = "fast" })
+-- Parent: indented under "Fast attack" with a guide line, shown only while it is on
+Mobs:Slider({ Title = "Attack speed", Parent = "fast", Min = 1, Max = 10 })
+Mobs:Header("Targets")    -- small caption that splits a groupbox into groups
 local Other = Farm:AddRightGroupbox({ Title = "Other", Icon = "sparkles", Collapsed = true })
 
 -- Controls added straight to a tab become a full-width card above the columns.
 Farm:Toggle({ Title = "Master switch" })
 
--- Sub tabs: a row of pills under the page title, each with its own columns.
+-- Sub tabs: on PC they unfold as a tree under the open tab in the sidebar
+-- (pills under the title on touch); the page title shows "Tab › Sub tab".
 local Combat = Window:Tab({ Title = "Combat", Icon = "swords" })
 local PvP = Combat:SubTab({ Title = "PvP", Icon = "crosshair" })
 PvP:AddLeftGroupbox("Aim", "crosshair"):Toggle({ Title = "Silent aim" })
@@ -181,12 +187,16 @@ Missing translations fall back to the default language (with a warning when `Dev
 ## Themes
 
 ```lua
-Robly:SetTheme("Midnight")                    -- "RobScript", "Light", "Graphite", "Midnight"
-Robly:AddTheme("Ocean", { accent = "#2EC4B6", bg = "#0B1320" })   -- missing tokens come from RobScript
+Robly:SetTheme("Synthwave")                   -- 18 presets, see Robly.ThemeOrder
+Robly:SetEffect("Snow")                       -- None, Aurora, Stars, Snow, Grid, Gradient
+Robly:SetGlass(true)                          -- panels let the effect show through
+Robly:AddTheme("Reef", { accent = "#2EC4B6", accent2 = "#4C8DFF", bg = "#0B1320", Effect = "Aurora" })
 Window:SetTheme({ accent = Color3.fromRGB(76, 141, 255) })
 ```
 
-A theme is a few **base colours** — `accent`, `bg`, `text` (+ `success`, `warning`, `danger`). Every other token is derived from them, so changing the background repaints the sidebar, cards, outlines and popups too. Any derived token can be set explicitly to override it: `nav` (sidebar), `surface` (cards), `border`, `raised, overlay, sunken, selected, segment, borderStrong, divider, textMuted, textSubtle, accentInk, accentPressed, track, toggleOff, knobOn, knobOff, checkBorder, dangerInk, tooltip, tooltipText, backdrop, code, codeText`.
+Presets: RobScript, Light, Graphite, Midnight, Sakura, Ocean, Matcha, Sunset, Amber, Crimson, Cyber, Synthwave, Dracula, Nord, Frost, Lavender, Coffee, Mono — each with its own background effect.
+
+A theme is a few **base colours** — `accent`, `accent2` (second accent: toggles, slider fills, progress, primary buttons and the sidebar marker are an accent → accent2 gradient), `bg`, `text` (+ `success`, `warning`, `danger`). Every other token is derived from them, so changing the background repaints the sidebar, cards, outlines and popups too. Any derived token can be set explicitly to override it: `nav` (sidebar), `surface` (cards), `border`, `raised, overlay, sunken, selected, segment, borderStrong, divider, textMuted, textSubtle, accentInk, accentPressed, track, toggleOff, knobOn, knobOff, checkBorder, dangerInk, tooltip, tooltipText, backdrop, code, codeText`.
 
 Players can edit themes in Settings (Accent, Background, Sidebar, Cards, Outline, Text, plus "All colours") and share them as `robly2:…` strings.
 

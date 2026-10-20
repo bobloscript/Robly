@@ -26,6 +26,7 @@ local Search = import("ui/Search")
 local Pill = import("ui/Pill")
 local Tab = import("ui/Tab")
 local Detached = import("ui/Detached")
+local Effects = import("ui/Effects")
 local Binds = import("system/Binds")
 local Config = import("system/Config")
 
@@ -173,12 +174,13 @@ function Window:_build()
 	self.Scale = New("UIScale", { Parent = self.Frame })
 	-- Everything laid out lives in Shell; the resize grip floats in Frame and
 	-- must not be part of the list layout.
-	self.Shell = New("Frame", { Name = "Shell", Size = UDim2.fromScale(1, 1), Parent = self.Frame })
+	self.Effects = self.Maid:Add(Effects.new(self.Frame, 0))
+	self.Shell = New("Frame", { Name = "Shell", Size = UDim2.fromScale(1, 1), ZIndex = 1, Parent = self.Frame })
 	self.Header = New("Frame", { Name = "Header", Parent = self.Shell })
 	-- transparent button under the header content: the drag handle (Frames
 	-- don't receive input reliably, buttons do)
 	self.DragHandle = New("TextButton", { Name = "DragHandle", Size = UDim2.fromScale(1, 1), ZIndex = 1, Parent = self.Header })
-	self.Nav = New("Frame", { Name = "Nav", BackgroundColor3 = C("nav"), Parent = self.Shell })
+	self.Nav = New("Frame", { Name = "Nav", Parent = self.Shell })
 	self.Main = New("Frame", { Name = "Main", Parent = self.Shell }, {
 		Create.pad("contentTop", "contentX", "contentBottom", "contentX"),
 	})
@@ -286,7 +288,10 @@ function Window:_applyLayout()
 	end
 
 	local radius = Theme.Sizes.rWindow
-	New("UICorner", { CornerRadius = UDim.new(0, radius), Parent = nav })
+	-- sidebar background: only its outer corners are round; translucent with Glass
+	local function navPanel(round)
+		Create.panel(nav, { color = C("nav"), transparency = Theme.glass(0.35), radius = radius, round = round })
+	end
 	if mode == "pc" then
 		maid:Add(Create.list("Vertical", 0)).Parent = frame
 		header.LayoutOrder = 1
@@ -302,9 +307,7 @@ function Window:_applyLayout()
 		main.Size = UDim2.fromScale(0, 1)
 		main.LayoutOrder = 2
 		Create.flex().Parent = main
-		-- square the inner corners of the sidebar, keep the outer bottom-left round
-		New("Frame", { Name = "Patch", Size = UDim2.new(1, 0, 0, radius), BackgroundColor3 = C("nav"), Parent = nav })
-		New("Frame", { Name = "Patch", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, radius, 1, 0), BackgroundColor3 = C("nav"), Parent = nav })
+		navPanel({ bl = true })
 		New("Frame", { Name = "Edge", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, 1, 1, 0), BackgroundColor3 = C("divider"), ZIndex = 3, Parent = nav })
 		New("Frame", { Name = "Edge", AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = C("divider"), ZIndex = 3, Parent = header })
 	elseif mode == "phone" then
@@ -322,7 +325,7 @@ function Window:_applyLayout()
 		main.LayoutOrder = 2
 		main.Size = UDim2.fromScale(1, 0)
 		Create.flex().Parent = main
-		New("Frame", { Name = "Patch", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, radius, 1, 0), BackgroundColor3 = C("nav"), Parent = nav })
+		navPanel({ tl = true, bl = true })
 		New("Frame", { Name = "Edge", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, 1, 1, 0), BackgroundColor3 = C("divider"), ZIndex = 3, Parent = nav })
 	else
 		maid:Add(Create.list("Vertical", 0)).Parent = frame
@@ -333,7 +336,7 @@ function Window:_applyLayout()
 		Create.flex().Parent = main
 		nav.LayoutOrder = 3
 		nav.Size = UDim2.new(1, 0, 0, Theme.Sizes.tabbar)
-		New("Frame", { Name = "Patch", Size = UDim2.new(1, 0, 0, radius), BackgroundColor3 = C("nav"), Parent = nav })
+		navPanel({ bl = true, br = true })
 		New("Frame", { Name = "Edge", Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = C("divider"), ZIndex = 3, Parent = nav })
 	end
 	maid:Add(function()
@@ -718,12 +721,23 @@ function Window:_navVisual(tab, item)
 	local mode = Theme.Mode
 	if mode == "pc" then
 		Theme.set(item.button, "BackgroundColor3", highlighted and C("accent") or C("selected"))
-		Motion.tween(item.button, { BackgroundTransparency = highlighted and 0.82 or (selected and 0 or 1) }, "fade")
+		Motion.tween(item.button, { BackgroundTransparency = highlighted and 0.82 or (selected and 0.35 or 1) }, "fade")
 		item.icon:SetColor(selected and C("accent") or C("textMuted"), true)
 		Theme.set(item.label, "TextColor3", selected and C("text") or C("textMuted"))
 		item.label.FontFace = Theme.font(selected and "SemiBold" or "Medium")
+		if item.tile then
+			Motion.tween(item.tile, { BackgroundTransparency = selected and 0.84 or 1 }, "fade")
+		end
+		if item.bar then
+			item.bar.Visible = selected
+			if selected then
+				item.bar.Size = UDim2.fromOffset(3, 4)
+				Motion.tween(item.bar, { Size = UDim2.fromOffset(3, 18) }, "spring")
+			end
+		end
 	elseif mode == "phone" then
-		Motion.tween(item.button, { BackgroundTransparency = (selected or highlighted) and 0 or 1 }, "fade")
+		Theme.set(item.button, "BackgroundColor3", C("accent"))
+		Motion.tween(item.button, { BackgroundTransparency = (selected or highlighted) and 0.84 or 1 }, "fade")
 		item.icon:SetColor(selected and C("accent") or C("textSubtle"), true)
 	else
 		item.icon:SetColor(selected and C("accent") or C("textSubtle"), true)
@@ -830,19 +844,58 @@ function Window:_buildSidebar(maid)
 		LayoutOrder = 1,
 		Parent = holder,
 	}, { Create.flex(), Create.list("Vertical", 2) })
+	list.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	list.CanvasSize = UDim2.new()
+	-- keep the scroll position when the tree is rebuilt (sub tabs unfold)
+	if self._navScroll then
+		list.CanvasPosition = self._navScroll
+	end
+	maid:Add(list:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+		self._navScroll = list.CanvasPosition
+	end))
 
-	local function item(tab, parent, order)
+	local order = 0
+	local function nextOrder()
+		order += 1
+		return order
+	end
+
+	local function item(tab, parent)
+		local selected = self.Selected == tab
 		local button = New("TextButton", {
 			Name = tab.Id,
 			Size = Theme.sz(1, 0, 0, "navItem"),
 			BackgroundColor3 = C("selected"),
 			BackgroundTransparency = 1,
-			LayoutOrder = order,
+			LayoutOrder = nextOrder(),
 			ZIndex = 2,
 			Parent = parent,
-		}, { Create.corner(10), Create.pad(0, 10), Create.list("Horizontal", 10, { valign = "Center" }) })
-		local icon = Icons.new(tab.Icon, "icon", C("textMuted"))
-		icon.Frame.Parent = button
+		}, { Create.corner(8), Create.pad(0, 8, 0, 6), Create.list("Horizontal", 9, { valign = "Center" }) })
+		-- accent bar on the left edge of the selected tab (gradient accent → accent2)
+		local bar = New("Frame", {
+			Name = "Bar",
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, -6, 0.5, 0),
+			Size = UDim2.fromOffset(3, 0),
+			BackgroundColor3 = Color3.new(1, 1, 1),
+			Parent = button,
+		}, { Create.corner("full"), New("UIGradient", { Color = Theme.gradient(), Rotation = 90 }) })
+		New("UIFlexItem", { FlexMode = Enum.UIFlexMode.None, Parent = bar })
+		bar.Visible = false
+		-- icon in a tile: accent-tinted when selected
+		local tile = New("Frame", {
+			Name = "Tile",
+			Size = UDim2.fromOffset(26, 26),
+			BackgroundColor3 = C("accent"),
+			BackgroundTransparency = 1,
+			LayoutOrder = 1,
+			Parent = button,
+		}, { Create.corner(7) })
+		local icon = Icons.new(tab.Icon, 16, C("textMuted"), {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+		})
+		icon.Frame.Parent = tile
 		local label = New("TextLabel", {
 			Size = UDim2.fromScale(0, 1),
 			TextColor3 = C("textMuted"),
@@ -856,21 +909,30 @@ function Window:_buildSidebar(maid)
 		if tab.BadgeSpec then
 			local badge = New("TextLabel", {
 				AutomaticSize = Enum.AutomaticSize.X,
-				Size = UDim2.fromScale(0, 1),
+				Size = UDim2.fromOffset(0, 18),
+				BackgroundColor3 = C("raised"),
 				TextColor3 = C("textMuted"),
 				TextSize = 11,
 				Weight = "SemiBold",
 				LayoutOrder = 3,
 				Parent = button,
-			})
+			}, { Create.corner("full"), Create.pad(0, 6) })
+			badge.TextXAlignment = Enum.TextXAlignment.Center
 			loc:Bind(badge, "Text", tab.BadgeSpec)
 		end
 		local pip = Icons.new("pip", 14, C("textSubtle"))
 		pip.Frame.LayoutOrder = 4
 		pip.Frame.Parent = button
+		local chevron
+		if #tab.SubTabs > 0 then
+			chevron = Icons.new("chevronDown", 14, C("textSubtle"))
+			chevron.Frame.LayoutOrder = 5
+			chevron.Frame.Rotation = selected and 0 or -90
+			chevron.Frame.Parent = button
+		end
 		maid:Add(button.MouseEnter:Connect(function()
 			if self.Selected ~= tab then
-				Motion.tween(button, { BackgroundTransparency = 0.5 }, "fade")
+				Motion.tween(button, { BackgroundTransparency = 0.6 }, "fade")
 			end
 		end))
 		maid:Add(button.MouseLeave:Connect(function()
@@ -882,14 +944,95 @@ function Window:_buildSidebar(maid)
 			self:SelectTab(tab)
 		end))
 		self:_attachNavGestures(tab, button, maid)
-		self._navItems[tab] = { button = button, icon = icon, label = label, pip = pip }
+		self._navItems[tab] = { button = button, icon = icon, label = label, pip = pip, bar = bar, tile = tile }
+
+		-- sub tabs of the open tab unfold underneath, as a tree (quick-nav style)
+		if selected and #tab.SubTabs > 0 then
+			local tree = New("Frame", {
+				Name = "SubTree",
+				Size = UDim2.fromScale(1, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				LayoutOrder = nextOrder(),
+				ZIndex = 2,
+				Parent = parent,
+			}, { Create.pad(2, 0, 4, 22), Create.list("Vertical", 1) })
+			New("Frame", {
+				Name = "Guide",
+				Position = UDim2.new(0, -3, 0, 4),
+				Size = UDim2.new(0, 1, 1, -8),
+				BackgroundColor3 = C("border"),
+				Parent = tree,
+			})
+			for index, sub in ipairs(tab.SubTabs) do
+				local current = tab.CurrentSubTab == sub
+				local subButton = New("TextButton", {
+					Name = "Sub",
+					Size = Theme.f(function(_, s)
+						return UDim2.new(1, 0, 0, s.navItem - 6)
+					end),
+					BackgroundColor3 = C("selected"),
+					BackgroundTransparency = current and 0.5 or 1,
+					LayoutOrder = index,
+					ZIndex = 2,
+					Parent = tree,
+				}, { Create.corner(6), Create.pad(0, 8, 0, 10), Create.list("Horizontal", 8, { valign = "Center" }) })
+				-- dot on the guide line marks the current sub tab
+				New("Frame", {
+					Name = "Dot",
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.new(0, -3, 0.5, 0),
+					Size = UDim2.fromOffset(current and 7 or 5, current and 7 or 5),
+					BackgroundColor3 = current and C("accent") or C("border"),
+					ZIndex = 3,
+					Parent = subButton,
+				}, { Create.corner("full"), New("UIFlexItem", { FlexMode = Enum.UIFlexMode.None }) })
+				if sub.Icon then
+					Icons.new(sub.Icon, 14, current and C("accent") or C("textSubtle")).Frame.Parent = subButton
+				end
+				local subLabel = New("TextLabel", {
+					Size = UDim2.fromScale(0, 1),
+					TextColor3 = current and C("text") or C("textMuted"),
+					Weight = current and "SemiBold" or "Regular",
+					TextTruncate = Enum.TextTruncate.AtEnd,
+					LayoutOrder = 2,
+					Parent = subButton,
+				}, { Create.flex() })
+				Theme.bind(subLabel, "TextSize", Theme.f(function(_, s)
+					return s.font - 1
+				end))
+				loc:Bind(subLabel, "Text", sub.TitleSpec)
+				maid:Add(subButton.Activated:Connect(function()
+					tab:SelectSubTab(sub)
+				end))
+			end
+		end
 	end
 
-	for index, tab in ipairs(self:_navTabs()) do
-		item(tab, list, index)
+	-- tabs, grouped by Category (a small caption before each new category)
+	local lastCategory = nil
+	for _, tab in ipairs(self:_navTabs()) do
+		local category = tab.CategorySpec
+		if category and category ~= lastCategory then
+			local caption = New("TextLabel", {
+				Name = "Category",
+				Size = UDim2.new(1, 0, 0, 26),
+				TextColor3 = C("textSubtle"),
+				TextSize = 11,
+				Weight = "SemiBold",
+				TextYAlignment = Enum.TextYAlignment.Bottom,
+				LayoutOrder = nextOrder(),
+				Parent = list,
+			}, { Create.pad(0, 0, 4, 10) })
+			loc:Bind(caption, "Text", function()
+				return Util.upper(loc:Get(category))
+			end)
+		end
+		lastCategory = category
+		item(tab, list)
 	end
 	if self.SettingsTab then
-		item(self.SettingsTab.Tab, holder, 2)
+		item(self.SettingsTab.Tab, holder)
+		self._navItems[self.SettingsTab.Tab].button.LayoutOrder = 2
 	end
 	if self.Branding then
 		New("Frame", {
@@ -1218,7 +1361,11 @@ function Window:SelectTab(tab)
 	if Theme.Mode ~= "pc" and previous ~= tab then
 		self:_buildHeader()
 	end
-	self:_updateNavSelection()
+	if Theme.Mode == "pc" and previous ~= tab and ((previous and #previous.SubTabs > 0) or #tab.SubTabs > 0) then
+		self:_rebuildNav() -- the sub tab tree follows the open tab
+	else
+		self:_updateNavSelection()
+	end
 	self.TabChanged:Fire(tab)
 end
 
@@ -1579,6 +1726,16 @@ end
 
 function Window:SetTheme(nameOrColors)
 	Theme.apply(nameOrColors)
+	self.Config:SaveInterface()
+end
+
+function Window:SetEffect(effect)
+	Theme.setEffect(effect)
+	self.Config:SaveInterface()
+end
+
+function Window:SetGlass(enabled)
+	Theme.setGlass(enabled)
 	self.Config:SaveInterface()
 end
 

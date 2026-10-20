@@ -12,6 +12,8 @@ local Robly = {
 	Version = "__VERSION__",
 	Windows = {},
 	Themes = Theme.Presets,
+	Effects = Theme.Effects,
+	ThemeOrder = Theme.PresetOrder,
 	Icons = Icons.Data,
 	L = Localization.L,
 }
@@ -32,8 +34,8 @@ function Robly:_windowClosed(window)
 	end
 end
 
--- Switch theme for every window: "RobScript", "Light", "Graphite", "Midnight",
--- a custom registered name, or a colour table.
+-- Switch theme for every window: a preset name (see Robly.Themes / the 18
+-- built-in presets), a custom registered name, or a colour table.
 function Robly:SetTheme(theme)
 	Theme.apply(theme)
 end
@@ -50,7 +52,11 @@ function Robly:AddTheme(name, colors)
 		end
 	end
 	for key, value in pairs(colors) do
-		spec[key] = typeof(value) == "Color3" and value or Util.hex(value)
+		if key == "Effect" or key == "effect" then
+			Theme.PresetEffects[name] = value
+		else
+			spec[key] = typeof(value) == "Color3" and value or Util.hex(value)
+		end
 	end
 	Theme.PresetSpecs[name] = spec
 	local out = Theme.derive(spec)
@@ -59,6 +65,17 @@ function Robly:AddTheme(name, colors)
 		table.insert(Theme.PresetOrder, name)
 	end
 	return out
+end
+
+-- Background effect inside every window: "None", "Aurora", "Stars", "Snow",
+-- "Grid", "Gradient".
+function Robly:SetEffect(effect)
+	Theme.setEffect(effect)
+end
+
+-- Glass: panels become translucent so the background effect shows through.
+function Robly:SetGlass(enabled)
+	Theme.setGlass(enabled)
 end
 
 function Robly:SetAnimations(mode)

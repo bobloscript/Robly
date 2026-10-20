@@ -7,6 +7,7 @@ local Create = import("core/Create")
 local Motion = import("core/Motion")
 local Icons = import("core/Icons")
 local Maid = import("util/Maid")
+local Util = import("util/Util")
 local Registry = import("controls/Registry")
 
 local New = Create.New
@@ -41,6 +42,7 @@ function Section.new(body, opts)
 		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = C("surface"),
+		BackgroundTransparency = Theme.glass(),
 		LayoutOrder = body:_nextOrder(),
 		Parent = parent,
 	}, {
@@ -52,45 +54,86 @@ function Section.new(body, opts)
 	if self.TitleSpec then
 		local header = New("TextButton", {
 			Name = "Header",
-			Size = Theme.sz(1, 0, 0, "groupHeader"),
+			Size = UDim2.fromScale(1, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
 			LayoutOrder = 1,
 			Parent = self.Frame,
-		}, { Create.pad(0, "padX"), Create.list("Horizontal", 8, { valign = "Center" }) })
+		}, {
+			Create.pad(6, "padX"),
+			Create.minSize(0, "groupHeader"),
+			Create.list("Horizontal", 9, { valign = "Center" }),
+		})
 		if opts.Icon then
-			local icon = Icons.new(opts.Icon, "iconSmall", C("accent"))
-			icon.Frame.LayoutOrder = 0
-			icon.Frame.Parent = header
+			-- icon in an accent-tinted tile
+			local tile = New("Frame", {
+				Name = "IconTile",
+				Size = UDim2.fromOffset(24, 24),
+				BackgroundColor3 = C("accent"),
+				BackgroundTransparency = 0.85,
+				LayoutOrder = 0,
+				Parent = header,
+			}, { Create.corner(7) })
+			Icons.new(opts.Icon, 14, C("accent"), {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+			}).Frame.Parent = tile
 		end
+		local texts = New("Frame", {
+			Name = "Texts",
+			Size = UDim2.fromScale(0, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			LayoutOrder = 1,
+			Parent = header,
+		}, { Create.list("Vertical", 1), Create.flex() })
 		local label = New("TextLabel", {
-			Size = UDim2.fromScale(0, 1),
-			Weight = "SemiBold",
+			Size = Theme.f(function(_, s)
+				return UDim2.new(1, 0, 0, s.fontSection + 4)
+			end),
+			Weight = "Bold",
 			TextSize = S("fontSection"),
 			TextTruncate = Enum.TextTruncate.AtEnd,
 			LayoutOrder = 1,
-			Parent = header,
-		}, { Create.flex() })
+			Parent = texts,
+		})
 		self.TitleLabel = label
 		window.Loc:Bind(label, "Text", self.TitleSpec)
+		if opts.Description then
+			local desc = Create.text("", { size = "fontDesc", color = "textSubtle", wrap = true, order = 2, name = "Description" })
+			desc.Parent = texts
+			window.Loc:Bind(desc, "Text", opts.Description)
+			self.DescLabel = desc
+		end
 		self.Hint = New("TextLabel", {
 			AutomaticSize = Enum.AutomaticSize.X,
-			Size = UDim2.fromScale(0, 1),
+			Size = UDim2.fromOffset(0, 18),
+			BackgroundColor3 = C("raised"),
 			TextColor3 = C("textSubtle"),
 			TextSize = S("fontDesc"),
 			Visible = false,
 			LayoutOrder = 2,
 			Parent = header,
-		})
+		}, { Create.corner("full"), Create.pad(0, 7) })
 		self:_refreshHint()
 		self.Chevron = Icons.new("chevronDown", 14, C("textSubtle"))
 		self.Chevron.Frame.LayoutOrder = 3
 		self.Chevron.Frame.Parent = header
-		self.Header = header
+		self.HeaderButton = header
+		-- accent line under the header, fading out to the right
 		self.HeaderLine = New("Frame", {
 			Name = "HeaderLine",
 			Size = UDim2.new(1, 0, 0, 1),
-			BackgroundColor3 = C("divider"),
+			BackgroundColor3 = Color3.new(1, 1, 1),
 			LayoutOrder = 2,
 			Parent = self.Frame,
+		}, {
+			New("UIGradient", {
+				Color = Theme.gradient(),
+				Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 0.35),
+					NumberSequenceKeypoint.new(0.6, 0.85),
+					NumberSequenceKeypoint.new(1, 1),
+				}),
+			}),
 		})
 		if opts.Collapsible ~= false then
 			self.Maid:Add(header.Activated:Connect(function()
@@ -213,6 +256,40 @@ function Section:SetTitle(spec)
 	end
 	return self
 end
+
+-- Sub heading inside a groupbox: small caps caption that splits rows into groups.
+function Section:Header(spec)
+	local holder = New("Frame", {
+		Name = "SubHeader",
+		Size = UDim2.fromScale(1, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		LayoutOrder = self:_nextOrder(),
+		Parent = self.Card,
+	}, { Create.pad(8, "padX", 2, "padX"), Create.list("Horizontal", 8, { valign = "Center" }) })
+	local label = New("TextLabel", {
+		AutomaticSize = Enum.AutomaticSize.X,
+		Size = UDim2.fromOffset(0, 14),
+		TextColor3 = C("accent"),
+		TextSize = 11,
+		Weight = "Bold",
+		LayoutOrder = 1,
+		Parent = holder,
+	})
+	self.Window.Loc:Bind(label, "Text", function()
+		return Util.upper(self.Window.Loc:Get(spec))
+	end)
+	New("Frame", {
+		Size = UDim2.new(0, 0, 0, 1),
+		BackgroundColor3 = C("divider"),
+		LayoutOrder = 2,
+		Parent = holder,
+	}, { Create.flex() })
+	self.Maid:Add(holder)
+	return holder
+end
+Section.AddHeader = Section.Header
+Section.CreateHeader = Section.Header
+Section.SubHeader = Section.Header
 
 function Section:SetVisible(visible)
 	self.Frame.Visible = visible ~= false

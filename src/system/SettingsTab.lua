@@ -31,6 +31,7 @@ end
 -- Changing Background/Text/Accent re-derives every colour that wasn't set by hand.
 local LABELS = {
 	accent = L("accent"),
+	accent2 = L("accent2"),
 	bg = L("background"),
 	nav = L("sidebar"),
 	surface = L("cards"),
@@ -80,7 +81,14 @@ local function miniPreview(colors)
 		Parent = body,
 	}, { Create.corner(5), Create.pad(0, 5), Create.list("Horizontal", 4, { valign = "Center" }) })
 	New("Frame", { Size = UDim2.new(0, 0, 0, 4), BackgroundColor3 = colors.textSubtle, Parent = row }, { Create.corner(2), Create.flex() })
-	New("Frame", { Size = UDim2.fromOffset(16, 10), BackgroundColor3 = colors.accent, LayoutOrder = 2, Parent = row }, { Create.corner("full") })
+	New("Frame", { Size = UDim2.fromOffset(16, 10), BackgroundColor3 = Color3.new(1, 1, 1), LayoutOrder = 2, Parent = row }, {
+		Create.corner("full"),
+		New("UIGradient", { Color = ColorSequence.new(colors.accent, colors.accent2 or colors.accent) }),
+	})
+	New("Frame", { Size = UDim2.new(0.85, 0, 0, 3), BackgroundColor3 = Color3.new(1, 1, 1), LayoutOrder = 3, Parent = body }, {
+		Create.corner(2),
+		New("UIGradient", { Color = ColorSequence.new(colors.accent, colors.accent2 or colors.accent) }),
+	})
 	return card
 end
 
@@ -89,28 +97,45 @@ function SettingsTab:_buildTheme()
 	local section = self.Tab:Section({ Title = L("theme") })
 	local grid = Control.new(section, { Title = L("theme") }, { class = ThemeGrid, kind = "ThemeGrid", layout = "custom", searchable = false })
 	grid.Inner:FindFirstChildOfClass("UISizeConstraint"):Destroy()
+	-- every preset as a card in a responsive grid
 	local holder = New("Frame", {
+		Name = "Themes",
 		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Parent = grid.Inner,
-	}, { Create.list("Horizontal", 10) })
+	})
+	local layout = New("UIGridLayout", {
+		CellPadding = UDim2.fromOffset(8, 8),
+		CellSize = UDim2.fromOffset(110, 92),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Parent = holder,
+	})
+	local function fit()
+		local width = holder.AbsoluteSize.X
+		if width <= 0 then
+			return
+		end
+		local columns = math.max(2, math.floor((width + 8) / (104 + 8)))
+		layout.CellSize = UDim2.new(1 / columns, -8 + 8 / columns, 0, 92)
+	end
+	grid.Maid:Add(holder:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit))
+	fit()
 	local cards = {}
 	for index, name in ipairs(Theme.PresetOrder) do
 		local colors = Theme.Presets[name]
 		local button = New("TextButton", {
-			Size = UDim2.fromScale(0, 0),
-			AutomaticSize = Enum.AutomaticSize.Y,
+			Name = name,
 			LayoutOrder = index,
 			Parent = holder,
-		}, { Create.flex(), Create.list("Vertical", 6) })
+		}, { Create.list("Vertical", 5) })
 		local preview = miniPreview(colors)
 		preview.Parent = button
 		local stroke = Create.stroke("accent", 2)
 		stroke.Parent = preview
 		local label = New("TextLabel", {
 			Size = UDim2.new(1, 0, 0, 16),
-			Text = name == "RobScript" and "RobScript" or name,
-			TextSize = 12.5,
+			Text = name,
+			TextSize = 12,
 			Weight = "SemiBold",
 			LayoutOrder = 2,
 			Parent = button,
@@ -126,17 +151,60 @@ function SettingsTab:_buildTheme()
 		for name, card in pairs(cards) do
 			local on = Theme.Name == name
 			card.stroke.Transparency = on and 0 or 1
+			Theme.set(card.label, "TextColor3", on and C("accent") or C("text"))
 		end
 	end
 	refresh()
 	grid.Maid:Add(Theme.Changed:Connect(refresh))
 	local function relabel()
-		cards.Light.label.Text = window.Loc:Get({ en = "Light", ru = "Светлая", es = "Clara", pt = "Clara", de = "Hell", fr = "Clair" })
-		cards.Graphite.label.Text = window.Loc:Get({ en = "Graphite", ru = "Графит", es = "Grafito", pt = "Grafite", de = "Graphit", fr = "Graphite" })
-		cards.Midnight.label.Text = window.Loc:Get({ en = "Midnight", ru = "Полночь", es = "Medianoche", pt = "Meia-noite", de = "Mitternacht", fr = "Minuit" })
+		for name, card in pairs(cards) do
+			card.label.Text = window.Loc:Get(Theme.PresetTitles and Theme.PresetTitles[name] or name)
+		end
 	end
 	relabel()
 	grid.Maid:Add(window.Loc.Changed:Connect(relabel))
+
+	-- background effect + glass
+	local effectOptions = {}
+	for _, effect in ipairs(Theme.Effects) do
+		table.insert(effectOptions, { Value = effect, Text = L("effect_" .. string.lower(effect)) })
+	end
+	local effect = section:Dropdown({
+		Title = L("effect"),
+		Description = L("effect_desc"),
+		Icon = "sparkles",
+		Flag = "robly:effect",
+		Options = effectOptions,
+		Default = Theme.Effect,
+		Save = false,
+		Callback = function(value)
+			if value and value ~= Theme.Effect then
+				window:SetEffect(value)
+			end
+		end,
+	})
+	local glass = section:Toggle({
+		Title = L("glass"),
+		Description = L("glass_desc"),
+		Flag = "robly:glass",
+		Default = Theme.Glass,
+		Save = false,
+		Highlight = false,
+		EnabledWhen = function(get)
+			return get("robly:effect") ~= "None"
+		end,
+		Callback = function(value)
+			if value ~= Theme.Glass then
+				window:SetGlass(value)
+			end
+		end,
+	})
+	grid.Maid:Add(Theme.Changed:Connect(function(what)
+		if what == "effect" or what == "colors" then
+			window.Store:Set(effect.Flag, Theme.Effect, "silent")
+			window.Store:Set(glass.Flag, Theme.Glass, "silent")
+		end
+	end))
 
 	-- Live editor
 	local pickers = {}

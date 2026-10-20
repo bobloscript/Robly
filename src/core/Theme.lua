@@ -24,14 +24,14 @@ Theme.Changed = Signal.new()
 -- be overridden on its own (theme editor, "All colours"); overrides survive
 -- base changes until the theme is reset.
 
-Theme.BaseKeys = { "accent", "bg", "text", "success", "warning", "danger" }
+Theme.BaseKeys = { "accent", "accent2", "bg", "text", "success", "warning", "danger" }
 
 -- Editable in the theme editor's main list (base + the most visible derived ones)
-Theme.MainKeys = { "accent", "bg", "nav", "surface", "border", "text" }
+Theme.MainKeys = { "accent", "accent2", "bg", "nav", "surface", "border", "text" }
 
 -- Every token, in export / "All colours" order.
 Theme.TokenOrder = {
-	"accent", "bg", "nav", "surface", "border", "text",
+	"accent", "accent2", "bg", "nav", "surface", "border", "text",
 	"raised", "overlay", "sunken", "selected", "segment", "borderStrong", "divider",
 	"textMuted", "textSubtle", "accentInk", "accentPressed", "track", "toggleOff",
 	"knobOn", "knobOff", "checkBorder", "success", "warning", "danger", "dangerInk",
@@ -58,8 +58,12 @@ function Theme.derive(spec)
 	local dark = Util.luminance(bg) < 0.4
 	local black = Color3.new(0, 0, 0)
 	local white = Color3.new(1, 1, 1)
+	local h, sat, val = accent:ToHSV()
 	local c = {
 		accent = accent,
+		-- second accent for gradients and background effects (default: a
+		-- neighbouring hue of the accent)
+		accent2 = get("accent2", Color3.fromHSV((h + 0.09) % 1, math.min(1, sat * 0.95), math.min(1, val * 1.02))),
 		bg = bg,
 		text = text,
 		success = get("success", Color3.fromRGB(52, 211, 153)),
@@ -100,18 +104,76 @@ function Theme.derive(spec)
 end
 
 -- Presets are specs; Theme.Presets holds their derived colours for previews.
-Theme.PresetSpecs = {
-	RobScript = { accent = "FF3B7F", bg = "121216", text = "F2F2F5", accentInk = "1A0610" },
-	Light = { accent = "E0245E", bg = "FFFFFF", text = "16161A", success = "0E9F6E", warning = "B7791F", danger = "E5484D" },
-	Graphite = { accent = "E6E6E8", bg = "1B1B1D", text = "EDEDEE" },
-	Midnight = { accent = "4C8DFF", bg = "0E1320", text = "E8EDF7" },
+-- Each preset also has a default background effect.
+local PRESETS = {
+	{ "RobScript", { accent = "FF3B7F", accent2 = "9B5CFF", bg = "121216", text = "F2F2F5", accentInk = "1A0610" }, "Aurora" },
+	{ "Light", { accent = "E0245E", accent2 = "FF7A59", bg = "FFFFFF", text = "16161A", success = "0E9F6E", warning = "B7791F", danger = "E5484D" }, "None" },
+	{ "Graphite", { accent = "E6E6E8", accent2 = "9A9AA2", bg = "1B1B1D", text = "EDEDEE" }, "Grid" },
+	{ "Midnight", { accent = "4C8DFF", accent2 = "8B5CF6", bg = "0E1320", text = "E8EDF7" }, "Stars" },
+	{ "Sakura", { accent = "FF8FB8", accent2 = "FFC2D6", bg = "1A1216", text = "F7EEF2" }, "Snow" },
+	{ "Ocean", { accent = "22D3EE", accent2 = "3B82F6", bg = "0A1620", text = "E6F4F8" }, "Aurora" },
+	{ "Matcha", { accent = "7BD389", accent2 = "C3E88D", bg = "111712", text = "ECF3EC" }, "Aurora" },
+	{ "Sunset", { accent = "FF7A45", accent2 = "FF3D7F", bg = "1A1012", text = "FBEDE7" }, "Gradient" },
+	{ "Amber", { accent = "FFB020", accent2 = "FF7A00", bg = "16130C", text = "F7F1E3" }, "Gradient" },
+	{ "Crimson", { accent = "FF4D4D", accent2 = "B3123A", bg = "140C0D", text = "F5ECEC" }, "Grid" },
+	{ "Cyber", { accent = "00F0FF", accent2 = "FF00C8", bg = "0A0A12", text = "E8F7FF" }, "Grid" },
+	{ "Synthwave", { accent = "FF2E97", accent2 = "7B61FF", bg = "140A24", text = "F5E9FF" }, "Stars" },
+	{ "Dracula", { accent = "BD93F9", accent2 = "FF79C6", bg = "1E1F29", text = "F8F8F2" }, "Stars" },
+	{ "Nord", { accent = "88C0D0", accent2 = "81A1C1", bg = "1F2430", text = "ECEFF4" }, "Snow" },
+	{ "Frost", { accent = "7DD3FC", accent2 = "C4B5FD", bg = "0D1117", text = "E6EDF3" }, "Snow" },
+	{ "Lavender", { accent = "B794F6", accent2 = "F0ABFC", bg = "15121D", text = "F3EEFB" }, "Aurora" },
+	{ "Coffee", { accent = "D4A373", accent2 = "A47148", bg = "16110D", text = "F1E9E1" }, "None" },
+	{ "Mono", { accent = "FFFFFF", accent2 = "8A8A8A", bg = "0E0E0E", text = "F2F2F2" }, "None" },
 }
+Theme.PresetSpecs = {}
+Theme.PresetEffects = {}
+Theme.PresetOrder = {}
+for _, entry in ipairs(PRESETS) do
+	Theme.PresetSpecs[entry[1]] = entry[2]
+	Theme.PresetEffects[entry[1]] = entry[3]
+	table.insert(Theme.PresetOrder, entry[1])
+end
 Theme.Presets = {}
 for name, spec in pairs(Theme.PresetSpecs) do
 	Theme.Presets[name] = Theme.derive(spec)
 end
 
-Theme.PresetOrder = { "RobScript", "Light", "Graphite", "Midnight" }
+-- Background effect inside the window and "glass" (translucent panels).
+Theme.Effects = { "None", "Aurora", "Stars", "Snow", "Grid", "Gradient" }
+Theme.Effect = "Aurora"
+Theme.Glass = true
+
+function Theme.setEffect(effect)
+	if not table.find(Theme.Effects, effect) then
+		effect = "None"
+	end
+	Theme.Effect = effect
+	Theme.refresh()
+	Theme.Changed:Fire("effect")
+end
+
+function Theme.setGlass(enabled)
+	Theme.Glass = enabled == true
+	Theme.refresh()
+	Theme.Changed:Fire("effect")
+end
+
+-- Transparency for panels that let the background effect show through.
+function Theme.glass(amount)
+	return Theme.f(function()
+		if Theme.Glass and Theme.Effect ~= "None" then
+			return amount or 0.22
+		end
+		return 0
+	end)
+end
+
+-- Accent → accent2 gradient (UIGradient.Color); the element itself must be white.
+function Theme.gradient()
+	return Theme.f(function(c)
+		return ColorSequence.new(c.accent, c.accent2)
+	end)
+end
 
 Theme.Name = "RobScript"
 Theme.Spec = table.clone(Theme.PresetSpecs.RobScript)
@@ -376,6 +438,7 @@ function Theme.apply(nameOrColors)
 		end
 		Theme.Name = nameOrColors
 		Theme.Spec = toSpec(found)
+		Theme.Effect = Theme.PresetEffects[nameOrColors] or Theme.Effect
 	elseif type(nameOrColors) == "table" then
 		local spec = toSpec(Theme.PresetSpecs.RobScript)
 		spec.accentInk = nil
@@ -496,7 +559,7 @@ function Theme.import(text)
 end
 
 function Theme.serialize()
-	local out = { name = Theme.Name }
+	local out = { name = Theme.Name, effect = Theme.Effect, glass = Theme.Glass }
 	if Theme.Name == "Custom" then
 		out.spec = {}
 		for key, color in pairs(Theme.Spec) do
@@ -510,8 +573,15 @@ function Theme.deserialize(data)
 	if type(data) ~= "table" then
 		return
 	end
+	if type(data.effect) == "string" then
+		Theme.Effect = table.find(Theme.Effects, data.effect) and data.effect or Theme.Effect
+	end
+	if data.glass ~= nil then
+		Theme.Glass = data.glass == true
+	end
 	local raw = data.spec or data.colors -- "colors" = 1.0 full list
 	if data.name == "Custom" and type(raw) == "table" then
+		local effect = Theme.Effect
 		local spec = toSpec(raw)
 		if data.colors and not data.spec then
 			-- 1.0 saved every token; keep only the base so everything follows
@@ -525,7 +595,11 @@ function Theme.deserialize(data)
 		Theme.Spec = spec
 		commit()
 	elseif type(data.name) == "string" and Theme.PresetSpecs[data.name] then
+		local effect = Theme.Effect
 		Theme.apply(data.name)
+		if type(data.effect) == "string" then
+			Theme.setEffect(effect)
+		end
 	end
 end
 

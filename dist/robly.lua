@@ -1,5 +1,5 @@
 --[[
-	Robly v1.3.0 — UI library for Roblox scripts by RobScript
+	Robly v1.4.0 — UI library for Roblox scripts by RobScript
 	https://robscript.com · https://github.com/bobloscript/Robly
 
 	Built file. Edit the modules in src/ and run `python3 tools/build.py`.
@@ -179,16 +179,59 @@ __modules["controls/Base"] = function()
 				Parent = self.Row,
 			})
 		end
+		-- Nesting: opts.Parent = flag or control → indented under it with a guide
+		-- line, and (unless VisibleWhen is given) only shown while the parent is on.
+		local parentFlag = opts.Parent
+		if type(parentFlag) == "table" then
+			parentFlag = parentFlag.Flag
+		end
+		self.ParentFlag = parentFlag
+		local indent = parentFlag and 18 or 0
 		self.Inner = New("Frame", {
 			Name = "Inner",
 			Size = UDim2.fromScale(1, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			ZIndex = 2,
 			Parent = self.Row,
-		}, {
-			Create.pad("padY", "padX"),
-			Create.minSize(0, self.DescSpec and "rowDesc" or "row"),
-		})
+		}, { Create.minSize(0, self.DescSpec and "rowDesc" or "row") })
+		local padding = New("UIPadding", { Parent = self.Inner })
+		Theme.bind(padding, "PaddingTop", Theme.f(function(_, s)
+			return UDim.new(0, s.padY)
+		end))
+		Theme.bind(padding, "PaddingBottom", Theme.f(function(_, s)
+			return UDim.new(0, s.padY)
+		end))
+		Theme.bind(padding, "PaddingRight", Theme.f(function(_, s)
+			return UDim.new(0, s.padX)
+		end))
+		Theme.bind(padding, "PaddingLeft", Theme.f(function(_, s)
+			return UDim.new(0, s.padX + indent)
+		end))
+		if parentFlag then
+			New("Frame", {
+				Name = "Guide",
+				Position = Theme.f(function(_, s)
+					return UDim2.new(0, s.padX + 5, 0, 0)
+				end),
+				Size = UDim2.new(0, 1, 1, 0),
+				BackgroundColor3 = C("borderStrong"),
+				Parent = self.Row,
+			})
+			if opts.VisibleWhen == nil then
+				opts.VisibleWhen = { Flag = parentFlag }
+			end
+		end
+		-- accent bar on the left edge while the control is "on" (toggles, checkboxes)
+		self.ActiveBar = New("Frame", {
+			Name = "ActiveBar",
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 0, 0.5, 0),
+			Size = UDim2.new(0, 2, 0.6, 0),
+			BackgroundColor3 = Color3.new(1, 1, 1),
+			BackgroundTransparency = 1,
+			ZIndex = 3,
+			Parent = self.Row,
+		}, { Create.corner("full"), New("UIGradient", { Color = Theme.gradient(), Rotation = 90 }) })
 
 		local layout = spec.layout or "row"
 		self.Layout = layout
@@ -301,6 +344,22 @@ __modules["controls/Base"] = function()
 	end
 
 	function Control:_render() end
+
+	-- Visual "on" state shared by toggles and checkboxes: accent bar + bolder title.
+	function Control:_setActive(on, animate)
+		if self.Options.Highlight == false then
+			on = false
+		end
+		if animate then
+			Motion.tween(self.ActiveBar, { BackgroundTransparency = on and 0 or 1 }, "fade")
+		else
+			self.ActiveBar.BackgroundTransparency = on and 0 or 1
+		end
+		if self.TitleLabel then
+			self.TitleLabel.FontFace = Theme.font(on and "SemiBold" or "Medium")
+			Theme.set(self.TitleLabel, "TextColor3", on and C("text") or C("textMuted"))
+		end
+	end
 
 	function Control:_ensureDescription()
 		if self.DescLabel or not self.Texts then
@@ -513,6 +572,7 @@ __modules["controls/Basic"] = function()
 			LayoutOrder = 5,
 			Parent = self.Right,
 		}, { Create.corner("full") })
+		self.TrackGradient = New("UIGradient", { Color = Theme.gradient(), Enabled = false, Parent = track })
 		self.Knob = New("Frame", {
 			Name = "Knob",
 			AnchorPoint = Vector2.new(0, 0.5),
@@ -537,7 +597,12 @@ __modules["controls/Basic"] = function()
 	end
 
 	function Toggle:_render(on, animate)
-		local trackColor = on and C("accent") or C("toggleOff")
+		-- on: white base × accent→accent2 gradient
+		self.TrackGradient.Enabled = on == true
+		self:_setActive(on == true, animate)
+		local trackColor = on and Theme.f(function()
+			return Color3.new(1, 1, 1)
+		end) or C("toggleOff")
 		local knobColor = on and C("knobOn") or C("knobOff")
 		local anchor = on and Vector2.new(1, 0.5) or Vector2.new(0, 0.5)
 		local position = on and UDim2.new(1, -2, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
@@ -584,7 +649,8 @@ __modules["controls/Basic"] = function()
 			BackgroundColor3 = C("accent"),
 			BackgroundTransparency = 1,
 			Parent = self.Left,
-		}, { Create.corner(6) })
+		}, { Create.corner(6), New("UIGradient", { Color = Theme.gradient(), Rotation = 45 }) })
+		box.BackgroundColor3 = Color3.new(1, 1, 1)
 		self.Stroke = Create.stroke("checkBorder", 1.5)
 		self.Stroke.Parent = box
 		self.Check = Icons.new("check", Theme.Sizes.touch and 18 or 14, C("accentInk"), {
@@ -614,6 +680,7 @@ __modules["controls/Basic"] = function()
 				instance[k] = v
 			end
 		end
+		self:_setActive(on == true, animate)
 		tween(self.Box, { BackgroundTransparency = on and 0 or 1 }, "fade")
 		tween(self.Stroke, { Transparency = on and 1 or 0 }, "fade")
 		self.Check.Frame.Visible = on
@@ -632,7 +699,7 @@ __modules["controls/Basic"] = function()
 	-- Button ------------------------------------------------------------------------------
 
 	local VARIANTS = {
-		Primary = { bg = "accent", fg = "accentInk", pressed = "accentPressed", weight = "SemiBold" },
+		Primary = { bg = "accent", fg = "accentInk", weight = "SemiBold", gradient = true },
 		Secondary = { bg = "raised", fg = "text", pressed = "segment", weight = "Medium" },
 		Text = { bg = nil, fg = "accent", weight = "SemiBold" },
 		Danger = { bg = "danger", fg = "dangerInk", weight = "SemiBold" },
@@ -653,6 +720,10 @@ __modules["controls/Basic"] = function()
 			Create.pad(0, 12),
 			Create.list("Horizontal", 8, { align = "Center", valign = "Center" }),
 		})
+		if variant.gradient then
+			button.BackgroundColor3 = Color3.new(1, 1, 1)
+			New("UIGradient", { Color = Theme.gradient(), Parent = button })
+		end
 		if spec.Icon then
 			local icon = Icons.new(spec.Icon, "iconSmall", C(variant.fg))
 			icon.Frame.LayoutOrder = 1
@@ -900,9 +971,9 @@ __modules["controls/Basic"] = function()
 		}, { Create.corner("full") })
 		self.Fill = New("Frame", {
 			Size = UDim2.fromScale(0, 1),
-			BackgroundColor3 = C("accent"),
+			BackgroundColor3 = Color3.new(1, 1, 1),
 			Parent = track,
-		}, { Create.corner("full") })
+		}, { Create.corner("full"), New("UIGradient", { Color = Theme.gradient() }) })
 		self.Value = 0
 		self:SetValue(opts.Value or opts.Default or 0, false)
 		return self
@@ -1942,11 +2013,15 @@ __modules["controls/Value"] = function()
 		self.ValueLabel = New("TextLabel", {
 			AutomaticSize = Enum.AutomaticSize.X,
 			Size = UDim2.fromOffset(0, 20),
-			TextColor3 = C("textMuted"),
+			BackgroundColor3 = C("accent"),
+			BackgroundTransparency = 0.86,
+			TextColor3 = C("accent"),
+			Weight = "SemiBold",
 			TextSize = S("fontDesc"),
 			LayoutOrder = 5,
 			Parent = self.Right,
-		})
+		}, { Create.corner(6), Create.pad(0, 7) })
+		self.ValueLabel.TextXAlignment = Enum.TextXAlignment.Center
 		Theme.bind(self.ValueLabel, "TextSize", Theme.f(function(_, s)
 			return s.font - 1
 		end))
@@ -1969,9 +2044,9 @@ __modules["controls/Value"] = function()
 			AnchorPoint = Vector2.new(0, 0.5),
 			Position = UDim2.fromScale(0, 0.5),
 			Size = UDim2.fromScale(0, 1),
-			BackgroundColor3 = C("accent"),
+			BackgroundColor3 = Color3.new(1, 1, 1),
 			Parent = track,
-		}, { Create.corner("full") })
+		}, { Create.corner("full"), New("UIGradient", { Color = Theme.gradient() }) })
 
 		local function knob()
 			local k = New("Frame", {
@@ -2666,6 +2741,65 @@ __modules["core/Create"] = function()
 
 	function Create.maxSize(x, y)
 		return Create.New("UISizeConstraint", { MaxSize = Theme.v2(x or math.huge, y or math.huge) })
+	end
+
+	-- A filled panel with only some corners rounded, built from non-overlapping
+	-- pieces (3×3 grid; rounded corners are clipped quarter circles). Unlike a
+	-- rounded frame + square "patches", it stays correct when translucent.
+	--   Create.panel(parent, { color = token, transparency = token|number,
+	--                          radius = n, round = { tl, tr, bl, br } })
+	function Create.panel(parent, opts)
+		local r = opts.radius or 12
+		local round = opts.round or {}
+		local holder = Create.New("Frame", {
+			Name = "Panel",
+			Size = UDim2.fromScale(1, 1),
+			ZIndex = opts.zindex or 0,
+			Parent = parent,
+		})
+		local function piece(position, size)
+			return Create.New("Frame", {
+				Position = position,
+				Size = size,
+				BackgroundColor3 = opts.color,
+				BackgroundTransparency = opts.transparency or 0,
+				ZIndex = opts.zindex or 0,
+				Parent = holder,
+			})
+		end
+		-- centre column and the left/right middle strips
+		piece(UDim2.new(0, r, 0, 0), UDim2.new(1, -2 * r, 1, 0))
+		piece(UDim2.new(0, 0, 0, r), UDim2.new(0, r, 1, -2 * r))
+		piece(UDim2.new(1, -r, 0, r), UDim2.new(0, r, 1, -2 * r))
+		local corners = {
+			tl = { UDim2.new(0, 0, 0, 0), UDim2.fromOffset(0, 0) },
+			tr = { UDim2.new(1, -r, 0, 0), UDim2.fromOffset(-r, 0) },
+			bl = { UDim2.new(0, 0, 1, -r), UDim2.fromOffset(0, -r) },
+			br = { UDim2.new(1, -r, 1, -r), UDim2.fromOffset(-r, -r) },
+		}
+		for name, spec in pairs(corners) do
+			if round[name] then
+				local clip = Create.New("Frame", {
+					Position = spec[1],
+					Size = UDim2.fromOffset(r, r),
+					ClipsDescendants = true,
+					ZIndex = opts.zindex or 0,
+					Parent = holder,
+				})
+				local circle = Create.New("Frame", {
+					Position = spec[2],
+					Size = UDim2.fromOffset(2 * r, 2 * r),
+					BackgroundColor3 = opts.color,
+					BackgroundTransparency = opts.transparency or 0,
+					ZIndex = opts.zindex or 0,
+					Parent = clip,
+				})
+				Create.corner(r).Parent = circle
+			else
+				piece(spec[1], UDim2.fromOffset(r, r))
+			end
+		end
+		return holder
 	end
 
 	-- Text helper: Create.text(text, { size = "fontDesc", color = "textMuted", weight = "Medium", wrap = true })
@@ -5748,6 +5882,7 @@ __modules["core/Strings"] = function()
 	S.en = {
 		density = "Density", density_compact = "Compact", density_comfortable = "Comfortable",
 		sidebar = "Sidebar", cards = "Cards", outline = "Outline", reset_overrides = "Reset hand-picked colours",
+		accent2 = "Second accent", effect = "Background effect", effect_desc = "Animated layer behind the window content", glass = "Glass", glass_desc = "Panels let the background effect show through", effect_none = "None", effect_aurora = "Aurora", effect_stars = "Stars", effect_snow = "Snow", effect_grid = "Grid", effect_gradient = "Gradient",
 		seconds = "{n}s", paused_short = "Paused", hud_hide_key = "Hide / show panel",
 		settings = "Settings", theme = "Theme", configs = "Configs", interface = "Interface", about = "About",
 		language = "Language", animations = "Animations", anim_full = "Full", anim_soft = "Soft", anim_off = "Off",
@@ -5790,6 +5925,7 @@ __modules["core/Strings"] = function()
 	S.ru = {
 		density = "Плотность", density_compact = "Компактно", density_comfortable = "Просторно",
 		sidebar = "Боковая панель", cards = "Карточки", outline = "Обводка", reset_overrides = "Сбросить ручные цвета",
+		accent2 = "Второй акцент", effect = "Фоновый эффект", effect_desc = "Анимированный слой за содержимым окна", glass = "Стекло", glass_desc = "Панели пропускают фоновый эффект", effect_none = "Нет", effect_aurora = "Сияние", effect_stars = "Звёзды", effect_snow = "Снег", effect_grid = "Сетка", effect_gradient = "Градиент",
 		seconds = "{n} с", paused_short = "Пауза", hud_hide_key = "Скрыть / показать панель",
 		settings = "Настройки", theme = "Тема", configs = "Конфиги", interface = "Интерфейс", about = "О библиотеке",
 		language = "Язык", animations = "Анимации", anim_full = "Полные", anim_soft = "Мягкие", anim_off = "Выкл",
@@ -5832,6 +5968,7 @@ __modules["core/Strings"] = function()
 	S.es = {
 		density = "Densidad", density_compact = "Compacta", density_comfortable = "Amplia",
 		sidebar = "Barra lateral", cards = "Tarjetas", outline = "Contorno", reset_overrides = "Restablecer colores manuales",
+		accent2 = "Segundo acento", effect = "Efecto de fondo", effect_desc = "Capa animada detrás del contenido", glass = "Cristal", glass_desc = "Los paneles dejan ver el efecto de fondo", effect_none = "Ninguno", effect_aurora = "Aurora", effect_stars = "Estrellas", effect_snow = "Nieve", effect_grid = "Cuadrícula", effect_gradient = "Degradado",
 		seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar panel",
 		settings = "Ajustes", theme = "Tema", configs = "Configuraciones", interface = "Interfaz", about = "Acerca de",
 		language = "Idioma", animations = "Animaciones", anim_full = "Completas", anim_soft = "Suaves", anim_off = "No",
@@ -5874,6 +6011,7 @@ __modules["core/Strings"] = function()
 	S.pt = {
 		density = "Densidade", density_compact = "Compacta", density_comfortable = "Espaçosa",
 		sidebar = "Barra lateral", cards = "Cartões", outline = "Contorno", reset_overrides = "Redefinir cores manuais",
+		accent2 = "Segundo destaque", effect = "Efeito de fundo", effect_desc = "Camada animada atrás do conteúdo", glass = "Vidro", glass_desc = "Os painéis deixam ver o efeito de fundo", effect_none = "Nenhum", effect_aurora = "Aurora", effect_stars = "Estrelas", effect_snow = "Neve", effect_grid = "Grade", effect_gradient = "Gradiente",
 		seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar painel",
 		settings = "Configurações", theme = "Tema", configs = "Perfis", interface = "Interface", about = "Sobre",
 		language = "Idioma", animations = "Animações", anim_full = "Completas", anim_soft = "Suaves", anim_off = "Desligadas",
@@ -5916,6 +6054,7 @@ __modules["core/Strings"] = function()
 	S.de = {
 		density = "Dichte", density_compact = "Kompakt", density_comfortable = "Großzügig",
 		sidebar = "Seitenleiste", cards = "Karten", outline = "Umriss", reset_overrides = "Eigene Farben zurücksetzen",
+		accent2 = "Zweiter Akzent", effect = "Hintergrundeffekt", effect_desc = "Animierte Ebene hinter dem Inhalt", glass = "Glas", glass_desc = "Flächen lassen den Hintergrundeffekt durchscheinen", effect_none = "Keiner", effect_aurora = "Polarlicht", effect_stars = "Sterne", effect_snow = "Schnee", effect_grid = "Raster", effect_gradient = "Verlauf",
 		seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Panel aus- / einblenden",
 		settings = "Einstellungen", theme = "Design", configs = "Profile", interface = "Oberfläche", about = "Über",
 		language = "Sprache", animations = "Animationen", anim_full = "Voll", anim_soft = "Sanft", anim_off = "Aus",
@@ -5958,6 +6097,7 @@ __modules["core/Strings"] = function()
 	S.fr = {
 		density = "Densité", density_compact = "Compacte", density_comfortable = "Aérée",
 		sidebar = "Barre latérale", cards = "Cartes", outline = "Contour", reset_overrides = "Réinitialiser les couleurs perso",
+		accent2 = "Second accent", effect = "Effet de fond", effect_desc = "Calque animé derrière le contenu", glass = "Verre", glass_desc = "Les panneaux laissent voir l'effet de fond", effect_none = "Aucun", effect_aurora = "Aurore", effect_stars = "Étoiles", effect_snow = "Neige", effect_grid = "Grille", effect_gradient = "Dégradé",
 		seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Masquer / afficher le panneau",
 		settings = "Paramètres", theme = "Thème", configs = "Profils", interface = "Interface", about = "À propos",
 		language = "Langue", animations = "Animations", anim_full = "Complètes", anim_soft = "Douces", anim_off = "Non",
@@ -6027,14 +6167,14 @@ __modules["core/Theme"] = function()
 	-- be overridden on its own (theme editor, "All colours"); overrides survive
 	-- base changes until the theme is reset.
 
-	Theme.BaseKeys = { "accent", "bg", "text", "success", "warning", "danger" }
+	Theme.BaseKeys = { "accent", "accent2", "bg", "text", "success", "warning", "danger" }
 
 	-- Editable in the theme editor's main list (base + the most visible derived ones)
-	Theme.MainKeys = { "accent", "bg", "nav", "surface", "border", "text" }
+	Theme.MainKeys = { "accent", "accent2", "bg", "nav", "surface", "border", "text" }
 
 	-- Every token, in export / "All colours" order.
 	Theme.TokenOrder = {
-		"accent", "bg", "nav", "surface", "border", "text",
+		"accent", "accent2", "bg", "nav", "surface", "border", "text",
 		"raised", "overlay", "sunken", "selected", "segment", "borderStrong", "divider",
 		"textMuted", "textSubtle", "accentInk", "accentPressed", "track", "toggleOff",
 		"knobOn", "knobOff", "checkBorder", "success", "warning", "danger", "dangerInk",
@@ -6061,8 +6201,12 @@ __modules["core/Theme"] = function()
 		local dark = Util.luminance(bg) < 0.4
 		local black = Color3.new(0, 0, 0)
 		local white = Color3.new(1, 1, 1)
+		local h, sat, val = accent:ToHSV()
 		local c = {
 			accent = accent,
+			-- second accent for gradients and background effects (default: a
+			-- neighbouring hue of the accent)
+			accent2 = get("accent2", Color3.fromHSV((h + 0.09) % 1, math.min(1, sat * 0.95), math.min(1, val * 1.02))),
 			bg = bg,
 			text = text,
 			success = get("success", Color3.fromRGB(52, 211, 153)),
@@ -6103,18 +6247,76 @@ __modules["core/Theme"] = function()
 	end
 
 	-- Presets are specs; Theme.Presets holds their derived colours for previews.
-	Theme.PresetSpecs = {
-		RobScript = { accent = "FF3B7F", bg = "121216", text = "F2F2F5", accentInk = "1A0610" },
-		Light = { accent = "E0245E", bg = "FFFFFF", text = "16161A", success = "0E9F6E", warning = "B7791F", danger = "E5484D" },
-		Graphite = { accent = "E6E6E8", bg = "1B1B1D", text = "EDEDEE" },
-		Midnight = { accent = "4C8DFF", bg = "0E1320", text = "E8EDF7" },
+	-- Each preset also has a default background effect.
+	local PRESETS = {
+		{ "RobScript", { accent = "FF3B7F", accent2 = "9B5CFF", bg = "121216", text = "F2F2F5", accentInk = "1A0610" }, "Aurora" },
+		{ "Light", { accent = "E0245E", accent2 = "FF7A59", bg = "FFFFFF", text = "16161A", success = "0E9F6E", warning = "B7791F", danger = "E5484D" }, "None" },
+		{ "Graphite", { accent = "E6E6E8", accent2 = "9A9AA2", bg = "1B1B1D", text = "EDEDEE" }, "Grid" },
+		{ "Midnight", { accent = "4C8DFF", accent2 = "8B5CF6", bg = "0E1320", text = "E8EDF7" }, "Stars" },
+		{ "Sakura", { accent = "FF8FB8", accent2 = "FFC2D6", bg = "1A1216", text = "F7EEF2" }, "Snow" },
+		{ "Ocean", { accent = "22D3EE", accent2 = "3B82F6", bg = "0A1620", text = "E6F4F8" }, "Aurora" },
+		{ "Matcha", { accent = "7BD389", accent2 = "C3E88D", bg = "111712", text = "ECF3EC" }, "Aurora" },
+		{ "Sunset", { accent = "FF7A45", accent2 = "FF3D7F", bg = "1A1012", text = "FBEDE7" }, "Gradient" },
+		{ "Amber", { accent = "FFB020", accent2 = "FF7A00", bg = "16130C", text = "F7F1E3" }, "Gradient" },
+		{ "Crimson", { accent = "FF4D4D", accent2 = "B3123A", bg = "140C0D", text = "F5ECEC" }, "Grid" },
+		{ "Cyber", { accent = "00F0FF", accent2 = "FF00C8", bg = "0A0A12", text = "E8F7FF" }, "Grid" },
+		{ "Synthwave", { accent = "FF2E97", accent2 = "7B61FF", bg = "140A24", text = "F5E9FF" }, "Stars" },
+		{ "Dracula", { accent = "BD93F9", accent2 = "FF79C6", bg = "1E1F29", text = "F8F8F2" }, "Stars" },
+		{ "Nord", { accent = "88C0D0", accent2 = "81A1C1", bg = "1F2430", text = "ECEFF4" }, "Snow" },
+		{ "Frost", { accent = "7DD3FC", accent2 = "C4B5FD", bg = "0D1117", text = "E6EDF3" }, "Snow" },
+		{ "Lavender", { accent = "B794F6", accent2 = "F0ABFC", bg = "15121D", text = "F3EEFB" }, "Aurora" },
+		{ "Coffee", { accent = "D4A373", accent2 = "A47148", bg = "16110D", text = "F1E9E1" }, "None" },
+		{ "Mono", { accent = "FFFFFF", accent2 = "8A8A8A", bg = "0E0E0E", text = "F2F2F2" }, "None" },
 	}
+	Theme.PresetSpecs = {}
+	Theme.PresetEffects = {}
+	Theme.PresetOrder = {}
+	for _, entry in ipairs(PRESETS) do
+		Theme.PresetSpecs[entry[1]] = entry[2]
+		Theme.PresetEffects[entry[1]] = entry[3]
+		table.insert(Theme.PresetOrder, entry[1])
+	end
 	Theme.Presets = {}
 	for name, spec in pairs(Theme.PresetSpecs) do
 		Theme.Presets[name] = Theme.derive(spec)
 	end
 
-	Theme.PresetOrder = { "RobScript", "Light", "Graphite", "Midnight" }
+	-- Background effect inside the window and "glass" (translucent panels).
+	Theme.Effects = { "None", "Aurora", "Stars", "Snow", "Grid", "Gradient" }
+	Theme.Effect = "Aurora"
+	Theme.Glass = true
+
+	function Theme.setEffect(effect)
+		if not table.find(Theme.Effects, effect) then
+			effect = "None"
+		end
+		Theme.Effect = effect
+		Theme.refresh()
+		Theme.Changed:Fire("effect")
+	end
+
+	function Theme.setGlass(enabled)
+		Theme.Glass = enabled == true
+		Theme.refresh()
+		Theme.Changed:Fire("effect")
+	end
+
+	-- Transparency for panels that let the background effect show through.
+	function Theme.glass(amount)
+		return Theme.f(function()
+			if Theme.Glass and Theme.Effect ~= "None" then
+				return amount or 0.22
+			end
+			return 0
+		end)
+	end
+
+	-- Accent → accent2 gradient (UIGradient.Color); the element itself must be white.
+	function Theme.gradient()
+		return Theme.f(function(c)
+			return ColorSequence.new(c.accent, c.accent2)
+		end)
+	end
 
 	Theme.Name = "RobScript"
 	Theme.Spec = table.clone(Theme.PresetSpecs.RobScript)
@@ -6379,6 +6581,7 @@ __modules["core/Theme"] = function()
 			end
 			Theme.Name = nameOrColors
 			Theme.Spec = toSpec(found)
+			Theme.Effect = Theme.PresetEffects[nameOrColors] or Theme.Effect
 		elseif type(nameOrColors) == "table" then
 			local spec = toSpec(Theme.PresetSpecs.RobScript)
 			spec.accentInk = nil
@@ -6499,7 +6702,7 @@ __modules["core/Theme"] = function()
 	end
 
 	function Theme.serialize()
-		local out = { name = Theme.Name }
+		local out = { name = Theme.Name, effect = Theme.Effect, glass = Theme.Glass }
 		if Theme.Name == "Custom" then
 			out.spec = {}
 			for key, color in pairs(Theme.Spec) do
@@ -6513,8 +6716,15 @@ __modules["core/Theme"] = function()
 		if type(data) ~= "table" then
 			return
 		end
+		if type(data.effect) == "string" then
+			Theme.Effect = table.find(Theme.Effects, data.effect) and data.effect or Theme.Effect
+		end
+		if data.glass ~= nil then
+			Theme.Glass = data.glass == true
+		end
 		local raw = data.spec or data.colors -- "colors" = 1.0 full list
 		if data.name == "Custom" and type(raw) == "table" then
+			local effect = Theme.Effect
 			local spec = toSpec(raw)
 			if data.colors and not data.spec then
 				-- 1.0 saved every token; keep only the base so everything follows
@@ -6528,7 +6738,11 @@ __modules["core/Theme"] = function()
 			Theme.Spec = spec
 			commit()
 		elseif type(data.name) == "string" and Theme.PresetSpecs[data.name] then
+			local effect = Theme.Effect
 			Theme.apply(data.name)
+			if type(data.effect) == "string" then
+				Theme.setEffect(effect)
+			end
 		end
 	end
 
@@ -6547,9 +6761,11 @@ __modules["init"] = function()
 	local Window = import("ui/Window")
 
 	local Robly = {
-		Version = "1.3.0",
+		Version = "1.4.0",
 		Windows = {},
 		Themes = Theme.Presets,
+		Effects = Theme.Effects,
+		ThemeOrder = Theme.PresetOrder,
 		Icons = Icons.Data,
 		L = Localization.L,
 	}
@@ -6570,8 +6786,8 @@ __modules["init"] = function()
 		end
 	end
 
-	-- Switch theme for every window: "RobScript", "Light", "Graphite", "Midnight",
-	-- a custom registered name, or a colour table.
+	-- Switch theme for every window: a preset name (see Robly.Themes / the 18
+	-- built-in presets), a custom registered name, or a colour table.
 	function Robly:SetTheme(theme)
 		Theme.apply(theme)
 	end
@@ -6588,7 +6804,11 @@ __modules["init"] = function()
 			end
 		end
 		for key, value in pairs(colors) do
-			spec[key] = typeof(value) == "Color3" and value or Util.hex(value)
+			if key == "Effect" or key == "effect" then
+				Theme.PresetEffects[name] = value
+			else
+				spec[key] = typeof(value) == "Color3" and value or Util.hex(value)
+			end
 		end
 		Theme.PresetSpecs[name] = spec
 		local out = Theme.derive(spec)
@@ -6597,6 +6817,17 @@ __modules["init"] = function()
 			table.insert(Theme.PresetOrder, name)
 		end
 		return out
+	end
+
+	-- Background effect inside every window: "None", "Aurora", "Stars", "Snow",
+	-- "Grid", "Gradient".
+	function Robly:SetEffect(effect)
+		Theme.setEffect(effect)
+	end
+
+	-- Glass: panels become translucent so the background effect shows through.
+	function Robly:SetGlass(enabled)
+		Theme.setGlass(enabled)
 	end
 
 	function Robly:SetAnimations(mode)
@@ -8073,6 +8304,7 @@ __modules["system/SettingsTab"] = function()
 	-- Changing Background/Text/Accent re-derives every colour that wasn't set by hand.
 	local LABELS = {
 		accent = L("accent"),
+		accent2 = L("accent2"),
 		bg = L("background"),
 		nav = L("sidebar"),
 		surface = L("cards"),
@@ -8122,7 +8354,14 @@ __modules["system/SettingsTab"] = function()
 			Parent = body,
 		}, { Create.corner(5), Create.pad(0, 5), Create.list("Horizontal", 4, { valign = "Center" }) })
 		New("Frame", { Size = UDim2.new(0, 0, 0, 4), BackgroundColor3 = colors.textSubtle, Parent = row }, { Create.corner(2), Create.flex() })
-		New("Frame", { Size = UDim2.fromOffset(16, 10), BackgroundColor3 = colors.accent, LayoutOrder = 2, Parent = row }, { Create.corner("full") })
+		New("Frame", { Size = UDim2.fromOffset(16, 10), BackgroundColor3 = Color3.new(1, 1, 1), LayoutOrder = 2, Parent = row }, {
+			Create.corner("full"),
+			New("UIGradient", { Color = ColorSequence.new(colors.accent, colors.accent2 or colors.accent) }),
+		})
+		New("Frame", { Size = UDim2.new(0.85, 0, 0, 3), BackgroundColor3 = Color3.new(1, 1, 1), LayoutOrder = 3, Parent = body }, {
+			Create.corner(2),
+			New("UIGradient", { Color = ColorSequence.new(colors.accent, colors.accent2 or colors.accent) }),
+		})
 		return card
 	end
 
@@ -8131,28 +8370,45 @@ __modules["system/SettingsTab"] = function()
 		local section = self.Tab:Section({ Title = L("theme") })
 		local grid = Control.new(section, { Title = L("theme") }, { class = ThemeGrid, kind = "ThemeGrid", layout = "custom", searchable = false })
 		grid.Inner:FindFirstChildOfClass("UISizeConstraint"):Destroy()
+		-- every preset as a card in a responsive grid
 		local holder = New("Frame", {
+			Name = "Themes",
 			Size = UDim2.fromScale(1, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			Parent = grid.Inner,
-		}, { Create.list("Horizontal", 10) })
+		})
+		local layout = New("UIGridLayout", {
+			CellPadding = UDim2.fromOffset(8, 8),
+			CellSize = UDim2.fromOffset(110, 92),
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			Parent = holder,
+		})
+		local function fit()
+			local width = holder.AbsoluteSize.X
+			if width <= 0 then
+				return
+			end
+			local columns = math.max(2, math.floor((width + 8) / (104 + 8)))
+			layout.CellSize = UDim2.new(1 / columns, -8 + 8 / columns, 0, 92)
+		end
+		grid.Maid:Add(holder:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit))
+		fit()
 		local cards = {}
 		for index, name in ipairs(Theme.PresetOrder) do
 			local colors = Theme.Presets[name]
 			local button = New("TextButton", {
-				Size = UDim2.fromScale(0, 0),
-				AutomaticSize = Enum.AutomaticSize.Y,
+				Name = name,
 				LayoutOrder = index,
 				Parent = holder,
-			}, { Create.flex(), Create.list("Vertical", 6) })
+			}, { Create.list("Vertical", 5) })
 			local preview = miniPreview(colors)
 			preview.Parent = button
 			local stroke = Create.stroke("accent", 2)
 			stroke.Parent = preview
 			local label = New("TextLabel", {
 				Size = UDim2.new(1, 0, 0, 16),
-				Text = name == "RobScript" and "RobScript" or name,
-				TextSize = 12.5,
+				Text = name,
+				TextSize = 12,
 				Weight = "SemiBold",
 				LayoutOrder = 2,
 				Parent = button,
@@ -8168,17 +8424,60 @@ __modules["system/SettingsTab"] = function()
 			for name, card in pairs(cards) do
 				local on = Theme.Name == name
 				card.stroke.Transparency = on and 0 or 1
+				Theme.set(card.label, "TextColor3", on and C("accent") or C("text"))
 			end
 		end
 		refresh()
 		grid.Maid:Add(Theme.Changed:Connect(refresh))
 		local function relabel()
-			cards.Light.label.Text = window.Loc:Get({ en = "Light", ru = "Светлая", es = "Clara", pt = "Clara", de = "Hell", fr = "Clair" })
-			cards.Graphite.label.Text = window.Loc:Get({ en = "Graphite", ru = "Графит", es = "Grafito", pt = "Grafite", de = "Graphit", fr = "Graphite" })
-			cards.Midnight.label.Text = window.Loc:Get({ en = "Midnight", ru = "Полночь", es = "Medianoche", pt = "Meia-noite", de = "Mitternacht", fr = "Minuit" })
+			for name, card in pairs(cards) do
+				card.label.Text = window.Loc:Get(Theme.PresetTitles and Theme.PresetTitles[name] or name)
+			end
 		end
 		relabel()
 		grid.Maid:Add(window.Loc.Changed:Connect(relabel))
+
+		-- background effect + glass
+		local effectOptions = {}
+		for _, effect in ipairs(Theme.Effects) do
+			table.insert(effectOptions, { Value = effect, Text = L("effect_" .. string.lower(effect)) })
+		end
+		local effect = section:Dropdown({
+			Title = L("effect"),
+			Description = L("effect_desc"),
+			Icon = "sparkles",
+			Flag = "robly:effect",
+			Options = effectOptions,
+			Default = Theme.Effect,
+			Save = false,
+			Callback = function(value)
+				if value and value ~= Theme.Effect then
+					window:SetEffect(value)
+				end
+			end,
+		})
+		local glass = section:Toggle({
+			Title = L("glass"),
+			Description = L("glass_desc"),
+			Flag = "robly:glass",
+			Default = Theme.Glass,
+			Save = false,
+			Highlight = false,
+			EnabledWhen = function(get)
+				return get("robly:effect") ~= "None"
+			end,
+			Callback = function(value)
+				if value ~= Theme.Glass then
+					window:SetGlass(value)
+				end
+			end,
+		})
+		grid.Maid:Add(Theme.Changed:Connect(function(what)
+			if what == "effect" or what == "colors" then
+				window.Store:Set(effect.Flag, Theme.Effect, "silent")
+				window.Store:Set(glass.Flag, Theme.Glass, "silent")
+			end
+		end))
 
 		-- Live editor
 		local pickers = {}
@@ -8830,6 +9129,7 @@ __modules["ui/Detached"] = function()
 	local Maid = import("util/Maid")
 	local Util = import("util/Util")
 	local Pill = import("ui/Pill")
+	local Effects = import("ui/Effects")
 
 	local New = Create.New
 	local C, S = Theme.c, Theme.s
@@ -8877,6 +9177,7 @@ __modules["ui/Detached"] = function()
 		}))
 		self.Frame = frame
 		self.Scale = New("UIScale", { Parent = frame })
+		self.Effects = self.Maid:Add(Effects.new(frame, 0))
 		-- Everything laid out lives in Shell, so free-floating parts (resize grip)
 		-- stay out of the list layout.
 		local shell = New("Frame", {
@@ -9408,6 +9709,211 @@ __modules["ui/Dialog"] = function()
 	end
 
 	return Dialog
+end
+
+__modules["ui/Effects"] = function()
+	-- Effects: decorative background inside a window, behind all content.
+	--   Aurora   — large soft colour blobs (accent / accent2) drifting slowly
+	--   Stars    — tiny twinkling dots
+	--   Snow     — slowly falling dots
+	--   Grid     — faint line grid with an accent glow in the corner
+	--   Gradient — diagonal accent wash
+	--   None
+	-- Animated with looping tweens (no per-frame scripts); static when animations
+	-- are "Soft" or "Off". Panels become translucent with Theme.Glass.
+
+	local Theme = import("core/Theme")
+	local Create = import("core/Create")
+	local Motion = import("core/Motion")
+	local Services = import("core/Services")
+	local Maid = import("util/Maid")
+
+	local New = Create.New
+	local C = Theme.c
+
+	local Effects = {}
+	Effects.__index = Effects
+
+	-- deterministic pseudo-random so a layout looks the same every time
+	local function rng(seed)
+		local state = seed
+		return function()
+			state = (state * 1103515245 + 12345) % 2147483648
+			return state / 2147483648
+		end
+	end
+
+	local function loop(instance, props, seconds, style)
+		if Motion.Mode ~= "Full" then
+			return nil
+		end
+		local info = TweenInfo.new(seconds, style or Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+		local tween = Services.TweenService:Create(instance, info, props)
+		tween:Play()
+		return tween
+	end
+
+	function Effects.new(parent, zindex)
+		local self = setmetatable({}, Effects)
+		self.Parent = parent
+		self.Maid = Maid.new()
+		self.Holder = self.Maid:Add(New("Frame", {
+			Name = "Backdrop",
+			Size = UDim2.fromScale(1, 1),
+			ZIndex = zindex or 0,
+			ClipsDescendants = true,
+			Parent = parent,
+		}))
+		self.Maid:Add(Theme.Changed:Connect(function(what)
+			if what == "effect" or (what == "colors" and self._built ~= Theme.Effect) then
+				self:Build()
+			end
+		end))
+		self.Maid:Add(Motion.Changed:Connect(function()
+			self:Build()
+		end))
+		self:Build()
+		return self
+	end
+
+	function Effects:Build()
+		if self._maid then
+			self._maid:Clean()
+		end
+		local maid = Maid.new()
+		self._maid = maid
+		local holder = self.Holder
+		local effect = Theme.Effect
+		self._built = effect
+		local random = rng(7)
+
+		if effect == "Aurora" then
+			local blobs = {
+				{ color = "accent", x = 0.05, y = -0.25, size = 0.75, alpha = 0.86 },
+				{ color = "accent2", x = 0.55, y = 0.35, size = 0.8, alpha = 0.88 },
+				{ color = "accent", x = 0.75, y = -0.35, size = 0.5, alpha = 0.92 },
+			}
+			for index, spec in ipairs(blobs) do
+				local blob = maid:Add(New("Frame", {
+					Name = "Blob",
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.fromScale(spec.x + spec.size / 2, spec.y + spec.size / 2),
+					Size = UDim2.fromScale(spec.size, spec.size * 1.3),
+					BackgroundColor3 = C(spec.color),
+					BackgroundTransparency = spec.alpha,
+					Parent = holder,
+				}, {
+					Create.corner("full"),
+					New("UIGradient", {
+						Transparency = NumberSequence.new({
+							NumberSequenceKeypoint.new(0, 1),
+							NumberSequenceKeypoint.new(0.5, 0),
+							NumberSequenceKeypoint.new(1, 1),
+						}),
+						Rotation = index * 40,
+					}),
+				}))
+				maid:Add(loop(blob, {
+					Position = UDim2.fromScale(spec.x + spec.size / 2 + (index % 2 == 0 and -0.12 or 0.12), spec.y + spec.size / 2 + 0.1),
+					Rotation = index % 2 == 0 and -25 or 25,
+				}, 9 + index * 3))
+			end
+		elseif effect == "Stars" or effect == "Snow" then
+			local count = effect == "Stars" and 46 or 34
+			for _ = 1, count do
+				local size = effect == "Stars" and (random() < 0.8 and 2 or 3) or math.floor(2 + random() * 3)
+				local x, y = random(), random()
+				local dot = maid:Add(New("Frame", {
+					Name = "Dot",
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.fromScale(x, effect == "Snow" and -0.05 + y * 0.2 or y),
+					Size = UDim2.fromOffset(size, size),
+					BackgroundColor3 = random() < 0.25 and C("accent") or C("text"),
+					BackgroundTransparency = 0.35 + random() * 0.45,
+					Parent = holder,
+				}, { Create.corner("full") }))
+				if effect == "Stars" then
+					maid:Add(loop(dot, { BackgroundTransparency = 0.92 }, 1.5 + random() * 3))
+				else
+					dot.Position = UDim2.fromScale(x, y)
+					local fall = Motion.Mode == "Full" and TweenInfo.new(9 + random() * 9, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1, false, random() * 6)
+					if fall then
+						dot.Position = UDim2.fromScale(x, -0.05)
+						local tween = Services.TweenService:Create(dot, fall, { Position = UDim2.fromScale(x + (random() - 0.5) * 0.15, 1.05) })
+						tween:Play()
+						maid:Add(tween)
+					end
+				end
+			end
+		elseif effect == "Grid" then
+			local step = 28
+			for i = 0, 60 do
+				maid:Add(New("Frame", {
+					Position = UDim2.fromOffset(i * step, 0),
+					Size = UDim2.new(0, 1, 1, 0),
+					BackgroundColor3 = C("text"),
+					BackgroundTransparency = 0.955,
+					Parent = holder,
+				}))
+			end
+			for i = 0, 40 do
+				maid:Add(New("Frame", {
+					Position = UDim2.fromOffset(0, i * step),
+					Size = UDim2.new(1, 0, 0, 1),
+					BackgroundColor3 = C("text"),
+					BackgroundTransparency = 0.955,
+					Parent = holder,
+				}))
+			end
+			local glow = maid:Add(New("Frame", {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.95, 0.05),
+				Size = UDim2.fromScale(0.9, 0.9),
+				BackgroundColor3 = C("accent"),
+				BackgroundTransparency = 0.88,
+				Parent = holder,
+			}, {
+				Create.corner("full"),
+				New("UIGradient", {
+					Transparency = NumberSequence.new({
+						NumberSequenceKeypoint.new(0, 1),
+						NumberSequenceKeypoint.new(0.5, 0),
+						NumberSequenceKeypoint.new(1, 1),
+					}),
+					Rotation = 45,
+				}),
+			}))
+			maid:Add(loop(glow, { BackgroundTransparency = 0.94 }, 4))
+		elseif effect == "Gradient" then
+			local wash = maid:Add(New("Frame", {
+				Size = UDim2.fromScale(1, 1),
+				BackgroundColor3 = Color3.new(1, 1, 1),
+				BackgroundTransparency = 0.86,
+				Parent = holder,
+			}, {
+				New("UIGradient", {
+					Color = Theme.gradient(),
+					Transparency = NumberSequence.new({
+						NumberSequenceKeypoint.new(0, 0),
+						NumberSequenceKeypoint.new(0.55, 0.85),
+						NumberSequenceKeypoint.new(1, 1),
+					}),
+					Rotation = 35,
+				}),
+			}))
+			local gradient = wash:FindFirstChildOfClass("UIGradient")
+			maid:Add(loop(gradient, { Rotation = 55 }, 8))
+		end
+	end
+
+	function Effects:Destroy()
+		if self._maid then
+			self._maid:Clean()
+		end
+		self.Maid:Clean()
+	end
+
+	return Effects
 end
 
 __modules["ui/Notifications"] = function()
@@ -10017,6 +10523,7 @@ __modules["ui/Section"] = function()
 	local Motion = import("core/Motion")
 	local Icons = import("core/Icons")
 	local Maid = import("util/Maid")
+	local Util = import("util/Util")
 	local Registry = import("controls/Registry")
 
 	local New = Create.New
@@ -10051,6 +10558,7 @@ __modules["ui/Section"] = function()
 			Size = UDim2.fromScale(1, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
 			BackgroundColor3 = C("surface"),
+			BackgroundTransparency = Theme.glass(),
 			LayoutOrder = body:_nextOrder(),
 			Parent = parent,
 		}, {
@@ -10062,45 +10570,86 @@ __modules["ui/Section"] = function()
 		if self.TitleSpec then
 			local header = New("TextButton", {
 				Name = "Header",
-				Size = Theme.sz(1, 0, 0, "groupHeader"),
+				Size = UDim2.fromScale(1, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
 				LayoutOrder = 1,
 				Parent = self.Frame,
-			}, { Create.pad(0, "padX"), Create.list("Horizontal", 8, { valign = "Center" }) })
+			}, {
+				Create.pad(6, "padX"),
+				Create.minSize(0, "groupHeader"),
+				Create.list("Horizontal", 9, { valign = "Center" }),
+			})
 			if opts.Icon then
-				local icon = Icons.new(opts.Icon, "iconSmall", C("accent"))
-				icon.Frame.LayoutOrder = 0
-				icon.Frame.Parent = header
+				-- icon in an accent-tinted tile
+				local tile = New("Frame", {
+					Name = "IconTile",
+					Size = UDim2.fromOffset(24, 24),
+					BackgroundColor3 = C("accent"),
+					BackgroundTransparency = 0.85,
+					LayoutOrder = 0,
+					Parent = header,
+				}, { Create.corner(7) })
+				Icons.new(opts.Icon, 14, C("accent"), {
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.fromScale(0.5, 0.5),
+				}).Frame.Parent = tile
 			end
+			local texts = New("Frame", {
+				Name = "Texts",
+				Size = UDim2.fromScale(0, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				LayoutOrder = 1,
+				Parent = header,
+			}, { Create.list("Vertical", 1), Create.flex() })
 			local label = New("TextLabel", {
-				Size = UDim2.fromScale(0, 1),
-				Weight = "SemiBold",
+				Size = Theme.f(function(_, s)
+					return UDim2.new(1, 0, 0, s.fontSection + 4)
+				end),
+				Weight = "Bold",
 				TextSize = S("fontSection"),
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				LayoutOrder = 1,
-				Parent = header,
-			}, { Create.flex() })
+				Parent = texts,
+			})
 			self.TitleLabel = label
 			window.Loc:Bind(label, "Text", self.TitleSpec)
+			if opts.Description then
+				local desc = Create.text("", { size = "fontDesc", color = "textSubtle", wrap = true, order = 2, name = "Description" })
+				desc.Parent = texts
+				window.Loc:Bind(desc, "Text", opts.Description)
+				self.DescLabel = desc
+			end
 			self.Hint = New("TextLabel", {
 				AutomaticSize = Enum.AutomaticSize.X,
-				Size = UDim2.fromScale(0, 1),
+				Size = UDim2.fromOffset(0, 18),
+				BackgroundColor3 = C("raised"),
 				TextColor3 = C("textSubtle"),
 				TextSize = S("fontDesc"),
 				Visible = false,
 				LayoutOrder = 2,
 				Parent = header,
-			})
+			}, { Create.corner("full"), Create.pad(0, 7) })
 			self:_refreshHint()
 			self.Chevron = Icons.new("chevronDown", 14, C("textSubtle"))
 			self.Chevron.Frame.LayoutOrder = 3
 			self.Chevron.Frame.Parent = header
-			self.Header = header
+			self.HeaderButton = header
+			-- accent line under the header, fading out to the right
 			self.HeaderLine = New("Frame", {
 				Name = "HeaderLine",
 				Size = UDim2.new(1, 0, 0, 1),
-				BackgroundColor3 = C("divider"),
+				BackgroundColor3 = Color3.new(1, 1, 1),
 				LayoutOrder = 2,
 				Parent = self.Frame,
+			}, {
+				New("UIGradient", {
+					Color = Theme.gradient(),
+					Transparency = NumberSequence.new({
+						NumberSequenceKeypoint.new(0, 0.35),
+						NumberSequenceKeypoint.new(0.6, 0.85),
+						NumberSequenceKeypoint.new(1, 1),
+					}),
+				}),
 			})
 			if opts.Collapsible ~= false then
 				self.Maid:Add(header.Activated:Connect(function()
@@ -10224,6 +10773,40 @@ __modules["ui/Section"] = function()
 		return self
 	end
 
+	-- Sub heading inside a groupbox: small caps caption that splits rows into groups.
+	function Section:Header(spec)
+		local holder = New("Frame", {
+			Name = "SubHeader",
+			Size = UDim2.fromScale(1, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			LayoutOrder = self:_nextOrder(),
+			Parent = self.Card,
+		}, { Create.pad(8, "padX", 2, "padX"), Create.list("Horizontal", 8, { valign = "Center" }) })
+		local label = New("TextLabel", {
+			AutomaticSize = Enum.AutomaticSize.X,
+			Size = UDim2.fromOffset(0, 14),
+			TextColor3 = C("accent"),
+			TextSize = 11,
+			Weight = "Bold",
+			LayoutOrder = 1,
+			Parent = holder,
+		})
+		self.Window.Loc:Bind(label, "Text", function()
+			return Util.upper(self.Window.Loc:Get(spec))
+		end)
+		New("Frame", {
+			Size = UDim2.new(0, 0, 0, 1),
+			BackgroundColor3 = C("divider"),
+			LayoutOrder = 2,
+			Parent = holder,
+		}, { Create.flex() })
+		self.Maid:Add(holder)
+		return holder
+	end
+	Section.AddHeader = Section.Header
+	Section.CreateHeader = Section.Header
+	Section.SubHeader = Section.Header
+
 	function Section:SetVisible(visible)
 		self.Frame.Visible = visible ~= false
 		return self
@@ -10294,6 +10877,7 @@ __modules["ui/Tab"] = function()
 		self.DescSpec = opts.Description
 		self.Icon = opts.Icon or "dot"
 		self.BadgeSpec = opts.Badge
+		self.CategorySpec = opts.Category
 		self.Detachable = opts.Detachable ~= false and not self.Internal
 		self.DetachedWindow = nil
 		self.DetachChanged = Signal.new()
@@ -10322,15 +10906,41 @@ __modules["ui/Tab"] = function()
 			Parent = self.Page,
 		}, { Create.list("Horizontal", 12) })
 		Theme.bind(header, "Visible", S("pageHeader"))
+		-- icon tile (accent-tinted) gives every page a visual anchor
+		local tile = New("Frame", {
+			Name = "IconTile",
+			Size = UDim2.fromOffset(38, 38),
+			BackgroundColor3 = C("accent"),
+			BackgroundTransparency = 0.84,
+			LayoutOrder = 0,
+			Parent = header,
+		}, { Create.corner(10), Create.stroke("accent", 1, 0.7) })
+		Icons.new(self.Icon, 20, C("accent"), {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+		}).Frame.Parent = tile
 		local texts = New("Frame", {
 			Size = UDim2.fromScale(0, 0),
 			AutomaticSize = Enum.AutomaticSize.Y,
+			LayoutOrder = 1,
 			Parent = header,
-		}, { Create.list("Vertical", 4), Create.flex() })
+		}, { Create.list("Vertical", 2), Create.flex() })
+		-- breadcrumb: "Tab › Sub tab" (visible once the tab has sub tabs)
+		local crumb = New("TextLabel", {
+			Name = "Crumb",
+			Size = UDim2.new(1, 0, 0, 14),
+			TextColor3 = C("textSubtle"),
+			TextSize = 11,
+			Weight = "SemiBold",
+			Visible = false,
+			LayoutOrder = 0,
+			Parent = texts,
+		})
+		self.Crumb = crumb
 		local title = Create.text("", { weight = "Bold", size = "fontTitle", wrap = true, order = 1 })
 		title.Parent = texts
-		window.Loc:Bind(title, "Text", self.TitleSpec)
 		self.TitleLabel = title
+		self:_updateTitle()
 		if self.DescSpec then
 			local desc = Create.text("", { color = "textMuted", wrap = true, order = 2 })
 			Theme.bind(desc, "TextSize", Theme.f(function(_, s)
@@ -10467,7 +11077,13 @@ __modules["ui/Tab"] = function()
 		self.Maid:Add(button.Activated:Connect(function()
 			self:SelectSubTab(sub)
 		end))
-		self.SubBar.Visible = true
+		-- PC shows sub tabs as a tree in the sidebar; touch shows the pill row
+		Theme.bind(self.SubBar, "Visible", Theme.f(function(_, s)
+			return s.touch and #self.SubTabs > 0
+		end))
+		if self.Window.Selected == self then
+			self.Window:_rebuildNav()
+		end
 		-- tab-level controls stay on top; an empty main body takes no space
 		self.Main.Frame.Visible = not self.Main:IsEmpty()
 		if not self.CurrentSubTab then
@@ -10502,8 +11118,29 @@ __modules["ui/Tab"] = function()
 				sub.IconObject:SetColor(on and C("accent") or C("textMuted"), true)
 			end
 		end
-		local _ = previous
 		self.Main.Frame.Visible = not self.Main:IsEmpty()
+		if previous ~= target then
+			self:_updateTitle()
+			if self.Window.Selected == self and Theme.Mode == "pc" then
+				self.Window:_rebuildNav()
+			end
+		end
+	end
+
+	-- Page title shows the current sub tab; the breadcrumb above it names the tab.
+	function Tab:_updateTitle()
+		local loc = self.Window.Loc
+		local sub = self.CurrentSubTab
+		if sub then
+			self.Crumb.Visible = true
+			loc:Bind(self.Crumb, "Text", function()
+				return Util.upper(loc:Get(self.TitleSpec)) .. "  ›  " .. Util.upper(loc:Get(sub.TitleSpec))
+			end)
+			loc:Bind(self.TitleLabel, "Text", sub.TitleSpec)
+		else
+			self.Crumb.Visible = false
+			loc:Bind(self.TitleLabel, "Text", self.TitleSpec)
+		end
 	end
 
 	function Tab:Select()
@@ -10517,7 +11154,7 @@ __modules["ui/Tab"] = function()
 
 	function Tab:SetTitle(spec)
 		self.TitleSpec = spec
-		self.Window.Loc:Bind(self.TitleLabel, "Text", spec)
+		self:_updateTitle()
 		self.Window:_rebuildNav()
 		return self
 	end
@@ -10698,6 +11335,7 @@ __modules["ui/Window"] = function()
 	local Pill = import("ui/Pill")
 	local Tab = import("ui/Tab")
 	local Detached = import("ui/Detached")
+	local Effects = import("ui/Effects")
 	local Binds = import("system/Binds")
 	local Config = import("system/Config")
 
@@ -10845,12 +11483,13 @@ __modules["ui/Window"] = function()
 		self.Scale = New("UIScale", { Parent = self.Frame })
 		-- Everything laid out lives in Shell; the resize grip floats in Frame and
 		-- must not be part of the list layout.
-		self.Shell = New("Frame", { Name = "Shell", Size = UDim2.fromScale(1, 1), Parent = self.Frame })
+		self.Effects = self.Maid:Add(Effects.new(self.Frame, 0))
+		self.Shell = New("Frame", { Name = "Shell", Size = UDim2.fromScale(1, 1), ZIndex = 1, Parent = self.Frame })
 		self.Header = New("Frame", { Name = "Header", Parent = self.Shell })
 		-- transparent button under the header content: the drag handle (Frames
 		-- don't receive input reliably, buttons do)
 		self.DragHandle = New("TextButton", { Name = "DragHandle", Size = UDim2.fromScale(1, 1), ZIndex = 1, Parent = self.Header })
-		self.Nav = New("Frame", { Name = "Nav", BackgroundColor3 = C("nav"), Parent = self.Shell })
+		self.Nav = New("Frame", { Name = "Nav", Parent = self.Shell })
 		self.Main = New("Frame", { Name = "Main", Parent = self.Shell }, {
 			Create.pad("contentTop", "contentX", "contentBottom", "contentX"),
 		})
@@ -10958,7 +11597,10 @@ __modules["ui/Window"] = function()
 		end
 
 		local radius = Theme.Sizes.rWindow
-		New("UICorner", { CornerRadius = UDim.new(0, radius), Parent = nav })
+		-- sidebar background: only its outer corners are round; translucent with Glass
+		local function navPanel(round)
+			Create.panel(nav, { color = C("nav"), transparency = Theme.glass(0.35), radius = radius, round = round })
+		end
 		if mode == "pc" then
 			maid:Add(Create.list("Vertical", 0)).Parent = frame
 			header.LayoutOrder = 1
@@ -10974,9 +11616,7 @@ __modules["ui/Window"] = function()
 			main.Size = UDim2.fromScale(0, 1)
 			main.LayoutOrder = 2
 			Create.flex().Parent = main
-			-- square the inner corners of the sidebar, keep the outer bottom-left round
-			New("Frame", { Name = "Patch", Size = UDim2.new(1, 0, 0, radius), BackgroundColor3 = C("nav"), Parent = nav })
-			New("Frame", { Name = "Patch", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, radius, 1, 0), BackgroundColor3 = C("nav"), Parent = nav })
+			navPanel({ bl = true })
 			New("Frame", { Name = "Edge", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, 1, 1, 0), BackgroundColor3 = C("divider"), ZIndex = 3, Parent = nav })
 			New("Frame", { Name = "Edge", AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = C("divider"), ZIndex = 3, Parent = header })
 		elseif mode == "phone" then
@@ -10994,7 +11634,7 @@ __modules["ui/Window"] = function()
 			main.LayoutOrder = 2
 			main.Size = UDim2.fromScale(1, 0)
 			Create.flex().Parent = main
-			New("Frame", { Name = "Patch", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, radius, 1, 0), BackgroundColor3 = C("nav"), Parent = nav })
+			navPanel({ tl = true, bl = true })
 			New("Frame", { Name = "Edge", AnchorPoint = Vector2.new(1, 0), Position = UDim2.fromScale(1, 0), Size = UDim2.new(0, 1, 1, 0), BackgroundColor3 = C("divider"), ZIndex = 3, Parent = nav })
 		else
 			maid:Add(Create.list("Vertical", 0)).Parent = frame
@@ -11005,7 +11645,7 @@ __modules["ui/Window"] = function()
 			Create.flex().Parent = main
 			nav.LayoutOrder = 3
 			nav.Size = UDim2.new(1, 0, 0, Theme.Sizes.tabbar)
-			New("Frame", { Name = "Patch", Size = UDim2.new(1, 0, 0, radius), BackgroundColor3 = C("nav"), Parent = nav })
+			navPanel({ bl = true, br = true })
 			New("Frame", { Name = "Edge", Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = C("divider"), ZIndex = 3, Parent = nav })
 		end
 		maid:Add(function()
@@ -11390,12 +12030,23 @@ __modules["ui/Window"] = function()
 		local mode = Theme.Mode
 		if mode == "pc" then
 			Theme.set(item.button, "BackgroundColor3", highlighted and C("accent") or C("selected"))
-			Motion.tween(item.button, { BackgroundTransparency = highlighted and 0.82 or (selected and 0 or 1) }, "fade")
+			Motion.tween(item.button, { BackgroundTransparency = highlighted and 0.82 or (selected and 0.35 or 1) }, "fade")
 			item.icon:SetColor(selected and C("accent") or C("textMuted"), true)
 			Theme.set(item.label, "TextColor3", selected and C("text") or C("textMuted"))
 			item.label.FontFace = Theme.font(selected and "SemiBold" or "Medium")
+			if item.tile then
+				Motion.tween(item.tile, { BackgroundTransparency = selected and 0.84 or 1 }, "fade")
+			end
+			if item.bar then
+				item.bar.Visible = selected
+				if selected then
+					item.bar.Size = UDim2.fromOffset(3, 4)
+					Motion.tween(item.bar, { Size = UDim2.fromOffset(3, 18) }, "spring")
+				end
+			end
 		elseif mode == "phone" then
-			Motion.tween(item.button, { BackgroundTransparency = (selected or highlighted) and 0 or 1 }, "fade")
+			Theme.set(item.button, "BackgroundColor3", C("accent"))
+			Motion.tween(item.button, { BackgroundTransparency = (selected or highlighted) and 0.84 or 1 }, "fade")
 			item.icon:SetColor(selected and C("accent") or C("textSubtle"), true)
 		else
 			item.icon:SetColor(selected and C("accent") or C("textSubtle"), true)
@@ -11502,19 +12153,58 @@ __modules["ui/Window"] = function()
 			LayoutOrder = 1,
 			Parent = holder,
 		}, { Create.flex(), Create.list("Vertical", 2) })
+		list.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		list.CanvasSize = UDim2.new()
+		-- keep the scroll position when the tree is rebuilt (sub tabs unfold)
+		if self._navScroll then
+			list.CanvasPosition = self._navScroll
+		end
+		maid:Add(list:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+			self._navScroll = list.CanvasPosition
+		end))
 
-		local function item(tab, parent, order)
+		local order = 0
+		local function nextOrder()
+			order += 1
+			return order
+		end
+
+		local function item(tab, parent)
+			local selected = self.Selected == tab
 			local button = New("TextButton", {
 				Name = tab.Id,
 				Size = Theme.sz(1, 0, 0, "navItem"),
 				BackgroundColor3 = C("selected"),
 				BackgroundTransparency = 1,
-				LayoutOrder = order,
+				LayoutOrder = nextOrder(),
 				ZIndex = 2,
 				Parent = parent,
-			}, { Create.corner(10), Create.pad(0, 10), Create.list("Horizontal", 10, { valign = "Center" }) })
-			local icon = Icons.new(tab.Icon, "icon", C("textMuted"))
-			icon.Frame.Parent = button
+			}, { Create.corner(8), Create.pad(0, 8, 0, 6), Create.list("Horizontal", 9, { valign = "Center" }) })
+			-- accent bar on the left edge of the selected tab (gradient accent → accent2)
+			local bar = New("Frame", {
+				Name = "Bar",
+				AnchorPoint = Vector2.new(0, 0.5),
+				Position = UDim2.new(0, -6, 0.5, 0),
+				Size = UDim2.fromOffset(3, 0),
+				BackgroundColor3 = Color3.new(1, 1, 1),
+				Parent = button,
+			}, { Create.corner("full"), New("UIGradient", { Color = Theme.gradient(), Rotation = 90 }) })
+			New("UIFlexItem", { FlexMode = Enum.UIFlexMode.None, Parent = bar })
+			bar.Visible = false
+			-- icon in a tile: accent-tinted when selected
+			local tile = New("Frame", {
+				Name = "Tile",
+				Size = UDim2.fromOffset(26, 26),
+				BackgroundColor3 = C("accent"),
+				BackgroundTransparency = 1,
+				LayoutOrder = 1,
+				Parent = button,
+			}, { Create.corner(7) })
+			local icon = Icons.new(tab.Icon, 16, C("textMuted"), {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+			})
+			icon.Frame.Parent = tile
 			local label = New("TextLabel", {
 				Size = UDim2.fromScale(0, 1),
 				TextColor3 = C("textMuted"),
@@ -11528,21 +12218,30 @@ __modules["ui/Window"] = function()
 			if tab.BadgeSpec then
 				local badge = New("TextLabel", {
 					AutomaticSize = Enum.AutomaticSize.X,
-					Size = UDim2.fromScale(0, 1),
+					Size = UDim2.fromOffset(0, 18),
+					BackgroundColor3 = C("raised"),
 					TextColor3 = C("textMuted"),
 					TextSize = 11,
 					Weight = "SemiBold",
 					LayoutOrder = 3,
 					Parent = button,
-				})
+				}, { Create.corner("full"), Create.pad(0, 6) })
+				badge.TextXAlignment = Enum.TextXAlignment.Center
 				loc:Bind(badge, "Text", tab.BadgeSpec)
 			end
 			local pip = Icons.new("pip", 14, C("textSubtle"))
 			pip.Frame.LayoutOrder = 4
 			pip.Frame.Parent = button
+			local chevron
+			if #tab.SubTabs > 0 then
+				chevron = Icons.new("chevronDown", 14, C("textSubtle"))
+				chevron.Frame.LayoutOrder = 5
+				chevron.Frame.Rotation = selected and 0 or -90
+				chevron.Frame.Parent = button
+			end
 			maid:Add(button.MouseEnter:Connect(function()
 				if self.Selected ~= tab then
-					Motion.tween(button, { BackgroundTransparency = 0.5 }, "fade")
+					Motion.tween(button, { BackgroundTransparency = 0.6 }, "fade")
 				end
 			end))
 			maid:Add(button.MouseLeave:Connect(function()
@@ -11554,14 +12253,95 @@ __modules["ui/Window"] = function()
 				self:SelectTab(tab)
 			end))
 			self:_attachNavGestures(tab, button, maid)
-			self._navItems[tab] = { button = button, icon = icon, label = label, pip = pip }
+			self._navItems[tab] = { button = button, icon = icon, label = label, pip = pip, bar = bar, tile = tile }
+
+			-- sub tabs of the open tab unfold underneath, as a tree (quick-nav style)
+			if selected and #tab.SubTabs > 0 then
+				local tree = New("Frame", {
+					Name = "SubTree",
+					Size = UDim2.fromScale(1, 0),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					LayoutOrder = nextOrder(),
+					ZIndex = 2,
+					Parent = parent,
+				}, { Create.pad(2, 0, 4, 22), Create.list("Vertical", 1) })
+				New("Frame", {
+					Name = "Guide",
+					Position = UDim2.new(0, -3, 0, 4),
+					Size = UDim2.new(0, 1, 1, -8),
+					BackgroundColor3 = C("border"),
+					Parent = tree,
+				})
+				for index, sub in ipairs(tab.SubTabs) do
+					local current = tab.CurrentSubTab == sub
+					local subButton = New("TextButton", {
+						Name = "Sub",
+						Size = Theme.f(function(_, s)
+							return UDim2.new(1, 0, 0, s.navItem - 6)
+						end),
+						BackgroundColor3 = C("selected"),
+						BackgroundTransparency = current and 0.5 or 1,
+						LayoutOrder = index,
+						ZIndex = 2,
+						Parent = tree,
+					}, { Create.corner(6), Create.pad(0, 8, 0, 10), Create.list("Horizontal", 8, { valign = "Center" }) })
+					-- dot on the guide line marks the current sub tab
+					New("Frame", {
+						Name = "Dot",
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Position = UDim2.new(0, -3, 0.5, 0),
+						Size = UDim2.fromOffset(current and 7 or 5, current and 7 or 5),
+						BackgroundColor3 = current and C("accent") or C("border"),
+						ZIndex = 3,
+						Parent = subButton,
+					}, { Create.corner("full"), New("UIFlexItem", { FlexMode = Enum.UIFlexMode.None }) })
+					if sub.Icon then
+						Icons.new(sub.Icon, 14, current and C("accent") or C("textSubtle")).Frame.Parent = subButton
+					end
+					local subLabel = New("TextLabel", {
+						Size = UDim2.fromScale(0, 1),
+						TextColor3 = current and C("text") or C("textMuted"),
+						Weight = current and "SemiBold" or "Regular",
+						TextTruncate = Enum.TextTruncate.AtEnd,
+						LayoutOrder = 2,
+						Parent = subButton,
+					}, { Create.flex() })
+					Theme.bind(subLabel, "TextSize", Theme.f(function(_, s)
+						return s.font - 1
+					end))
+					loc:Bind(subLabel, "Text", sub.TitleSpec)
+					maid:Add(subButton.Activated:Connect(function()
+						tab:SelectSubTab(sub)
+					end))
+				end
+			end
 		end
 
-		for index, tab in ipairs(self:_navTabs()) do
-			item(tab, list, index)
+		-- tabs, grouped by Category (a small caption before each new category)
+		local lastCategory = nil
+		for _, tab in ipairs(self:_navTabs()) do
+			local category = tab.CategorySpec
+			if category and category ~= lastCategory then
+				local caption = New("TextLabel", {
+					Name = "Category",
+					Size = UDim2.new(1, 0, 0, 26),
+					TextColor3 = C("textSubtle"),
+					TextSize = 11,
+					Weight = "SemiBold",
+					TextYAlignment = Enum.TextYAlignment.Bottom,
+					LayoutOrder = nextOrder(),
+					Parent = list,
+				}, { Create.pad(0, 0, 4, 10) })
+				loc:Bind(caption, "Text", function()
+					return Util.upper(loc:Get(category))
+				end)
+			end
+			lastCategory = category
+			item(tab, list)
 		end
 		if self.SettingsTab then
-			item(self.SettingsTab.Tab, holder, 2)
+			item(self.SettingsTab.Tab, holder)
+			self._navItems[self.SettingsTab.Tab].button.LayoutOrder = 2
 		end
 		if self.Branding then
 			New("Frame", {
@@ -11890,7 +12670,11 @@ __modules["ui/Window"] = function()
 		if Theme.Mode ~= "pc" and previous ~= tab then
 			self:_buildHeader()
 		end
-		self:_updateNavSelection()
+		if Theme.Mode == "pc" and previous ~= tab and ((previous and #previous.SubTabs > 0) or #tab.SubTabs > 0) then
+			self:_rebuildNav() -- the sub tab tree follows the open tab
+		else
+			self:_updateNavSelection()
+		end
 		self.TabChanged:Fire(tab)
 	end
 
@@ -12251,6 +13035,16 @@ __modules["ui/Window"] = function()
 
 	function Window:SetTheme(nameOrColors)
 		Theme.apply(nameOrColors)
+		self.Config:SaveInterface()
+	end
+
+	function Window:SetEffect(effect)
+		Theme.setEffect(effect)
+		self.Config:SaveInterface()
+	end
+
+	function Window:SetGlass(enabled)
+		Theme.setGlass(enabled)
 		self.Config:SaveInterface()
 	end
 

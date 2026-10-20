@@ -15,6 +15,7 @@ local Device = import("core/Device")
 local Maid = import("util/Maid")
 local Util = import("util/Util")
 local Pill = import("ui/Pill")
+local Effects = import("ui/Effects")
 
 local New = Create.New
 local C, S = Theme.c, Theme.s
@@ -62,6 +63,7 @@ function Detached.new(tab, options)
 	}))
 	self.Frame = frame
 	self.Scale = New("UIScale", { Parent = frame })
+	self.Effects = self.Maid:Add(Effects.new(frame, 0))
 	-- Everything laid out lives in Shell, so free-floating parts (resize grip)
 	-- stay out of the list layout.
 	local shell = New("Frame", {

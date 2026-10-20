@@ -30,6 +30,7 @@ function Tab.new(window, opts, internal)
 	self.DescSpec = opts.Description
 	self.Icon = opts.Icon or "dot"
 	self.BadgeSpec = opts.Badge
+	self.CategorySpec = opts.Category
 	self.Detachable = opts.Detachable ~= false and not self.Internal
 	self.DetachedWindow = nil
 	self.DetachChanged = Signal.new()
@@ -58,15 +59,41 @@ function Tab.new(window, opts, internal)
 		Parent = self.Page,
 	}, { Create.list("Horizontal", 12) })
 	Theme.bind(header, "Visible", S("pageHeader"))
+	-- icon tile (accent-tinted) gives every page a visual anchor
+	local tile = New("Frame", {
+		Name = "IconTile",
+		Size = UDim2.fromOffset(38, 38),
+		BackgroundColor3 = C("accent"),
+		BackgroundTransparency = 0.84,
+		LayoutOrder = 0,
+		Parent = header,
+	}, { Create.corner(10), Create.stroke("accent", 1, 0.7) })
+	Icons.new(self.Icon, 20, C("accent"), {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+	}).Frame.Parent = tile
 	local texts = New("Frame", {
 		Size = UDim2.fromScale(0, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
+		LayoutOrder = 1,
 		Parent = header,
-	}, { Create.list("Vertical", 4), Create.flex() })
+	}, { Create.list("Vertical", 2), Create.flex() })
+	-- breadcrumb: "Tab › Sub tab" (visible once the tab has sub tabs)
+	local crumb = New("TextLabel", {
+		Name = "Crumb",
+		Size = UDim2.new(1, 0, 0, 14),
+		TextColor3 = C("textSubtle"),
+		TextSize = 11,
+		Weight = "SemiBold",
+		Visible = false,
+		LayoutOrder = 0,
+		Parent = texts,
+	})
+	self.Crumb = crumb
 	local title = Create.text("", { weight = "Bold", size = "fontTitle", wrap = true, order = 1 })
 	title.Parent = texts
-	window.Loc:Bind(title, "Text", self.TitleSpec)
 	self.TitleLabel = title
+	self:_updateTitle()
 	if self.DescSpec then
 		local desc = Create.text("", { color = "textMuted", wrap = true, order = 2 })
 		Theme.bind(desc, "TextSize", Theme.f(function(_, s)
@@ -203,7 +230,13 @@ function Tab:SubTab(opts, icon)
 	self.Maid:Add(button.Activated:Connect(function()
 		self:SelectSubTab(sub)
 	end))
-	self.SubBar.Visible = true
+	-- PC shows sub tabs as a tree in the sidebar; touch shows the pill row
+	Theme.bind(self.SubBar, "Visible", Theme.f(function(_, s)
+		return s.touch and #self.SubTabs > 0
+	end))
+	if self.Window.Selected == self then
+		self.Window:_rebuildNav()
+	end
 	-- tab-level controls stay on top; an empty main body takes no space
 	self.Main.Frame.Visible = not self.Main:IsEmpty()
 	if not self.CurrentSubTab then
@@ -238,8 +271,29 @@ function Tab:SelectSubTab(which)
 			sub.IconObject:SetColor(on and C("accent") or C("textMuted"), true)
 		end
 	end
-	local _ = previous
 	self.Main.Frame.Visible = not self.Main:IsEmpty()
+	if previous ~= target then
+		self:_updateTitle()
+		if self.Window.Selected == self and Theme.Mode == "pc" then
+			self.Window:_rebuildNav()
+		end
+	end
+end
+
+-- Page title shows the current sub tab; the breadcrumb above it names the tab.
+function Tab:_updateTitle()
+	local loc = self.Window.Loc
+	local sub = self.CurrentSubTab
+	if sub then
+		self.Crumb.Visible = true
+		loc:Bind(self.Crumb, "Text", function()
+			return Util.upper(loc:Get(self.TitleSpec)) .. "  ›  " .. Util.upper(loc:Get(sub.TitleSpec))
+		end)
+		loc:Bind(self.TitleLabel, "Text", sub.TitleSpec)
+	else
+		self.Crumb.Visible = false
+		loc:Bind(self.TitleLabel, "Text", self.TitleSpec)
+	end
 end
 
 function Tab:Select()
@@ -253,7 +307,7 @@ end
 
 function Tab:SetTitle(spec)
 	self.TitleSpec = spec
-	self.Window.Loc:Bind(self.TitleLabel, "Text", spec)
+	self:_updateTitle()
 	self.Window:_rebuildNav()
 	return self
 end

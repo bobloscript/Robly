@@ -384,7 +384,7 @@ step("detach and attach", function()
 	window:SelectTab(farm)
 	check("placeholder shown", window.Placeholder and window.Placeholder.Frame.Visible)
 	window.Flags.autoFarm = true
-	check("value shared", control("autoFarm").Track.BackgroundColor3 == window.Library.Themes.RobScript.accent)
+	check("value shared", control("autoFarm").TrackGradient.Enabled == true and control("autoFarm").ActiveBar.BackgroundTransparency < 1)
 	local detached = farm.DetachedWindow
 	local handle = M.find(detached.Frame, function(node)
 		return node.Name == "DragHandle"
@@ -431,18 +431,22 @@ step("colours are linked", function()
 			end
 		end
 	end
-	local navBefore = window.Nav.BackgroundColor3
+	local function navColor()
+		local panel = window.Nav:FindFirstChild("Panel")
+		return panel and panel:FindFirstChildOfClass("Frame").BackgroundColor3
+	end
+	local navBefore = navColor()
 	local bgPicker = picker("bg")
 	check("background picker", bgPicker ~= nil)
 	bgPicker:Set(Color3.fromRGB(40, 10, 60))
-	check("sidebar follows background", window.Nav.BackgroundColor3 ~= navBefore)
+	check("sidebar follows background", navColor() ~= navBefore)
 	local card = control("autoFarm").Section.Card
 	check("cards follow background", card.BackgroundColor3 ~= Robly.Themes.RobScript.surface)
-	check("nav picker synced", picker("nav"):Get() == window.Nav.BackgroundColor3)
+	check("nav picker synced", picker("nav"):Get() == navColor())
 	picker("nav"):Set(Color3.fromRGB(200, 0, 0))
-	check("sidebar editable", window.Nav.BackgroundColor3 == Color3.fromRGB(200, 0, 0))
+	check("sidebar editable", navColor() == Color3.fromRGB(200, 0, 0))
 	bgPicker:Set(Color3.fromRGB(10, 10, 10))
-	check("hand-picked sidebar survives a background change", window.Nav.BackgroundColor3 == Color3.fromRGB(200, 0, 0))
+	check("hand-picked sidebar survives a background change", navColor() == Color3.fromRGB(200, 0, 0))
 	local text = M.clipboard
 	window:SetTheme("RobScript")
 	local exportButton = textOf(settings.Tab.Page, window.Loc:Lib("export"))
@@ -516,6 +520,72 @@ step("phone layout", function()
 end)
 
 -- 7. Configs -------------------------------------------------------------------------------
+step("1.4 hierarchy, effects, themes", function()
+	-- categories + sub tab tree in the sidebar
+	local combat
+	for _, tab in ipairs(window.AllTabs) do
+		if #tab.SubTabs > 0 then
+			combat = tab
+		end
+	end
+	check("tab with sub tabs found", combat ~= nil)
+	local function count(root, name)
+		local n = 0
+		for _, d in ipairs(root:GetDescendants()) do
+			if d.Name == name then
+				n += 1
+			end
+		end
+		return n
+	end
+	check("category captions", count(window.Nav, "Category") >= 3, count(window.Nav, "Category"))
+	window:SelectTab(combat)
+	task.wait(0.05)
+	check("sub tree under open tab", count(window.Nav, "SubTree") == 1)
+	check("sub tree rows", count(window.Nav, "Sub") == #combat.SubTabs)
+	check("pills hidden on pc", combat.SubBar.Visible == false)
+	combat:SelectSubTab(combat.SubTabs[2])
+	task.wait(0.05)
+	check("breadcrumb shown", combat.Crumb.Visible and combat.Crumb.Text:find("›") ~= nil, combat.Crumb.Text)
+	local item = window._navItems[combat]
+	check("selected bar visible", item and item.bar.Visible == true)
+	-- nesting
+	local speed = control("attackSpeed")
+	check("child hidden while parent off", speed.Visible == false)
+	window.Flags.fastAttack = true
+	task.wait(0.05)
+	check("child shown when parent on", speed.Visible == true)
+	check("child has guide", speed.Row:FindFirstChild("Guide") ~= nil)
+	check("active bar on", control("fastAttack").ActiveBar.BackgroundTransparency < 1)
+	window.Flags.fastAttack = false
+	check("sub header built", control("fastAttack").Section.Card:FindFirstChild("SubHeader") ~= nil)
+	-- effects
+	local lib = window.Library
+	for _, effect in ipairs({ "Aurora", "Stars", "Snow", "Grid", "Gradient", "None" }) do
+		lib:SetEffect(effect)
+		task.wait()
+		local n = #window.Effects.Holder:GetChildren()
+		check("effect " .. effect, (effect == "None") == (n == 0), n)
+	end
+	window:SetTheme("Synthwave")
+	task.wait()
+	check("preset sets effect", window.Effects._built == "Stars" and #window.Effects.Holder:GetChildren() > 0)
+	lib:SetGlass(true)
+	check("glass cards", control("autoFarm").Section.Frame.BackgroundTransparency > 0)
+	lib:SetGlass(false)
+	check("solid cards", control("autoFarm").Section.Frame.BackgroundTransparency == 0)
+	lib:SetGlass(true)
+	check("18 themes", #lib.ThemeOrder >= 18, #lib.ThemeOrder)
+	local grid
+	for _, d in ipairs(window.SettingsTab.Tab.Page:GetDescendants()) do
+		if d.Name == "Themes" then
+			grid = d
+		end
+	end
+	check("theme grid has all presets", grid and #grid:GetChildren() - 1 == #lib.ThemeOrder, grid and (grid.ClassName .. " " .. #grid:GetChildren() .. " " .. grid:GetFullName()))
+	window:SetTheme("RobScript")
+end)
+
 step("configs", function()
 	window.Flags.walkSpeed = 77
 	window:SaveConfig("PvP")

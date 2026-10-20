@@ -166,6 +166,65 @@ function Create.maxSize(x, y)
 	return Create.New("UISizeConstraint", { MaxSize = Theme.v2(x or math.huge, y or math.huge) })
 end
 
+-- A filled panel with only some corners rounded, built from non-overlapping
+-- pieces (3×3 grid; rounded corners are clipped quarter circles). Unlike a
+-- rounded frame + square "patches", it stays correct when translucent.
+--   Create.panel(parent, { color = token, transparency = token|number,
+--                          radius = n, round = { tl, tr, bl, br } })
+function Create.panel(parent, opts)
+	local r = opts.radius or 12
+	local round = opts.round or {}
+	local holder = Create.New("Frame", {
+		Name = "Panel",
+		Size = UDim2.fromScale(1, 1),
+		ZIndex = opts.zindex or 0,
+		Parent = parent,
+	})
+	local function piece(position, size)
+		return Create.New("Frame", {
+			Position = position,
+			Size = size,
+			BackgroundColor3 = opts.color,
+			BackgroundTransparency = opts.transparency or 0,
+			ZIndex = opts.zindex or 0,
+			Parent = holder,
+		})
+	end
+	-- centre column and the left/right middle strips
+	piece(UDim2.new(0, r, 0, 0), UDim2.new(1, -2 * r, 1, 0))
+	piece(UDim2.new(0, 0, 0, r), UDim2.new(0, r, 1, -2 * r))
+	piece(UDim2.new(1, -r, 0, r), UDim2.new(0, r, 1, -2 * r))
+	local corners = {
+		tl = { UDim2.new(0, 0, 0, 0), UDim2.fromOffset(0, 0) },
+		tr = { UDim2.new(1, -r, 0, 0), UDim2.fromOffset(-r, 0) },
+		bl = { UDim2.new(0, 0, 1, -r), UDim2.fromOffset(0, -r) },
+		br = { UDim2.new(1, -r, 1, -r), UDim2.fromOffset(-r, -r) },
+	}
+	for name, spec in pairs(corners) do
+		if round[name] then
+			local clip = Create.New("Frame", {
+				Position = spec[1],
+				Size = UDim2.fromOffset(r, r),
+				ClipsDescendants = true,
+				ZIndex = opts.zindex or 0,
+				Parent = holder,
+			})
+			local circle = Create.New("Frame", {
+				Position = spec[2],
+				Size = UDim2.fromOffset(2 * r, 2 * r),
+				BackgroundColor3 = opts.color,
+				BackgroundTransparency = opts.transparency or 0,
+				ZIndex = opts.zindex or 0,
+				Parent = clip,
+			})
+			Create.corner(r).Parent = circle
+		else
+			piece(spec[1], UDim2.fromOffset(r, r))
+		end
+	end
+	return holder
+end
+
 -- Text helper: Create.text(text, { size = "fontDesc", color = "textMuted", weight = "Medium", wrap = true })
 function Create.text(text, options)
 	options = options or {}

@@ -59,6 +59,25 @@ local PvP = Combat:SubTab({ Title = "PvP", Icon = "crosshair" })          -- «�
 
 Группбоксы стоят в две колонки и складываются в одну на узком окне и телефоне. Плотность на ПК: «Компактно» (по умолчанию) или «Просторно» — в Настройках или опцией `Density`. Работают и имена из других либ: `CreateToggle`, `AddLeftGroupbox`, `CreateSubTab` и т. д.
 
+## Иерархия, эффекты и темы (1.4)
+
+```lua
+local Farm = Window:Tab({ Title = "Фарм", Icon = "leaf", Category = "Игра" })  -- подпись группы в сайдбаре
+local Combat = Window:Tab({ Title = "Бой", Icon = "swords", Category = "Игра" })
+Combat:SubTab({ Title = "PvP", Icon = "crosshair" })   -- на ПК раскрывается деревом под открытой вкладкой
+
+local auto = Farm:Section({ Title = "Автофарм", Icon = "leaf", Description = "Квесты и мобы" })
+auto:Toggle({ Title = "Быстрая атака", Flag = "fast" })
+auto:Slider({ Title = "Скорость", Parent = "fast", Min = 1, Max = 10 })  -- с отступом, видна только при включённом родителе
+auto:Header("Цели")                                    -- подзаголовок внутри группбокса
+
+Robly:SetTheme("Synthwave")   -- 18 тем
+Robly:SetEffect("Snow")       -- None, Aurora, Stars, Snow, Grid, Gradient
+Robly:SetGlass(true)          -- полупрозрачные панели
+```
+
+Второй акцент `accent2`: тоглы, слайдеры, прогресс, Primary-кнопки и маркер в сайдбаре закрашены градиентом accent → accent2. Включённый тогл или чекбокс подсвечивает строку акцентной полосой слева.
+
 ## Языки
 
 ```lua

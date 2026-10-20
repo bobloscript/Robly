@@ -35,8 +35,8 @@ local Window = Robly:CreateWindow({
 })
 
 -- Home ---------------------------------------------------------------------------
-local Home = Window:Tab({ Title = "tab.home", Icon = "home" })
-local status = Home:Section({ Title = { en = "Status", ru = "Статус" } })
+local Home = Window:Tab({ Title = "tab.home", Icon = "home", Category = { en = "Main", ru = "Главное" } })
+local status = Home:Section({ Title = { en = "Status", ru = "Статус" }, Icon = "activity" })
 status:Paragraph({
 	Title = { en = "Farm status", ru = "Статус фарма" },
 	Content = {
@@ -49,9 +49,13 @@ local progress = status:ProgressBar({ Title = { en = "Up to level 1500", ru = "�
 status:Code({ Title = "Luau", Code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/bobloscript/Robly/main/dist/robly.lua"))()' })
 
 -- Farm -----------------------------------------------------------------------------
-local Farm = Window:Tab({ Title = "tab.farm", Description = "farm.desc", Icon = "leaf", Badge = "12" })
+local Farm = Window:Tab({ Title = "tab.farm", Description = "farm.desc", Icon = "leaf", Badge = "12", Category = { en = "Game", ru = "Игра" } })
 
-local auto = Farm:Section({ Title = { en = "Auto farm", ru = "Автофарм" } })
+local auto = Farm:Section({
+	Title = { en = "Auto farm", ru = "Автофарм" },
+	Icon = "leaf",
+	Description = { en = "Quests, mobs and islands", ru = "Квесты, мобы и острова" },
+})
 auto:Toggle({
 	Title = "farm.auto",
 	Description = "farm.auto.desc",
@@ -81,14 +85,19 @@ auto:Segmented({
 	Default = "melee",
 })
 auto:Stepper({ Title = "farm.mobs", Flag = "mobs", Min = 1, Max = 8, Default = 3 })
+auto:Header({ en = "Attack", ru = "Атака" })
+auto:Toggle({ Title = { en = "Fast attack", ru = "Быстрая атака" }, Flag = "fastAttack", Icon = "zap" })
+-- Parent: indented under "Fast attack" and shown only while it is on
+auto:Slider({ Title = { en = "Attack speed", ru = "Скорость атаки" }, Flag = "attackSpeed", Parent = "fastAttack", Min = 1, Max = 10, Default = 5 })
+auto:Checkbox({ Title = { en = "Skip animations", ru = "Пропускать анимации" }, Flag = "skipAnims", Parent = "fastAttack" })
 
-local chests = Farm:Section({ Title = { en = "Chests", ru = "Сундуки" }, Collapsed = true })
+local chests = Farm:Section({ Title = { en = "Chests", ru = "Сундуки" }, Icon = "box", Collapsed = true })
 chests:Toggle({ Title = { en = "Chest farm", ru = "Фарм сундуков" }, Flag = "chestFarm", QuickButton = true, Icon = "box" })
 chests:Toggle({ Title = { en = "Server hop when empty", ru = "Сервер-хоп, если пусто" }, Flag = "serverHop", Default = true })
 chests:Checkbox({ Title = { en = "Collect fruits", ru = "Собирать фрукты" }, Flag = "collectFruits", Default = true })
 chests:Checkbox({ Title = { en = "Ignore players", ru = "Игнорировать игроков" }, Flag = "ignorePlayers" })
 
-local bosses = Farm:Section({ Title = { en = "Bosses", ru = "Боссы" } })
+local bosses = Farm:Section({ Title = { en = "Bosses", ru = "Боссы" }, Icon = "skull" })
 bosses:Toggle({
 	Title = { en = "Boss farm", ru = "Фарм боссов" },
 	Flag = "bossFarm",
@@ -98,7 +107,7 @@ bosses:Toggle({
 bosses:Slider({ Title = { en = "Mob level", ru = "Уровень мобов" }, Flag = "mobLevel", Range = true, Min = 0, Max = 1000, Step = 50, Default = { 200, 750 } })
 
 -- Combat ---------------------------------------------------------------------------
-local Combat = Window:Tab({ Title = "tab.combat", Icon = "swords" })
+local Combat = Window:Tab({ Title = "tab.combat", Icon = "swords", Category = { en = "Game", ru = "Игра" } })
 local PvE = Combat:SubTab({ Title = "PvE", Icon = "skull" })
 local PvP = Combat:SubTab({ Title = "PvP", Icon = "crosshair" })
 local aim = PvP:AddLeftGroupbox({ Title = { en = "Aim", ru = "Прицел" }, Icon = "crosshair" })
@@ -146,8 +155,8 @@ weapons:Keybind({
 })
 
 -- Teleports --------------------------------------------------------------------------
-local Teleports = Window:Tab({ Title = "tab.teleport", Icon = "pin" })
-local islands = Teleports:Section({ Title = { en = "Islands", ru = "Острова" } })
+local Teleports = Window:Tab({ Title = "tab.teleport", Icon = "pin", Category = { en = "World", ru = "Мир" } })
+local islands = Teleports:Section({ Title = { en = "Islands", ru = "Острова" }, Icon = "map" })
 for _, island in ipairs({ "Starter Island", "Jungle", "Desert", "Snow Mountain", "Sky Island" }) do
 	islands:Button({
 		Title = island,
@@ -163,15 +172,15 @@ for _, island in ipairs({ "Starter Island", "Jungle", "Desert", "Snow Mountain",
 end
 
 -- Visuals ------------------------------------------------------------------------------
-local Visual = Window:Tab({ Title = "tab.visual", Icon = "eye" })
-local esp = Visual:Section({ Title = "ESP" })
+local Visual = Window:Tab({ Title = "tab.visual", Icon = "eye", Category = { en = "World", ru = "Мир" } })
+local esp = Visual:Section({ Title = "ESP", Icon = "eye" })
 esp:Toggle({ Title = { en = "Player ESP", ru = "ESP игроков" }, Flag = "esp" })
 esp:ColorPicker({ Title = { en = "ESP colour", ru = "Цвет ESP" }, Flag = "espColor", Default = "#FF3B7F", VisibleWhen = { Flag = "esp" } })
 esp:Slider({ Title = { en = "Max distance", ru = "Макс. дистанция" }, Flag = "espDistance", Min = 100, Max = 5000, Step = 100, Default = 1500, VisibleWhen = { Flag = "esp" } })
 
 -- Player -------------------------------------------------------------------------------
-local Player = Window:Tab({ Title = "tab.player", Icon = "user" })
-local movement = Player:Section({ Title = { en = "Movement", ru = "Движение" } })
+local Player = Window:Tab({ Title = "tab.player", Icon = "user", Category = { en = "World", ru = "Мир" } })
+local movement = Player:Section({ Title = { en = "Movement", ru = "Движение" }, Icon = "footprints" })
 movement:Slider({ Title = { en = "Walk speed", ru = "Скорость" }, Flag = "walkSpeed", Min = 16, Max = 120, Default = 48 })
 movement:Input({ Title = { en = "Player name", ru = "Ник игрока" }, Flag = "target", Placeholder = { en = "For example, Builderman", ru = "Например, Builderman" } })
 movement:Input({ Title = { en = "Radius", ru = "Радиус" }, Flag = "radius", Numeric = true, Default = 150, Suffix = "studs" })
