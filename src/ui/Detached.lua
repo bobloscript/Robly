@@ -59,20 +59,36 @@ function Detached.new(tab, options)
 	}, {
 		Create.corner("rWindow"),
 		Create.stroke("borderStrong"),
-		Create.list("Vertical", 0),
 	}))
 	self.Frame = frame
 	self.Scale = New("UIScale", { Parent = frame })
+	-- Everything laid out lives in Shell, so free-floating parts (resize grip)
+	-- stay out of the list layout.
+	local shell = New("Frame", {
+		Name = "Shell",
+		Size = UDim2.fromScale(1, 1),
+		Parent = frame,
+	}, { Create.list("Vertical", 0) })
 
 	-- Header ---------------------------------------------------------------------
-	local header = New("Frame", {
+	local headerFrame = New("Frame", {
 		Name = "Header",
-		Size = Theme.f(function(_, s)
-			return UDim2.new(1, 0, 0, s.touch and 44 or 44)
-		end),
+		Size = UDim2.new(1, 0, 0, 44),
 		LayoutOrder = 1,
-		Active = true,
-		Parent = frame,
+		Parent = shell,
+	})
+	-- transparent button under the header content: the drag handle
+	local dragHandle = New("TextButton", {
+		Name = "DragHandle",
+		Size = UDim2.fromScale(1, 1),
+		ZIndex = 1,
+		Parent = headerFrame,
+	})
+	local header = New("Frame", {
+		Name = "Row",
+		Size = UDim2.fromScale(1, 1),
+		ZIndex = 2,
+		Parent = headerFrame,
 	}, { Create.pad(0, 4, 0, 14), Create.list("Horizontal", 4, { valign = "Center" }) })
 	local title = New("TextLabel", {
 		Size = UDim2.fromScale(0, 1),
@@ -117,13 +133,13 @@ function Detached.new(tab, options)
 		Size = UDim2.new(1, 0, 0, 1),
 		BackgroundColor3 = C("divider"),
 		LayoutOrder = 2,
-		Parent = frame,
+		Parent = shell,
 	})
 	local content = New("Frame", {
 		Name = "Content",
 		Size = UDim2.fromScale(1, 0),
 		LayoutOrder = 3,
-		Parent = frame,
+		Parent = shell,
 	}, { Create.flex(), Create.pad(Theme.f(function(_, s)
 		return UDim.new(0, s.touch and 8 or 12)
 	end), "contentX", "contentBottom", "contentX") })
@@ -147,11 +163,13 @@ function Detached.new(tab, options)
 	else
 		local mainPos, mainSize = rectOf(window.Frame)
 		if mainPos then
+			-- cascade, so a second window never hides exactly behind the first
+			local cascade = window:DetachedCount() * 28
 			local right = mainPos.X + mainSize.X + 16
 			if right + size.X < Device.viewport().X - 8 then
-				position = Vector2.new(right, mainPos.Y)
+				position = Vector2.new(right, mainPos.Y + cascade)
 			else
-				position = Vector2.new(mainPos.X - size.X - 16, mainPos.Y)
+				position = Vector2.new(mainPos.X - size.X - 16 - cascade, mainPos.Y + cascade)
 			end
 		else
 			position = Vector2.new(24, Device.inset() + 24)
@@ -187,7 +205,10 @@ function Detached.new(tab, options)
 
 	-- Drag by header; drop on the main sidebar returns the tab (PC)
 	local overNav = false
-	Drag.attach(header, {
+	Drag.attach(dragHandle, {
+		onStart = function()
+			frame.ZIndex = window.Root:NextZ()
+		end,
 		onMove = function(pointer, delta)
 			local p = frame.AbsolutePosition + delta
 			frame.Position = UDim2.fromOffset(p.X, p.Y)

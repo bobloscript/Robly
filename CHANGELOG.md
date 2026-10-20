@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.2 — 2026-10-20
+
+Fixes from the first in-game test.
+
+- Theme and language bindings were kept in weak tables. Roblox collects the Lua wrapper of a live Instance, so labels, strokes and corner patches nobody referenced stopped updating: after switching to Light/Graphite/Midnight parts of the window kept the old colours (title, Export/Import, "New profile", search field border, sidebar patches), and language switching had the same problem. Bindings are now strong and removed when the instance is destroyed.
+- Window and detached windows can be dragged again: the header drag uses a transparent button under the header content (Frames don't receive input reliably).
+- The resize grip sat inside the window's list layout: it showed up as "//" in the top-left corner and pushed the whole window down by 16 px. Layout now lives in an inner Shell frame.
+- A second detached window no longer opens exactly behind the first (cascades by 28 px).
+- Collapsed sections show the right number of functions ("All colours · 27 features" instead of "0").
+- Pressing a window's header raises it above other windows.
+
 ## 1.0.1 — 2026-10-20
 
 Bug hunt fixes.

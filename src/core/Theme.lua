@@ -211,16 +211,37 @@ end
 
 -- Bindings -------------------------------------------------------------------------
 
-local bindings = setmetatable({}, { __mode = "k" })
+-- Strong tables on purpose: Roblox may garbage-collect the Lua wrapper of an
+-- Instance that is still alive in the game, so a weak-keyed table would
+-- silently lose bindings of labels nobody keeps a reference to. Entries are
+-- removed when the instance is destroyed.
+local bindings = {}
 -- colour tweens started by Theme.set; cancelled on refresh so an old tween
 -- can't finish on a colour from the previous theme
-local tweens = setmetatable({}, { __mode = "k" })
+local tweens = {}
+local watched = {}
+
+local function watch(instance)
+	if watched[instance] then
+		return
+	end
+	watched[instance] = true
+	pcall(function()
+		instance.Destroying:Connect(function()
+			bindings[instance] = nil
+			tweens[instance] = nil
+			watched[instance] = nil
+		end)
+	end)
+end
+Theme.watchDestroy = watch
 
 function Theme.bind(instance, prop, token)
 	local props = bindings[instance]
 	if not props then
 		props = {}
 		bindings[instance] = props
+		watch(instance)
 	end
 	props[prop] = token
 	instance[prop] = Theme.resolve(token)
@@ -240,6 +261,7 @@ function Theme.set(instance, prop, token, preset)
 	if not props then
 		props = {}
 		bindings[instance] = props
+		watch(instance)
 	end
 	props[prop] = token
 	local tween = Motion.tween(instance, { [prop] = Theme.resolve(token) }, preset or "color")

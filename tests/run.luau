@@ -260,6 +260,23 @@ step("window toggle key", function()
 	check("RightShift restores", window.Minimized == false)
 end)
 
+step("window drag + layout parts", function()
+	check("frame itself has no list layout", window.Frame:FindFirstChildOfClass("UIListLayout") == nil)
+	check("resize grip floats in frame", window.Frame:FindFirstChild("Resize") ~= nil)
+	local handle = window.DragHandle
+	check("drag handle is a button", handle and handle:IsA("GuiButton"))
+	local before = window.Frame.Position
+	local start = M.input(Enum.UserInputType.MouseButton1, 400, 100)
+	M.fire(handle, "InputBegan", start)
+	M.UIS.InputChanged:Fire(M.input(Enum.UserInputType.MouseMovement, 440, 140))
+	M.UIS.InputChanged:Fire(M.input(Enum.UserInputType.MouseMovement, 460, 160))
+	M.UIS.InputEnded:Fire(start)
+	check("window moved by header drag", window.Frame.Position ~= before, tostring(window.Frame.Position))
+	window.Frame.Position = before
+	local src = fs.readFile("src/core/Theme.lua") .. fs.readFile("src/core/Localization.lua")
+	check("bindings are not weak tables", src:find('__mode = "k"', 1, true) == nil)
+end)
+
 -- 4. Search, tabs, detach -----------------------------------------------------------------
 step("search", function()
 	window.Search:SetQuery("фарм")

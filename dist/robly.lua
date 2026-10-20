@@ -1,5 +1,5 @@
 --[[
-	Robly v1.0.1 — UI library for Roblox scripts by RobScript
+	Robly v1.0.2 — UI library for Roblox scripts by RobScript
 	https://robscript.com · https://github.com/bobloscript/Robly
 
 	Built file. Edit the modules in src/ and run `python3 tools/build.py`.
@@ -3257,7 +3257,8 @@ __modules["core/Localization"] = function()
 		self.Dev = dev == true
 		self.Current = self.Default
 		self.Changed = Signal.new()
-		self._bindings = setmetatable({}, { __mode = "k" })
+		-- strong on purpose (see Theme bindings); cleaned when instances are destroyed
+		self._bindings = {}
 		self._warned = {}
 
 		-- Script with one language: library texts still follow the player's
@@ -3419,6 +3420,11 @@ __modules["core/Localization"] = function()
 		if not entries then
 			entries = {}
 			self._bindings[instance] = entries
+			pcall(function()
+				instance.Destroying:Connect(function()
+					self._bindings[instance] = nil
+				end)
+			end)
 		end
 		entries[prop] = { spec = spec, vars = vars }
 		local v = type(vars) == "function" and vars() or vars
@@ -4578,16 +4584,37 @@ __modules["core/Theme"] = function()
 
 	-- Bindings -------------------------------------------------------------------------
 
-	local bindings = setmetatable({}, { __mode = "k" })
+	-- Strong tables on purpose: Roblox may garbage-collect the Lua wrapper of an
+	-- Instance that is still alive in the game, so a weak-keyed table would
+	-- silently lose bindings of labels nobody keeps a reference to. Entries are
+	-- removed when the instance is destroyed.
+	local bindings = {}
 	-- colour tweens started by Theme.set; cancelled on refresh so an old tween
 	-- can't finish on a colour from the previous theme
-	local tweens = setmetatable({}, { __mode = "k" })
+	local tweens = {}
+	local watched = {}
+
+	local function watch(instance)
+		if watched[instance] then
+			return
+		end
+		watched[instance] = true
+		pcall(function()
+			instance.Destroying:Connect(function()
+				bindings[instance] = nil
+				tweens[instance] = nil
+				watched[instance] = nil
+			end)
+		end)
+	end
+	Theme.watchDestroy = watch
 
 	function Theme.bind(instance, prop, token)
 		local props = bindings[instance]
 		if not props then
 			props = {}
 			bindings[instance] = props
+			watch(instance)
 		end
 		props[prop] = token
 		instance[prop] = Theme.resolve(token)
@@ -4607,6 +4634,7 @@ __modules["core/Theme"] = function()
 		if not props then
 			props = {}
 			bindings[instance] = props
+			watch(instance)
 		end
 		props[prop] = token
 		local tween = Motion.tween(instance, { [prop] = Theme.resolve(token) }, preset or "color")
@@ -4769,7 +4797,7 @@ __modules["init"] = function()
 	local Window = import("ui/Window")
 
 	local Robly = {
-		Version = "1.0.1",
+		Version = "1.0.2",
 		Windows = {},
 		Themes = Theme.Presets,
 		Icons = Icons.Data,
@@ -6845,20 +6873,36 @@ __modules["ui/Detached"] = function()
 		}, {
 			Create.corner("rWindow"),
 			Create.stroke("borderStrong"),
-			Create.list("Vertical", 0),
 		}))
 		self.Frame = frame
 		self.Scale = New("UIScale", { Parent = frame })
+		-- Everything laid out lives in Shell, so free-floating parts (resize grip)
+		-- stay out of the list layout.
+		local shell = New("Frame", {
+			Name = "Shell",
+			Size = UDim2.fromScale(1, 1),
+			Parent = frame,
+		}, { Create.list("Vertical", 0) })
 
 		-- Header ---------------------------------------------------------------------
-		local header = New("Frame", {
+		local headerFrame = New("Frame", {
 			Name = "Header",
-			Size = Theme.f(function(_, s)
-				return UDim2.new(1, 0, 0, s.touch and 44 or 44)
-			end),
+			Size = UDim2.new(1, 0, 0, 44),
 			LayoutOrder = 1,
-			Active = true,
-			Parent = frame,
+			Parent = shell,
+		})
+		-- transparent button under the header content: the drag handle
+		local dragHandle = New("TextButton", {
+			Name = "DragHandle",
+			Size = UDim2.fromScale(1, 1),
+			ZIndex = 1,
+			Parent = headerFrame,
+		})
+		local header = New("Frame", {
+			Name = "Row",
+			Size = UDim2.fromScale(1, 1),
+			ZIndex = 2,
+			Parent = headerFrame,
 		}, { Create.pad(0, 4, 0, 14), Create.list("Horizontal", 4, { valign = "Center" }) })
 		local title = New("TextLabel", {
 			Size = UDim2.fromScale(0, 1),
@@ -6903,13 +6947,13 @@ __modules["ui/Detached"] = function()
 			Size = UDim2.new(1, 0, 0, 1),
 			BackgroundColor3 = C("divider"),
 			LayoutOrder = 2,
-			Parent = frame,
+			Parent = shell,
 		})
 		local content = New("Frame", {
 			Name = "Content",
 			Size = UDim2.fromScale(1, 0),
 			LayoutOrder = 3,
-			Parent = frame,
+			Parent = shell,
 		}, { Create.flex(), Create.pad(Theme.f(function(_, s)
 			return UDim.new(0, s.touch and 8 or 12)
 		end), "contentX", "contentBottom", "contentX") })
@@ -6933,11 +6977,13 @@ __modules["ui/Detached"] = function()
 		else
 			local mainPos, mainSize = rectOf(window.Frame)
 			if mainPos then
+				-- cascade, so a second window never hides exactly behind the first
+				local cascade = window:DetachedCount() * 28
 				local right = mainPos.X + mainSize.X + 16
 				if right + size.X < Device.viewport().X - 8 then
-					position = Vector2.new(right, mainPos.Y)
+					position = Vector2.new(right, mainPos.Y + cascade)
 				else
-					position = Vector2.new(mainPos.X - size.X - 16, mainPos.Y)
+					position = Vector2.new(mainPos.X - size.X - 16 - cascade, mainPos.Y + cascade)
 				end
 			else
 				position = Vector2.new(24, Device.inset() + 24)
@@ -6973,7 +7019,10 @@ __modules["ui/Detached"] = function()
 
 		-- Drag by header; drop on the main sidebar returns the tab (PC)
 		local overNav = false
-		Drag.attach(header, {
+		Drag.attach(dragHandle, {
+			onStart = function()
+				frame.ZIndex = window.Root:NextZ()
+			end,
 			onMove = function(pointer, delta)
 				local p = frame.AbsolutePosition + delta
 				frame.Position = UDim2.fromOffset(p.X, p.Y)
@@ -8022,9 +8071,7 @@ __modules["ui/Section"] = function()
 				LayoutOrder = 3,
 				Parent = header,
 			})
-			window.Loc:Bind(self.Hint, "Text", function()
-				return "· " .. window.Loc:Lib("functions", { n = self:Count() })
-			end)
+			self:_refreshHint()
 			self.Header = header
 			if opts.Collapsible ~= false then
 				self.Maid:Add(header.Activated:Connect(function()
@@ -8055,6 +8102,14 @@ __modules["ui/Section"] = function()
 		return self
 	end
 
+	function Section:_refreshHint()
+		if self.Hint then
+			self.Window.Loc:Bind(self.Hint, "Text", function()
+				return "· " .. self.Window.Loc:Lib("functions", { n = self:Count() })
+			end)
+		end
+	end
+
 	function Section:_nextOrder()
 		self._order += 1
 		return self._order
@@ -8063,6 +8118,7 @@ __modules["ui/Section"] = function()
 	function Section:_add(control)
 		table.insert(self.Controls, control)
 		self:_updateDividers()
+		self:_refreshHint()
 		self.Window:_controlAdded(control)
 	end
 
@@ -8106,7 +8162,7 @@ __modules["ui/Section"] = function()
 		self:_updateDividers()
 		if self.Hint then
 			self.Hint.Visible = collapsed
-			self.Window.Loc:Refresh()
+			self:_refreshHint()
 		end
 		if self.Chevron then
 			local rotation = collapsed and -90 or 0
@@ -8610,9 +8666,15 @@ __modules["ui/Window"] = function()
 			Create.stroke("border"),
 		}))
 		self.Scale = New("UIScale", { Parent = self.Frame })
-		self.Header = New("Frame", { Name = "Header", Active = true, Parent = self.Frame })
-		self.Nav = New("Frame", { Name = "Nav", BackgroundColor3 = C("nav"), Parent = self.Frame })
-		self.Main = New("Frame", { Name = "Main", Parent = self.Frame }, {
+		-- Everything laid out lives in Shell; the resize grip floats in Frame and
+		-- must not be part of the list layout.
+		self.Shell = New("Frame", { Name = "Shell", Size = UDim2.fromScale(1, 1), Parent = self.Frame })
+		self.Header = New("Frame", { Name = "Header", Parent = self.Shell })
+		-- transparent button under the header content: the drag handle (Frames
+		-- don't receive input reliably, buttons do)
+		self.DragHandle = New("TextButton", { Name = "DragHandle", Size = UDim2.fromScale(1, 1), ZIndex = 1, Parent = self.Header })
+		self.Nav = New("Frame", { Name = "Nav", BackgroundColor3 = C("nav"), Parent = self.Shell })
+		self.Main = New("Frame", { Name = "Main", Parent = self.Shell }, {
 			Create.pad("contentTop", "contentX", "contentBottom", "contentX"),
 		})
 		self.PageHost = New("Frame", { Name = "Pages", Size = UDim2.fromScale(1, 1), Parent = self.Main })
@@ -8625,8 +8687,9 @@ __modules["ui/Window"] = function()
 		end))
 
 		-- Move by header (not when pressing inside the search field)
-		Drag.attach(self.Header, {
+		Drag.attach(self.DragHandle, {
 			onStart = function(pointer)
+				self.Frame.ZIndex = root:NextZ()
 				local field = self.SearchField
 				if field and field.Parent and Theme.Mode == "pc" then
 					local p, s = field.AbsolutePosition, field.AbsoluteSize
@@ -8700,7 +8763,7 @@ __modules["ui/Window"] = function()
 	-- Arrange header / nav / main for the current mode.
 	function Window:_applyLayout()
 		local mode = Theme.Mode
-		local frame = self.Frame
+		local frame = self.Shell
 		local header, nav, main = self.Header, self.Nav, self.Main
 		-- move the persistent parts out before the old containers are destroyed
 		for _, part in ipairs({ header, nav, main }) do
@@ -8880,6 +8943,7 @@ __modules["ui/Window"] = function()
 		local row = maid:Add(New("Frame", {
 			Name = "Row",
 			Size = UDim2.fromScale(1, 1),
+			ZIndex = 2,
 			Parent = header,
 		}, {
 			Create.list("Horizontal", mode == "pc" and 12 or 4, { valign = "Center" }),

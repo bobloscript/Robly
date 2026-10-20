@@ -165,9 +165,15 @@ function Window:_build()
 		Create.stroke("border"),
 	}))
 	self.Scale = New("UIScale", { Parent = self.Frame })
-	self.Header = New("Frame", { Name = "Header", Active = true, Parent = self.Frame })
-	self.Nav = New("Frame", { Name = "Nav", BackgroundColor3 = C("nav"), Parent = self.Frame })
-	self.Main = New("Frame", { Name = "Main", Parent = self.Frame }, {
+	-- Everything laid out lives in Shell; the resize grip floats in Frame and
+	-- must not be part of the list layout.
+	self.Shell = New("Frame", { Name = "Shell", Size = UDim2.fromScale(1, 1), Parent = self.Frame })
+	self.Header = New("Frame", { Name = "Header", Parent = self.Shell })
+	-- transparent button under the header content: the drag handle (Frames
+	-- don't receive input reliably, buttons do)
+	self.DragHandle = New("TextButton", { Name = "DragHandle", Size = UDim2.fromScale(1, 1), ZIndex = 1, Parent = self.Header })
+	self.Nav = New("Frame", { Name = "Nav", BackgroundColor3 = C("nav"), Parent = self.Shell })
+	self.Main = New("Frame", { Name = "Main", Parent = self.Shell }, {
 		Create.pad("contentTop", "contentX", "contentBottom", "contentX"),
 	})
 	self.PageHost = New("Frame", { Name = "Pages", Size = UDim2.fromScale(1, 1), Parent = self.Main })
@@ -180,8 +186,9 @@ function Window:_build()
 	end))
 
 	-- Move by header (not when pressing inside the search field)
-	Drag.attach(self.Header, {
+	Drag.attach(self.DragHandle, {
 		onStart = function(pointer)
+			self.Frame.ZIndex = root:NextZ()
 			local field = self.SearchField
 			if field and field.Parent and Theme.Mode == "pc" then
 				local p, s = field.AbsolutePosition, field.AbsoluteSize
@@ -255,7 +262,7 @@ end
 -- Arrange header / nav / main for the current mode.
 function Window:_applyLayout()
 	local mode = Theme.Mode
-	local frame = self.Frame
+	local frame = self.Shell
 	local header, nav, main = self.Header, self.Nav, self.Main
 	-- move the persistent parts out before the old containers are destroyed
 	for _, part in ipairs({ header, nav, main }) do
@@ -435,6 +442,7 @@ function Window:_buildHeader()
 	local row = maid:Add(New("Frame", {
 		Name = "Row",
 		Size = UDim2.fromScale(1, 1),
+		ZIndex = 2,
 		Parent = header,
 	}, {
 		Create.list("Horizontal", mode == "pc" and 12 or 4, { valign = "Center" }),

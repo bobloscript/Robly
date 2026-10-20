@@ -84,7 +84,8 @@ function Localization.new(options, dev)
 	self.Dev = dev == true
 	self.Current = self.Default
 	self.Changed = Signal.new()
-	self._bindings = setmetatable({}, { __mode = "k" })
+	-- strong on purpose (see Theme bindings); cleaned when instances are destroyed
+	self._bindings = {}
 	self._warned = {}
 
 	-- Script with one language: library texts still follow the player's
@@ -246,6 +247,11 @@ function Localization:Bind(instance, prop, spec, vars)
 	if not entries then
 		entries = {}
 		self._bindings[instance] = entries
+		pcall(function()
+			instance.Destroying:Connect(function()
+				self._bindings[instance] = nil
+			end)
+		end)
 	end
 	entries[prop] = { spec = spec, vars = vars }
 	local v = type(vars) == "function" and vars() or vars

@@ -71,9 +71,7 @@ function Section.new(tab, opts)
 			LayoutOrder = 3,
 			Parent = header,
 		})
-		window.Loc:Bind(self.Hint, "Text", function()
-			return "· " .. window.Loc:Lib("functions", { n = self:Count() })
-		end)
+		self:_refreshHint()
 		self.Header = header
 		if opts.Collapsible ~= false then
 			self.Maid:Add(header.Activated:Connect(function()
@@ -104,6 +102,14 @@ function Section.new(tab, opts)
 	return self
 end
 
+function Section:_refreshHint()
+	if self.Hint then
+		self.Window.Loc:Bind(self.Hint, "Text", function()
+			return "· " .. self.Window.Loc:Lib("functions", { n = self:Count() })
+		end)
+	end
+end
+
 function Section:_nextOrder()
 	self._order += 1
 	return self._order
@@ -112,6 +118,7 @@ end
 function Section:_add(control)
 	table.insert(self.Controls, control)
 	self:_updateDividers()
+	self:_refreshHint()
 	self.Window:_controlAdded(control)
 end
 
@@ -155,7 +162,7 @@ function Section:SetCollapsed(collapsed, instant)
 	self:_updateDividers()
 	if self.Hint then
 		self.Hint.Visible = collapsed
-		self.Window.Loc:Refresh()
+		self:_refreshHint()
 	end
 	if self.Chevron then
 		local rotation = collapsed and -90 or 0
