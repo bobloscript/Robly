@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.0 — 2026-10-20
+
+- Loading screen: `CreateWindow({ Loading = true })` or `Loading = { Title, Subtitle, Duration }` shows a branded splash (gradient logo, title, progress bar, background effect) that fades into the window. `Duration = false` waits for the script: `Window.Splash:Set(0.5, "Loading modules…")`, `Window.Splash:Done()`.
+- Signature look: cards have an accent-tinted outline that fades into the normal border; rows get an accent wash on hover; an enabled switch glows.
+- New background effects: Petals (Sakura), Fireflies (Matcha), Particles (Coffee).
+
 ## 1.4.1 — 2026-10-20
 
 - Background effects are much more visible: soft radial glows (stacked circles) instead of faint bands, more and brighter stars and snowflakes (snow is spread over the whole window from the start), a stronger grid with two drifting glows, a brighter gradient with a moving spot.

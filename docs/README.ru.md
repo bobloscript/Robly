@@ -72,7 +72,8 @@ auto:Slider({ Title = "Скорость", Parent = "fast", Min = 1, Max = 10 }) 
 auto:Header("Цели")                                    -- подзаголовок внутри группбокса
 
 Robly:SetTheme("Synthwave")   -- 18 тем
-Robly:SetEffect("Snow")       -- None, Aurora, Stars, Snow, Grid, Gradient
+Robly:SetEffect("Snow")       -- None, Aurora, Stars, Snow, Petals, Fireflies, Particles, Grid, Gradient
+-- экран загрузки: CreateWindow({ Loading = { Subtitle = "Blox Fruits" } })
 Robly:SetGlass(true)          -- полупрозрачные панели
 ```
 

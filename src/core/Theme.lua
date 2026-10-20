@@ -110,9 +110,9 @@ local PRESETS = {
 	{ "Light", { accent = "E0245E", accent2 = "FF7A59", bg = "FFFFFF", text = "16161A", success = "0E9F6E", warning = "B7791F", danger = "E5484D" }, "None" },
 	{ "Graphite", { accent = "E6E6E8", accent2 = "9A9AA2", bg = "1B1B1D", text = "EDEDEE" }, "Grid" },
 	{ "Midnight", { accent = "4C8DFF", accent2 = "8B5CF6", bg = "0E1320", text = "E8EDF7" }, "Stars" },
-	{ "Sakura", { accent = "FF8FB8", accent2 = "FFC2D6", bg = "1A1216", text = "F7EEF2" }, "Snow" },
+	{ "Sakura", { accent = "FF8FB8", accent2 = "FFC2D6", bg = "1A1216", text = "F7EEF2" }, "Petals" },
 	{ "Ocean", { accent = "22D3EE", accent2 = "3B82F6", bg = "0A1620", text = "E6F4F8" }, "Aurora" },
-	{ "Matcha", { accent = "7BD389", accent2 = "C3E88D", bg = "111712", text = "ECF3EC" }, "Aurora" },
+	{ "Matcha", { accent = "7BD389", accent2 = "C3E88D", bg = "111712", text = "ECF3EC" }, "Fireflies" },
 	{ "Sunset", { accent = "FF7A45", accent2 = "FF3D7F", bg = "1A1012", text = "FBEDE7" }, "Gradient" },
 	{ "Amber", { accent = "FFB020", accent2 = "FF7A00", bg = "16130C", text = "F7F1E3" }, "Gradient" },
 	{ "Crimson", { accent = "FF4D4D", accent2 = "B3123A", bg = "140C0D", text = "F5ECEC" }, "Grid" },
@@ -122,7 +122,7 @@ local PRESETS = {
 	{ "Nord", { accent = "88C0D0", accent2 = "81A1C1", bg = "1F2430", text = "ECEFF4" }, "Snow" },
 	{ "Frost", { accent = "7DD3FC", accent2 = "C4B5FD", bg = "0D1117", text = "E6EDF3" }, "Snow" },
 	{ "Lavender", { accent = "B794F6", accent2 = "F0ABFC", bg = "15121D", text = "F3EEFB" }, "Aurora" },
-	{ "Coffee", { accent = "D4A373", accent2 = "A47148", bg = "16110D", text = "F1E9E1" }, "None" },
+	{ "Coffee", { accent = "D4A373", accent2 = "A47148", bg = "16110D", text = "F1E9E1" }, "Particles" },
 	{ "Mono", { accent = "FFFFFF", accent2 = "8A8A8A", bg = "0E0E0E", text = "F2F2F2" }, "None" },
 }
 Theme.PresetSpecs = {}
@@ -139,7 +139,7 @@ for name, spec in pairs(Theme.PresetSpecs) do
 end
 
 -- Background effect inside the window and "glass" (translucent panels).
-Theme.Effects = { "None", "Aurora", "Stars", "Snow", "Grid", "Gradient" }
+Theme.Effects = { "None", "Aurora", "Stars", "Snow", "Petals", "Fireflies", "Particles", "Grid", "Gradient" }
 Theme.Effect = "Aurora"
 Theme.Glass = true
 -- 0.25 … 2: multiplies how opaque the effect is (1 = default)

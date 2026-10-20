@@ -1,5 +1,5 @@
 --[[
-	Robly v1.4.1 — UI library for Roblox scripts by RobScript
+	Robly v1.5.0 — UI library for Roblox scripts by RobScript
 	https://robscript.com · https://github.com/bobloscript/Robly
 
 	Built file. Edit the modules in src/ and run `python3 tools/build.py`.
@@ -5911,7 +5911,7 @@ __modules["core/Strings"] = function()
 	S.en = {
 		density = "Density", density_compact = "Compact", density_comfortable = "Comfortable",
 		sidebar = "Sidebar", cards = "Cards", outline = "Outline", reset_overrides = "Reset hand-picked colours",
-		loading = "Loading…", effect_strength = "Effect strength", accent2 = "Second accent", effect = "Background effect", effect_desc = "Animated layer behind the window content", glass = "Glass", glass_desc = "Panels let the background effect show through", effect_none = "None", effect_aurora = "Aurora", effect_stars = "Stars", effect_snow = "Snow", effect_grid = "Grid", effect_gradient = "Gradient",
+		loading = "Loading…", effect_strength = "Effect strength", accent2 = "Second accent", effect = "Background effect", effect_desc = "Animated layer behind the window content", glass = "Glass", glass_desc = "Panels let the background effect show through", effect_none = "None", effect_aurora = "Aurora", effect_stars = "Stars", effect_snow = "Snow", effect_grid = "Grid", effect_gradient = "Gradient", effect_petals = "Petals", effect_fireflies = "Fireflies", effect_particles = "Particles",
 		seconds = "{n}s", paused_short = "Paused", hud_hide_key = "Hide / show panel",
 		settings = "Settings", theme = "Theme", configs = "Configs", interface = "Interface", about = "About",
 		language = "Language", animations = "Animations", anim_full = "Full", anim_soft = "Soft", anim_off = "Off",
@@ -5954,7 +5954,7 @@ __modules["core/Strings"] = function()
 	S.ru = {
 		density = "Плотность", density_compact = "Компактно", density_comfortable = "Просторно",
 		sidebar = "Боковая панель", cards = "Карточки", outline = "Обводка", reset_overrides = "Сбросить ручные цвета",
-		loading = "Загрузка…", effect_strength = "Сила эффекта", accent2 = "Второй акцент", effect = "Фоновый эффект", effect_desc = "Анимированный слой за содержимым окна", glass = "Стекло", glass_desc = "Панели пропускают фоновый эффект", effect_none = "Нет", effect_aurora = "Сияние", effect_stars = "Звёзды", effect_snow = "Снег", effect_grid = "Сетка", effect_gradient = "Градиент",
+		loading = "Загрузка…", effect_strength = "Сила эффекта", accent2 = "Второй акцент", effect = "Фоновый эффект", effect_desc = "Анимированный слой за содержимым окна", glass = "Стекло", glass_desc = "Панели пропускают фоновый эффект", effect_none = "Нет", effect_aurora = "Сияние", effect_stars = "Звёзды", effect_snow = "Снег", effect_grid = "Сетка", effect_gradient = "Градиент", effect_petals = "Лепестки", effect_fireflies = "Светлячки", effect_particles = "Частицы",
 		seconds = "{n} с", paused_short = "Пауза", hud_hide_key = "Скрыть / показать панель",
 		settings = "Настройки", theme = "Тема", configs = "Конфиги", interface = "Интерфейс", about = "О библиотеке",
 		language = "Язык", animations = "Анимации", anim_full = "Полные", anim_soft = "Мягкие", anim_off = "Выкл",
@@ -5997,7 +5997,7 @@ __modules["core/Strings"] = function()
 	S.es = {
 		density = "Densidad", density_compact = "Compacta", density_comfortable = "Amplia",
 		sidebar = "Barra lateral", cards = "Tarjetas", outline = "Contorno", reset_overrides = "Restablecer colores manuales",
-		loading = "Cargando…", effect_strength = "Intensidad del efecto", accent2 = "Segundo acento", effect = "Efecto de fondo", effect_desc = "Capa animada detrás del contenido", glass = "Cristal", glass_desc = "Los paneles dejan ver el efecto de fondo", effect_none = "Ninguno", effect_aurora = "Aurora", effect_stars = "Estrellas", effect_snow = "Nieve", effect_grid = "Cuadrícula", effect_gradient = "Degradado",
+		loading = "Cargando…", effect_strength = "Intensidad del efecto", accent2 = "Segundo acento", effect = "Efecto de fondo", effect_desc = "Capa animada detrás del contenido", glass = "Cristal", glass_desc = "Los paneles dejan ver el efecto de fondo", effect_none = "Ninguno", effect_aurora = "Aurora", effect_stars = "Estrellas", effect_snow = "Nieve", effect_grid = "Cuadrícula", effect_gradient = "Degradado", effect_petals = "Pétalos", effect_fireflies = "Luciérnagas", effect_particles = "Partículas",
 		seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar panel",
 		settings = "Ajustes", theme = "Tema", configs = "Configuraciones", interface = "Interfaz", about = "Acerca de",
 		language = "Idioma", animations = "Animaciones", anim_full = "Completas", anim_soft = "Suaves", anim_off = "No",
@@ -6040,7 +6040,7 @@ __modules["core/Strings"] = function()
 	S.pt = {
 		density = "Densidade", density_compact = "Compacta", density_comfortable = "Espaçosa",
 		sidebar = "Barra lateral", cards = "Cartões", outline = "Contorno", reset_overrides = "Redefinir cores manuais",
-		loading = "Carregando…", effect_strength = "Intensidade do efeito", accent2 = "Segundo destaque", effect = "Efeito de fundo", effect_desc = "Camada animada atrás do conteúdo", glass = "Vidro", glass_desc = "Os painéis deixam ver o efeito de fundo", effect_none = "Nenhum", effect_aurora = "Aurora", effect_stars = "Estrelas", effect_snow = "Neve", effect_grid = "Grade", effect_gradient = "Gradiente",
+		loading = "Carregando…", effect_strength = "Intensidade do efeito", accent2 = "Segundo destaque", effect = "Efeito de fundo", effect_desc = "Camada animada atrás do conteúdo", glass = "Vidro", glass_desc = "Os painéis deixam ver o efeito de fundo", effect_none = "Nenhum", effect_aurora = "Aurora", effect_stars = "Estrelas", effect_snow = "Neve", effect_grid = "Grade", effect_gradient = "Gradiente", effect_petals = "Pétalas", effect_fireflies = "Vaga-lumes", effect_particles = "Partículas",
 		seconds = "{n} s", paused_short = "Pausa", hud_hide_key = "Ocultar / mostrar painel",
 		settings = "Configurações", theme = "Tema", configs = "Perfis", interface = "Interface", about = "Sobre",
 		language = "Idioma", animations = "Animações", anim_full = "Completas", anim_soft = "Suaves", anim_off = "Desligadas",
@@ -6083,7 +6083,7 @@ __modules["core/Strings"] = function()
 	S.de = {
 		density = "Dichte", density_compact = "Kompakt", density_comfortable = "Großzügig",
 		sidebar = "Seitenleiste", cards = "Karten", outline = "Umriss", reset_overrides = "Eigene Farben zurücksetzen",
-		loading = "Wird geladen…", effect_strength = "Effektstärke", accent2 = "Zweiter Akzent", effect = "Hintergrundeffekt", effect_desc = "Animierte Ebene hinter dem Inhalt", glass = "Glas", glass_desc = "Flächen lassen den Hintergrundeffekt durchscheinen", effect_none = "Keiner", effect_aurora = "Polarlicht", effect_stars = "Sterne", effect_snow = "Schnee", effect_grid = "Raster", effect_gradient = "Verlauf",
+		loading = "Wird geladen…", effect_strength = "Effektstärke", accent2 = "Zweiter Akzent", effect = "Hintergrundeffekt", effect_desc = "Animierte Ebene hinter dem Inhalt", glass = "Glas", glass_desc = "Flächen lassen den Hintergrundeffekt durchscheinen", effect_none = "Keiner", effect_aurora = "Polarlicht", effect_stars = "Sterne", effect_snow = "Schnee", effect_grid = "Raster", effect_gradient = "Verlauf", effect_petals = "Blüten", effect_fireflies = "Glühwürmchen", effect_particles = "Partikel",
 		seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Panel aus- / einblenden",
 		settings = "Einstellungen", theme = "Design", configs = "Profile", interface = "Oberfläche", about = "Über",
 		language = "Sprache", animations = "Animationen", anim_full = "Voll", anim_soft = "Sanft", anim_off = "Aus",
@@ -6126,7 +6126,7 @@ __modules["core/Strings"] = function()
 	S.fr = {
 		density = "Densité", density_compact = "Compacte", density_comfortable = "Aérée",
 		sidebar = "Barre latérale", cards = "Cartes", outline = "Contour", reset_overrides = "Réinitialiser les couleurs perso",
-		loading = "Chargement…", effect_strength = "Intensité de l'effet", accent2 = "Second accent", effect = "Effet de fond", effect_desc = "Calque animé derrière le contenu", glass = "Verre", glass_desc = "Les panneaux laissent voir l'effet de fond", effect_none = "Aucun", effect_aurora = "Aurore", effect_stars = "Étoiles", effect_snow = "Neige", effect_grid = "Grille", effect_gradient = "Dégradé",
+		loading = "Chargement…", effect_strength = "Intensité de l'effet", accent2 = "Second accent", effect = "Effet de fond", effect_desc = "Calque animé derrière le contenu", glass = "Verre", glass_desc = "Les panneaux laissent voir l'effet de fond", effect_none = "Aucun", effect_aurora = "Aurore", effect_stars = "Étoiles", effect_snow = "Neige", effect_grid = "Grille", effect_gradient = "Dégradé", effect_petals = "Pétales", effect_fireflies = "Lucioles", effect_particles = "Particules",
 		seconds = "{n} s", paused_short = "Pause", hud_hide_key = "Masquer / afficher le panneau",
 		settings = "Paramètres", theme = "Thème", configs = "Profils", interface = "Interface", about = "À propos",
 		language = "Langue", animations = "Animations", anim_full = "Complètes", anim_soft = "Douces", anim_off = "Non",
@@ -6282,9 +6282,9 @@ __modules["core/Theme"] = function()
 		{ "Light", { accent = "E0245E", accent2 = "FF7A59", bg = "FFFFFF", text = "16161A", success = "0E9F6E", warning = "B7791F", danger = "E5484D" }, "None" },
 		{ "Graphite", { accent = "E6E6E8", accent2 = "9A9AA2", bg = "1B1B1D", text = "EDEDEE" }, "Grid" },
 		{ "Midnight", { accent = "4C8DFF", accent2 = "8B5CF6", bg = "0E1320", text = "E8EDF7" }, "Stars" },
-		{ "Sakura", { accent = "FF8FB8", accent2 = "FFC2D6", bg = "1A1216", text = "F7EEF2" }, "Snow" },
+		{ "Sakura", { accent = "FF8FB8", accent2 = "FFC2D6", bg = "1A1216", text = "F7EEF2" }, "Petals" },
 		{ "Ocean", { accent = "22D3EE", accent2 = "3B82F6", bg = "0A1620", text = "E6F4F8" }, "Aurora" },
-		{ "Matcha", { accent = "7BD389", accent2 = "C3E88D", bg = "111712", text = "ECF3EC" }, "Aurora" },
+		{ "Matcha", { accent = "7BD389", accent2 = "C3E88D", bg = "111712", text = "ECF3EC" }, "Fireflies" },
 		{ "Sunset", { accent = "FF7A45", accent2 = "FF3D7F", bg = "1A1012", text = "FBEDE7" }, "Gradient" },
 		{ "Amber", { accent = "FFB020", accent2 = "FF7A00", bg = "16130C", text = "F7F1E3" }, "Gradient" },
 		{ "Crimson", { accent = "FF4D4D", accent2 = "B3123A", bg = "140C0D", text = "F5ECEC" }, "Grid" },
@@ -6294,7 +6294,7 @@ __modules["core/Theme"] = function()
 		{ "Nord", { accent = "88C0D0", accent2 = "81A1C1", bg = "1F2430", text = "ECEFF4" }, "Snow" },
 		{ "Frost", { accent = "7DD3FC", accent2 = "C4B5FD", bg = "0D1117", text = "E6EDF3" }, "Snow" },
 		{ "Lavender", { accent = "B794F6", accent2 = "F0ABFC", bg = "15121D", text = "F3EEFB" }, "Aurora" },
-		{ "Coffee", { accent = "D4A373", accent2 = "A47148", bg = "16110D", text = "F1E9E1" }, "None" },
+		{ "Coffee", { accent = "D4A373", accent2 = "A47148", bg = "16110D", text = "F1E9E1" }, "Particles" },
 		{ "Mono", { accent = "FFFFFF", accent2 = "8A8A8A", bg = "0E0E0E", text = "F2F2F2" }, "None" },
 	}
 	Theme.PresetSpecs = {}
@@ -6311,7 +6311,7 @@ __modules["core/Theme"] = function()
 	end
 
 	-- Background effect inside the window and "glass" (translucent panels).
-	Theme.Effects = { "None", "Aurora", "Stars", "Snow", "Grid", "Gradient" }
+	Theme.Effects = { "None", "Aurora", "Stars", "Snow", "Petals", "Fireflies", "Particles", "Grid", "Gradient" }
 	Theme.Effect = "Aurora"
 	Theme.Glass = true
 	-- 0.25 … 2: multiplies how opaque the effect is (1 = default)
@@ -6811,7 +6811,7 @@ __modules["init"] = function()
 	local Window = import("ui/Window")
 
 	local Robly = {
-		Version = "1.4.1",
+		Version = "1.5.0",
 		Windows = {},
 		Themes = Theme.Presets,
 		Effects = Theme.Effects,
@@ -9791,6 +9791,7 @@ __modules["ui/Effects"] = function()
 	--   Aurora   — large soft colour blobs (accent / accent2) drifting slowly
 	--   Stars    — tiny twinkling dots
 	--   Snow     — slowly falling dots
+	--   Petals / Fireflies / Particles — falling petals, glowing dots, rising sparks
 	--   Grid     — faint line grid with an accent glow in the corner
 	--   Gradient — diagonal accent wash
 	--   None
@@ -9946,6 +9947,77 @@ __modules["ui/Effects"] = function()
 					tween:Play()
 					pcall(function()
 						tween.TimePosition = y * seconds
+					end)
+					maid:Add(tween)
+				end
+			end
+		elseif effect == "Petals" then
+			glow(holder, "accent", UDim2.fromScale(0.85, 0.1), UDim2.fromScale(0.7, 0.7), 0.25, maid)
+			for _ = 1, 32 do
+				local w = math.floor(6 + random() * 6)
+				local x, y = random(), random()
+				local petal = maid:Add(New("Frame", {
+					Name = "Petal",
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.fromScale(x, y),
+					Size = UDim2.fromOffset(w, math.floor(w * 0.6)),
+					Rotation = random() * 360,
+					BackgroundColor3 = random() < 0.5 and C("accent") or C("accent2"),
+					BackgroundTransparency = alpha(0.5 + random() * 0.35),
+					Parent = holder,
+				}, { New("UICorner", { CornerRadius = UDim.new(1, 0) }) }))
+				if Motion.Mode == "Full" then
+					local seconds = 10 + random() * 10
+					petal.Position = UDim2.fromScale(x, -0.05)
+					local tween = Services.TweenService:Create(
+						petal,
+						TweenInfo.new(seconds, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1),
+						{ Position = UDim2.fromScale(x + 0.15 + random() * 0.2, 1.05), Rotation = petal.Rotation + 540 }
+					)
+					tween:Play()
+					pcall(function()
+						tween.TimePosition = y * seconds
+					end)
+					maid:Add(tween)
+				end
+			end
+		elseif effect == "Fireflies" then
+			glow(holder, "accent2", UDim2.fromScale(0.5, 1), UDim2.fromScale(1, 1), 0.18, maid)
+			for _ = 1, 26 do
+				local x, y = random(), 0.2 + random() * 0.8
+				local fly = glow(holder, random() < 0.6 and "accent" or "accent2", UDim2.fromScale(x, y), UDim2.fromOffset(14, 14), 0.9, maid)
+				fly.Name = "Firefly"
+				maid:Add(loop(fly, {
+					Position = UDim2.fromScale(x + (random() - 0.5) * 0.12, y + (random() - 0.5) * 0.12),
+					Size = UDim2.fromOffset(6, 6),
+				}, 2 + random() * 3))
+			end
+		elseif effect == "Particles" then
+			glow(holder, "accent", UDim2.fromScale(0.2, 1), UDim2.fromScale(0.8, 0.8), 0.25, maid)
+			glow(holder, "accent2", UDim2.fromScale(0.85, 0.95), UDim2.fromScale(0.6, 0.6), 0.2, maid)
+			for _ = 1, 40 do
+				local size = math.floor(3 + random() * 5)
+				local x, y = random(), random()
+				local dot = maid:Add(New("Frame", {
+					Name = "Particle",
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.fromScale(x, y),
+					Size = UDim2.fromOffset(size, size),
+					BackgroundColor3 = random() < 0.5 and C("accent") or C("accent2"),
+					BackgroundTransparency = alpha(0.35 + random() * 0.4),
+					Parent = holder,
+				}, { Create.corner("full") }))
+				if Motion.Mode == "Full" then
+					local seconds = 7 + random() * 8
+					dot.Position = UDim2.fromScale(x, 1.05)
+					local tween = Services.TweenService:Create(
+						dot,
+						TweenInfo.new(seconds, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1),
+						{ Position = UDim2.fromScale(x + (random() - 0.5) * 0.1, -0.05), BackgroundTransparency = 1 }
+					)
+					tween:Play()
+					pcall(function()
+						tween.TimePosition = (1 - y) * seconds
 					end)
 					maid:Add(tween)
 				end

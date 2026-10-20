@@ -567,7 +567,7 @@ step("1.4 hierarchy, effects, themes", function()
 	check("sub header built", control("fastAttack").Section.Card:FindFirstChild("SubHeader") ~= nil)
 	-- effects
 	local lib = window.Library
-	for _, effect in ipairs({ "Aurora", "Stars", "Snow", "Grid", "Gradient", "None" }) do
+	for _, effect in ipairs({ "Aurora", "Stars", "Snow", "Petals", "Fireflies", "Particles", "Grid", "Gradient", "None" }) do
 		lib:SetEffect(effect)
 		task.wait()
 		local n = #window.Effects.Holder:GetChildren()

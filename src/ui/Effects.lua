@@ -2,6 +2,7 @@
 --   Aurora   — large soft colour blobs (accent / accent2) drifting slowly
 --   Stars    — tiny twinkling dots
 --   Snow     — slowly falling dots
+--   Petals / Fireflies / Particles — falling petals, glowing dots, rising sparks
 --   Grid     — faint line grid with an accent glow in the corner
 --   Gradient — diagonal accent wash
 --   None
@@ -157,6 +158,77 @@ function Effects:Build()
 				tween:Play()
 				pcall(function()
 					tween.TimePosition = y * seconds
+				end)
+				maid:Add(tween)
+			end
+		end
+	elseif effect == "Petals" then
+		glow(holder, "accent", UDim2.fromScale(0.85, 0.1), UDim2.fromScale(0.7, 0.7), 0.25, maid)
+		for _ = 1, 32 do
+			local w = math.floor(6 + random() * 6)
+			local x, y = random(), random()
+			local petal = maid:Add(New("Frame", {
+				Name = "Petal",
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(x, y),
+				Size = UDim2.fromOffset(w, math.floor(w * 0.6)),
+				Rotation = random() * 360,
+				BackgroundColor3 = random() < 0.5 and C("accent") or C("accent2"),
+				BackgroundTransparency = alpha(0.5 + random() * 0.35),
+				Parent = holder,
+			}, { New("UICorner", { CornerRadius = UDim.new(1, 0) }) }))
+			if Motion.Mode == "Full" then
+				local seconds = 10 + random() * 10
+				petal.Position = UDim2.fromScale(x, -0.05)
+				local tween = Services.TweenService:Create(
+					petal,
+					TweenInfo.new(seconds, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1),
+					{ Position = UDim2.fromScale(x + 0.15 + random() * 0.2, 1.05), Rotation = petal.Rotation + 540 }
+				)
+				tween:Play()
+				pcall(function()
+					tween.TimePosition = y * seconds
+				end)
+				maid:Add(tween)
+			end
+		end
+	elseif effect == "Fireflies" then
+		glow(holder, "accent2", UDim2.fromScale(0.5, 1), UDim2.fromScale(1, 1), 0.18, maid)
+		for _ = 1, 26 do
+			local x, y = random(), 0.2 + random() * 0.8
+			local fly = glow(holder, random() < 0.6 and "accent" or "accent2", UDim2.fromScale(x, y), UDim2.fromOffset(14, 14), 0.9, maid)
+			fly.Name = "Firefly"
+			maid:Add(loop(fly, {
+				Position = UDim2.fromScale(x + (random() - 0.5) * 0.12, y + (random() - 0.5) * 0.12),
+				Size = UDim2.fromOffset(6, 6),
+			}, 2 + random() * 3))
+		end
+	elseif effect == "Particles" then
+		glow(holder, "accent", UDim2.fromScale(0.2, 1), UDim2.fromScale(0.8, 0.8), 0.25, maid)
+		glow(holder, "accent2", UDim2.fromScale(0.85, 0.95), UDim2.fromScale(0.6, 0.6), 0.2, maid)
+		for _ = 1, 40 do
+			local size = math.floor(3 + random() * 5)
+			local x, y = random(), random()
+			local dot = maid:Add(New("Frame", {
+				Name = "Particle",
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(x, y),
+				Size = UDim2.fromOffset(size, size),
+				BackgroundColor3 = random() < 0.5 and C("accent") or C("accent2"),
+				BackgroundTransparency = alpha(0.35 + random() * 0.4),
+				Parent = holder,
+			}, { Create.corner("full") }))
+			if Motion.Mode == "Full" then
+				local seconds = 7 + random() * 8
+				dot.Position = UDim2.fromScale(x, 1.05)
+				local tween = Services.TweenService:Create(
+					dot,
+					TweenInfo.new(seconds, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1),
+					{ Position = UDim2.fromScale(x + (random() - 0.5) * 0.1, -0.05), BackgroundTransparency = 1 }
+				)
+				tween:Play()
+				pcall(function()
+					tween.TimePosition = (1 - y) * seconds
 				end)
 				maid:Add(tween)
 			end

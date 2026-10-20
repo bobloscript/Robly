@@ -188,7 +188,7 @@ Missing translations fall back to the default language (with a warning when `Dev
 
 ```lua
 Robly:SetTheme("Synthwave")                   -- 18 presets, see Robly.ThemeOrder
-Robly:SetEffect("Snow")                       -- None, Aurora, Stars, Snow, Grid, Gradient
+Robly:SetEffect("Snow")                       -- None, Aurora, Stars, Snow, Petals, Fireflies, Particles, Grid, Gradient
 Robly:SetGlass(true)                          -- panels let the effect show through
 Robly:AddTheme("Reef", { accent = "#2EC4B6", accent2 = "#4C8DFF", bg = "#0B1320", Effect = "Aurora" })
 Window:SetTheme({ accent = Color3.fromRGB(76, 141, 255) })
