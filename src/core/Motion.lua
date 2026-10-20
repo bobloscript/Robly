@@ -114,6 +114,14 @@ function Motion.pressable(button, target, scale, maid)
 		if isPress(input) and Motion.Mode == "Full" then
 			pressed = true
 			Motion.tween(uiScale, { Scale = scale }, "press")
+			-- a finger that slides off the button never fires its InputEnded
+			local ended
+			ended = Services.UserInputService.InputEnded:Connect(function(other)
+				if other == input or other.UserInputType == Enum.UserInputType.MouseButton1 then
+					ended:Disconnect()
+					release()
+				end
+			end)
 		end
 	end)
 	local c2 = button.InputEnded:Connect(function(input)

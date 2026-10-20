@@ -123,10 +123,16 @@ function QuickButtons:_button(control, order, maid)
 	Motion.pressable(button, nil, 0.9, maid)
 	local token = 0
 	maid:Add(button.Activated:Connect(function()
-		local state = control:QuickActivate()
 		token += 1
 		local mine = token
 		local text = window.Loc:Get(control.TitleSpec)
+		local state = nil
+		if not control.Enabled then
+			-- locked by EnabledWhen: say so instead of acting
+			text ..= " · " .. window.Loc:Lib("locked")
+		else
+			state = control:QuickActivate()
+		end
 		if state == true or state == false then
 			text ..= " · " .. window.Loc:Lib(state and "on" or "off")
 		end

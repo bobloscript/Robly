@@ -241,8 +241,10 @@ end)
 
 step("keybind bind conflict", function()
 	local bind = control("questKey")
+	local before = window.Flags.autoFarm
 	M.fire(bind.Chip, "Activated")
 	M.press(Enum.KeyCode.F)
+	check("captured key does not fire the existing F bind", window.Flags.autoFarm == before)
 	task.wait(0.05)
 	check("bind conflict dialog", window.Dialogs.Current ~= nil)
 	window.Dialogs:Close()
@@ -319,6 +321,16 @@ step("language switch", function()
 	check("plural ru many", window.Loc:Get("farm.killed", { count = 11 }) == "Убито 11 мобов")
 end)
 
+step("minimise during restore keeps the home position", function()
+	local home = window.Frame.Position
+	window:Minimize()
+	window:Restore()
+	window:Minimize()
+	window:Restore()
+	task.wait(0.05)
+	check("position unchanged", window.Frame.Position == home, tostring(window.Frame.Position) .. " vs " .. tostring(home))
+end)
+
 step("animations off", function()
 	window:SetAnimations("Off")
 	window:Minimize()
@@ -331,6 +343,7 @@ end)
 -- 6. Devices -------------------------------------------------------------------------------
 step("phone layout", function()
 	M.setViewport(844, 390)
+	task.wait(0.25) -- let the real (debounced) device detection fire first
 	window:_onDevice("phone")
 	task.wait(0.05)
 	check("rail built", M.find(window.Nav, function(node)
@@ -349,6 +362,7 @@ step("phone layout", function()
 		return node.Name == "TabBar"
 	end) ~= nil)
 	M.setViewport(1920, 1080)
+	task.wait(0.25)
 	window:_onDevice("pc")
 	task.wait(0.05)
 	check("sidebar back", M.find(window.Nav, function(node)
@@ -369,6 +383,17 @@ step("configs", function()
 	check("meta written", M.files["Robly/RobScriptHub/robly.json"] ~= nil)
 	local meta = M.files["Robly/RobScriptHub/robly.json"]
 	check("meta has theme + language", meta:find('"language"') ~= nil and meta:find('"theme"') ~= nil)
+end)
+
+step("unknown saved values survive a save", function()
+	local path = "Robly/RobScriptHub/profiles/PvP.json"
+	local data = require("@lune/serde").decode("json", M.files[path])
+	data.values["later:flag"] = 5
+	M.files[path] = require("@lune/serde").encode("json", data)
+	window:LoadConfig("PvP")
+	window:SaveConfig("PvP")
+	local again = require("@lune/serde").decode("json", M.files[path])
+	check("unregistered flag kept", again.values["later:flag"] == 5)
 end)
 
 step("notifications + dialog", function()
@@ -466,6 +491,18 @@ step("150 controls", function()
 		end
 	end
 	local elapsed = os.clock() - start
+	local extra = big.Tabs[1]:Section({ Title = "Edge cases" })
+	local inverted = extra:Slider({ Title = "Inverted", Min = 10, Max = 0, Default = 5 })
+	check("inverted slider range", inverted:Get() == 5)
+	local fired = false
+	extra:Keybind({ Title = "Locked bind", Default = "J", EnabledWhen = function()
+		return false
+	end, Callback = function()
+		fired = true
+	end })
+	M.press(Enum.KeyCode.J)
+	task.wait(0.05)
+	check("disabled bind does not fire", fired == false)
 	check("150 controls built", #big.Search.Entries >= 150, #big.Search.Entries)
 	print(string.format("150 controls built in %.2fs (mock)", elapsed))
 	local themeStart = os.clock()

@@ -279,6 +279,10 @@ function Binds:CooldownLeft(entry)
 end
 
 function Binds:Trigger(entry, down)
+	local control = entry.Control
+	if control and (control.Destroyed or not control.Enabled) and not entry.System then
+		return
+	end
 	local state = nil
 	if entry.Mode == "Toggle" and entry.Target then
 		if not down then
@@ -359,12 +363,18 @@ function Binds:Capture(callback)
 	local capture = {}
 	local onlyModifier = nil
 	local function finish(result)
-		if self.Capturing ~= capture then
+		if capture.done then
 			return
 		end
-		self.Capturing = nil
+		capture.done = true
 		capture.began:Disconnect()
 		capture.ended:Disconnect()
+		-- clear after this input event, so the same key press can't fire a bind
+		task.defer(function()
+			if self.Capturing == capture then
+				self.Capturing = nil
+			end
+		end)
 		task.spawn(callback, result)
 	end
 	capture.finish = finish
@@ -407,8 +417,12 @@ function Binds:Capture(callback)
 end
 
 function Binds:CancelCapture()
-	if self.Capturing then
-		self.Capturing.finish(nil)
+	local capture = self.Capturing
+	if capture then
+		capture.finish(nil)
+		if self.Capturing == capture then
+			self.Capturing = nil
+		end
 	end
 end
 

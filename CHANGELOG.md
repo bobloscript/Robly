@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.1 — 2026-10-20
+
+Bug hunt fixes.
+
+- Configs: saving no longer drops values loaded for controls that weren't created yet (lazy tabs, older script versions).
+- Keybinds: the key pressed while assigning a new bind no longer also fires an existing bind on that key.
+- Keybinds and quick buttons do nothing while their control is locked by `EnabledWhen` (quick buttons say "locked").
+- Minimise → restore → minimise quickly no longer moves the window to a wrong spot.
+- Ctrl+K no longer types "k" into the search field.
+- Switching theme during a colour animation no longer leaves a colour from the old theme.
+- Touch: a finger sliding off a button no longer leaves it pressed, and no longer makes the stepper count to its limit.
+- Truncated dropdown values and segments show the full text in a tooltip (PC).
+- The Settings "Animations" control follows `Robly:SetAnimations()`.
+- Search jumps to a control reliably after expanding its section.
+- No crash when a slider is given Min > Max or a window/tooltip doesn't fit the screen.
+
 ## 1.0.0 — 2026-10-20
 
 First release, built from the Robly brief and the "Robly UI" mockup.

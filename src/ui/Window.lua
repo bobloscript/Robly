@@ -449,6 +449,7 @@ function Window:_buildHeader()
 		logo.Parent = row
 	end
 
+	self.HeaderTitle = nil
 	if mode == "pc" then
 		local texts = New("Frame", {
 			Size = UDim2.fromScale(0, 1),
@@ -527,6 +528,12 @@ function Window:_buildHeader()
 			Parent = search,
 		}, { Create.corner(6), Create.pad(3, 6) })
 		maid:Add(box:GetPropertyChangedSignal("Text"):Connect(function()
+			-- Ctrl+K focuses the box; drop the "k" that the shortcut itself types
+			if self._swallowKey and os.clock() - self._swallowKey < 0.3 and box.Text:lower() == "k" then
+				self._swallowKey = nil
+				box.Text = ""
+				return
+			end
 			self.Search:SetQuery(box.Text)
 		end))
 		maid:Add(box.FocusLost:Connect(function(enter)
@@ -650,6 +657,7 @@ function Window:FocusSearch()
 		if self.Minimized then
 			self:Restore()
 		end
+		self._swallowKey = os.clock()
 		self.SearchBox:CaptureFocus()
 	else
 		self:_openTouchSearch()
@@ -1333,7 +1341,10 @@ function Window:Reveal(control)
 	if control.Section.Collapsed then
 		control.Section:SetCollapsed(false)
 	end
-	task.defer(function()
+	task.delay(0.05, function()
+		if self.Destroyed or control.Destroyed then
+			return
+		end
 		local page = tab.Page
 		local y = control.Holder.AbsolutePosition.Y - page.AbsolutePosition.Y + page.CanvasPosition.Y - 24
 		local maxY = math.max(0, page.AbsoluteCanvasSize.Y - page.AbsoluteWindowSize.Y)
@@ -1450,13 +1461,17 @@ function Window:Minimize()
 	self.Tooltip:Hide()
 	self:_updatePillDot()
 	local frame = self.Frame
-	self._restorePosition = frame.AbsolutePosition
+	if not (self._animatingUntil and os.clock() < self._animatingUntil and self._restorePosition) then
+		self._restorePosition = Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
+	end
+	self._animatingUntil = os.clock() + 0.3
 	self.Pill:Show(true)
 	if Motion.Mode == "Full" then
 		local pillPos, pillSize = self.Pill:Rect()
 		local center = pillPos + pillSize / 2
 		local scale = 0.12
-		local target = center - frame.AbsoluteSize * scale / 2
+		local fullSize = Vector2.new(frame.Size.X.Offset, frame.Size.Y.Offset)
+		local target = center - fullSize * scale / 2
 		Motion.tween(self.Scale, { Scale = scale }, "window")
 		Motion.tween(frame, { Position = UDim2.fromOffset(target.X, target.Y) }, "window")
 		task.delay(0.26, function()
@@ -1481,7 +1496,8 @@ function Window:Restore()
 	end
 	self.Minimized = false
 	local frame = self.Frame
-	local target = self._restorePosition or frame.AbsolutePosition
+	local target = self._restorePosition or Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
+	self._animatingUntil = os.clock() + 0.3
 	self.Pill:Hide()
 	frame.Visible = true
 	frame.ZIndex = self.Root:NextZ()

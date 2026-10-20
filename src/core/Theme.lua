@@ -212,6 +212,9 @@ end
 -- Bindings -------------------------------------------------------------------------
 
 local bindings = setmetatable({}, { __mode = "k" })
+-- colour tweens started by Theme.set; cancelled on refresh so an old tween
+-- can't finish on a colour from the previous theme
+local tweens = setmetatable({}, { __mode = "k" })
 
 function Theme.bind(instance, prop, token)
 	local props = bindings[instance]
@@ -239,10 +242,24 @@ function Theme.set(instance, prop, token, preset)
 		bindings[instance] = props
 	end
 	props[prop] = token
-	Motion.tween(instance, { [prop] = Theme.resolve(token) }, preset or "color")
+	local tween = Motion.tween(instance, { [prop] = Theme.resolve(token) }, preset or "color")
+	if tween then
+		local running = tweens[instance]
+		if not running then
+			running = {}
+			tweens[instance] = running
+		end
+		running[prop] = tween
+	end
 end
 
 function Theme.refresh()
+	for _, running in pairs(tweens) do
+		for _, tween in pairs(running) do
+			pcall(tween.Cancel, tween)
+		end
+	end
+	table.clear(tweens)
 	for instance, props in pairs(bindings) do
 		for prop, token in pairs(props) do
 			local ok, value = pcall(Theme.resolve, token)

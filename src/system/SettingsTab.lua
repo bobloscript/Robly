@@ -414,7 +414,9 @@ function SettingsTab:_buildInterface()
 			window:SetAnimations(mode)
 		end,
 	})
-	local _ = animations
+	window.Maid:Add(Motion.Changed:Connect(function(mode)
+		window.Store:Set(animations.Flag, mode, "silent")
+	end))
 	section:Toggle({
 		Title = L("detached_hide"),
 		Flag = "robly:hideDetached",

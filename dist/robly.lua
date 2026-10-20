@@ -1,5 +1,5 @@
 --[[
-	Robly v1.0.0 — UI library for Roblox scripts by RobScript
+	Robly v1.0.1 — UI library for Roblox scripts by RobScript
 	https://robscript.com · https://github.com/bobloscript/Robly
 
 	Built file. Edit the modules in src/ and run `python3 tools/build.py`.
@@ -1356,6 +1356,13 @@ __modules["controls/Dropdown"] = function()
 		chevron.Frame.LayoutOrder = 3
 		chevron.Frame.Parent = button
 		Motion.pressable(button, nil, 0.97, self.Maid)
+		-- long values are cut with "…"; the full text is in a tooltip
+		local function truncated()
+			return not self.ValueLabel.TextFits
+		end
+		self.Window.Tooltip:Attach(button, function()
+			return self:DisplayText()
+		end, self.Maid, nil, truncated)
 
 		self.Maid:Add(button.Activated:Connect(function()
 			if self.Enabled then
@@ -1907,6 +1914,9 @@ __modules["controls/Value"] = function()
 
 	function Controls.Slider(section, opts)
 		local min, max = opts.Min or 0, opts.Max or 100
+		if min > max then
+			min, max = max, min
+		end
 		local step = opts.Step or opts.Increment or 1
 		local range = opts.Range == true
 		local default = opts.Default
@@ -2161,6 +2171,16 @@ __modules["controls/Value"] = function()
 				end
 				holding += 1
 				local mine = holding
+				-- stop repeating when this touch/click ends anywhere on screen
+				local ended
+				ended = Services.UserInputService.InputEnded:Connect(function(other)
+					if other == input or other.UserInputType == Enum.UserInputType.MouseButton1 then
+						ended:Disconnect()
+						if holding == mine then
+							holding += 1
+						end
+					end
+				end)
 				bump()
 				task.delay(0.4, function()
 					while holding == mine and not self.Destroyed do
@@ -2280,6 +2300,9 @@ __modules["controls/Value"] = function()
 				Create.flex().Parent = button
 			end
 			self.Loc:Bind(button, "Text", option.Text)
+			self.Window.Tooltip:Attach(button, option.Text, self.Maid, nil, function()
+				return not button.TextFits
+			end)
 			self.Maid:Add(button.Activated:Connect(function()
 				if self.Enabled then
 					self:Set(option.Value)
@@ -3602,6 +3625,14 @@ __modules["core/Motion"] = function()
 			if isPress(input) and Motion.Mode == "Full" then
 				pressed = true
 				Motion.tween(uiScale, { Scale = scale }, "press")
+				-- a finger that slides off the button never fires its InputEnded
+				local ended
+				ended = Services.UserInputService.InputEnded:Connect(function(other)
+					if other == input or other.UserInputType == Enum.UserInputType.MouseButton1 then
+						ended:Disconnect()
+						release()
+					end
+				end)
 			end
 		end)
 		local c2 = button.InputEnded:Connect(function(input)
@@ -3909,6 +3940,7 @@ __modules["core/Store"] = function()
 		self.Defaults = {}
 		self.Meta = {}
 		self.Loaded = {}
+		self.LoadedKind = {}
 		self.Changed = Signal.new()
 		self._signals = {}
 		return self
@@ -4025,17 +4057,27 @@ __modules["core/Store"] = function()
 				out[flag] = encode(self.Values[flag])
 			end
 		end
+		-- Values loaded from a file whose control does not exist (yet) are kept,
+		-- so saving never silently drops them.
+		for flag, loadedKind in pairs(self.LoadedKind) do
+			if loadedKind == kind and not self.Meta[flag] and self.Values[flag] ~= nil then
+				out[flag] = encode(self.Values[flag])
+			end
+		end
 		return out
 	end
 
 	-- Applies a snapshot. Unknown flags are kept for later registration.
-	function Store:Load(snapshot, source)
+	function Store:Load(snapshot, source, kind)
 		local count = 0
 		for flag, raw in pairs(snapshot or {}) do
 			local value = decode(raw)
 			if value ~= nil then
 				count += 1
 				self.Loaded[flag] = true
+				if kind then
+					self.LoadedKind[flag] = kind
+				end
 				if self.Meta[flag] then
 					self:Set(flag, value, source or "config")
 				else
@@ -4537,6 +4579,9 @@ __modules["core/Theme"] = function()
 	-- Bindings -------------------------------------------------------------------------
 
 	local bindings = setmetatable({}, { __mode = "k" })
+	-- colour tweens started by Theme.set; cancelled on refresh so an old tween
+	-- can't finish on a colour from the previous theme
+	local tweens = setmetatable({}, { __mode = "k" })
 
 	function Theme.bind(instance, prop, token)
 		local props = bindings[instance]
@@ -4564,10 +4609,24 @@ __modules["core/Theme"] = function()
 			bindings[instance] = props
 		end
 		props[prop] = token
-		Motion.tween(instance, { [prop] = Theme.resolve(token) }, preset or "color")
+		local tween = Motion.tween(instance, { [prop] = Theme.resolve(token) }, preset or "color")
+		if tween then
+			local running = tweens[instance]
+			if not running then
+				running = {}
+				tweens[instance] = running
+			end
+			running[prop] = tween
+		end
 	end
 
 	function Theme.refresh()
+		for _, running in pairs(tweens) do
+			for _, tween in pairs(running) do
+				pcall(tween.Cancel, tween)
+			end
+		end
+		table.clear(tweens)
 		for instance, props in pairs(bindings) do
 			for prop, token in pairs(props) do
 				local ok, value = pcall(Theme.resolve, token)
@@ -4710,7 +4769,7 @@ __modules["init"] = function()
 	local Window = import("ui/Window")
 
 	local Robly = {
-		Version = "1.0.0",
+		Version = "1.0.1",
 		Windows = {},
 		Themes = Theme.Presets,
 		Icons = Icons.Data,
@@ -5060,6 +5119,10 @@ __modules["system/Binds"] = function()
 	end
 
 	function Binds:Trigger(entry, down)
+		local control = entry.Control
+		if control and (control.Destroyed or not control.Enabled) and not entry.System then
+			return
+		end
 		local state = nil
 		if entry.Mode == "Toggle" and entry.Target then
 			if not down then
@@ -5140,12 +5203,18 @@ __modules["system/Binds"] = function()
 		local capture = {}
 		local onlyModifier = nil
 		local function finish(result)
-			if self.Capturing ~= capture then
+			if capture.done then
 				return
 			end
-			self.Capturing = nil
+			capture.done = true
 			capture.began:Disconnect()
 			capture.ended:Disconnect()
+			-- clear after this input event, so the same key press can't fire a bind
+			task.defer(function()
+				if self.Capturing == capture then
+					self.Capturing = nil
+				end
+			end)
 			task.spawn(callback, result)
 		end
 		capture.finish = finish
@@ -5188,8 +5257,12 @@ __modules["system/Binds"] = function()
 	end
 
 	function Binds:CancelCapture()
-		if self.Capturing then
-			self.Capturing.finish(nil)
+		local capture = self.Capturing
+		if capture then
+			capture.finish(nil)
+			if self.Capturing == capture then
+				self.Capturing = nil
+			end
 		end
 	end
 
@@ -5276,11 +5349,11 @@ __modules["system/Config"] = function()
 
 		-- Interface flags first, then the autoload profile (before any control
 		-- exists: controls pick the values up when they register).
-		self.Store:Load(self.Meta.ui or {}, "config")
+		self.Store:Load(self.Meta.ui or {}, "config", "ui")
 		local autoload = self.Meta.autoload or self.Current
 		local profile = self:_read(autoload)
 		if profile and opts.AutoLoad ~= false then
-			self.Store:Load(profile.values or {}, "config")
+			self.Store:Load(profile.values or {}, "config", "profile")
 			self.Current = autoload
 		end
 
@@ -5527,7 +5600,7 @@ __modules["system/Config"] = function()
 		end
 		self._pending.profile = nil
 		self.Current = name
-		local count = self.Store:Load(data.values or {}, "config")
+		local count = self.Store:Load(data.values or {}, "config", "profile")
 		self._pending.profile = nil
 		self:_writeMeta()
 		self.Changed:Fire("list")
@@ -6124,10 +6197,16 @@ __modules["system/QuickButtons"] = function()
 		Motion.pressable(button, nil, 0.9, maid)
 		local token = 0
 		maid:Add(button.Activated:Connect(function()
-			local state = control:QuickActivate()
 			token += 1
 			local mine = token
 			local text = window.Loc:Get(control.TitleSpec)
+			local state = nil
+			if not control.Enabled then
+				-- locked by EnabledWhen: say so instead of acting
+				text ..= " · " .. window.Loc:Lib("locked")
+			else
+				state = control:QuickActivate()
+			end
 			if state == true or state == false then
 				text ..= " · " .. window.Loc:Lib(state and "on" or "off")
 			end
@@ -6586,7 +6665,9 @@ __modules["system/SettingsTab"] = function()
 				window:SetAnimations(mode)
 			end,
 		})
-		local _ = animations
+		window.Maid:Add(Motion.Changed:Connect(function(mode)
+			window.Store:Set(animations.Flag, mode, "silent")
+		end))
 		section:Toggle({
 			Title = L("detached_hide"),
 			Flag = "robly:hideDetached",
@@ -6939,8 +7020,8 @@ __modules["ui/Detached"] = function()
 			end,
 			onMove = function(_, _, total)
 				local vp = Device.viewport()
-				local w = math.clamp(startSize.X + total.X, 260, vp.X - frame.AbsolutePosition.X - 8)
-				local h = math.clamp(startSize.Y + total.Y, 200, vp.Y - frame.AbsolutePosition.Y - 8)
+				local w = math.clamp(startSize.X + total.X, 260, math.max(260, vp.X - frame.AbsolutePosition.X - 8))
+				local h = math.clamp(startSize.Y + total.Y, 200, math.max(200, vp.Y - frame.AbsolutePosition.Y - 8))
 				frame.Size = UDim2.fromOffset(w, h)
 			end,
 			onEnd = function()
@@ -8308,7 +8389,7 @@ __modules["ui/Tooltip"] = function()
 			local vp = Device.viewport()
 			local size = frame.AbsoluteSize
 			local ap, as = anchor.AbsolutePosition, anchor.AbsoluteSize
-			local x = math.clamp(ap.X + as.X / 2 - size.X / 2, 8, vp.X - size.X - 8)
+			local x = math.clamp(ap.X + as.X / 2 - size.X / 2, 8, math.max(8, vp.X - size.X - 8))
 			local y = ap.Y - size.Y - 8
 			if y < Device.inset() + 4 then
 				y = ap.Y + as.Y + 8
@@ -8333,10 +8414,11 @@ __modules["ui/Tooltip"] = function()
 	end
 
 	-- Attach hover (PC) / tap-on-anchor (touch) behaviour.
-	function Tooltip:Attach(anchor, spec, maid, vars)
+	-- condition (optional): only show when it returns true (e.g. text truncated)
+	function Tooltip:Attach(anchor, spec, maid, vars, condition)
 		local token = 0
 		maid:Add(anchor.MouseEnter:Connect(function()
-			if Theme.Sizes.touch then
+			if Theme.Sizes.touch or (condition and not condition()) then
 				return
 			end
 			token += 1
@@ -8812,6 +8894,7 @@ __modules["ui/Window"] = function()
 			logo.Parent = row
 		end
 
+		self.HeaderTitle = nil
 		if mode == "pc" then
 			local texts = New("Frame", {
 				Size = UDim2.fromScale(0, 1),
@@ -8890,6 +8973,12 @@ __modules["ui/Window"] = function()
 				Parent = search,
 			}, { Create.corner(6), Create.pad(3, 6) })
 			maid:Add(box:GetPropertyChangedSignal("Text"):Connect(function()
+				-- Ctrl+K focuses the box; drop the "k" that the shortcut itself types
+				if self._swallowKey and os.clock() - self._swallowKey < 0.3 and box.Text:lower() == "k" then
+					self._swallowKey = nil
+					box.Text = ""
+					return
+				end
 				self.Search:SetQuery(box.Text)
 			end))
 			maid:Add(box.FocusLost:Connect(function(enter)
@@ -9013,6 +9102,7 @@ __modules["ui/Window"] = function()
 			if self.Minimized then
 				self:Restore()
 			end
+			self._swallowKey = os.clock()
 			self.SearchBox:CaptureFocus()
 		else
 			self:_openTouchSearch()
@@ -9696,7 +9786,10 @@ __modules["ui/Window"] = function()
 		if control.Section.Collapsed then
 			control.Section:SetCollapsed(false)
 		end
-		task.defer(function()
+		task.delay(0.05, function()
+			if self.Destroyed or control.Destroyed then
+				return
+			end
 			local page = tab.Page
 			local y = control.Holder.AbsolutePosition.Y - page.AbsolutePosition.Y + page.CanvasPosition.Y - 24
 			local maxY = math.max(0, page.AbsoluteCanvasSize.Y - page.AbsoluteWindowSize.Y)
@@ -9813,13 +9906,17 @@ __modules["ui/Window"] = function()
 		self.Tooltip:Hide()
 		self:_updatePillDot()
 		local frame = self.Frame
-		self._restorePosition = frame.AbsolutePosition
+		if not (self._animatingUntil and os.clock() < self._animatingUntil and self._restorePosition) then
+			self._restorePosition = Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
+		end
+		self._animatingUntil = os.clock() + 0.3
 		self.Pill:Show(true)
 		if Motion.Mode == "Full" then
 			local pillPos, pillSize = self.Pill:Rect()
 			local center = pillPos + pillSize / 2
 			local scale = 0.12
-			local target = center - frame.AbsoluteSize * scale / 2
+			local fullSize = Vector2.new(frame.Size.X.Offset, frame.Size.Y.Offset)
+			local target = center - fullSize * scale / 2
 			Motion.tween(self.Scale, { Scale = scale }, "window")
 			Motion.tween(frame, { Position = UDim2.fromOffset(target.X, target.Y) }, "window")
 			task.delay(0.26, function()
@@ -9844,7 +9941,8 @@ __modules["ui/Window"] = function()
 		end
 		self.Minimized = false
 		local frame = self.Frame
-		local target = self._restorePosition or frame.AbsolutePosition
+		local target = self._restorePosition or Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
+		self._animatingUntil = os.clock() + 0.3
 		self.Pill:Hide()
 		frame.Visible = true
 		frame.ZIndex = self.Root:NextZ()

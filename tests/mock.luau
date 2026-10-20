@@ -156,6 +156,8 @@ Meta.__index = function(p, key)
 		return absSize(p)
 	elseif key == "AbsoluteRotation" then
 		return 0
+	elseif key == "TextFits" then
+		return true
 	elseif key == "UserInputState" then
 		return Enum.UserInputState.End
 	end

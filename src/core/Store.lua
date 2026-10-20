@@ -17,6 +17,7 @@ function Store.new()
 	self.Defaults = {}
 	self.Meta = {}
 	self.Loaded = {}
+	self.LoadedKind = {}
 	self.Changed = Signal.new()
 	self._signals = {}
 	return self
@@ -133,17 +134,27 @@ function Store:Snapshot(kind)
 			out[flag] = encode(self.Values[flag])
 		end
 	end
+	-- Values loaded from a file whose control does not exist (yet) are kept,
+	-- so saving never silently drops them.
+	for flag, loadedKind in pairs(self.LoadedKind) do
+		if loadedKind == kind and not self.Meta[flag] and self.Values[flag] ~= nil then
+			out[flag] = encode(self.Values[flag])
+		end
+	end
 	return out
 end
 
 -- Applies a snapshot. Unknown flags are kept for later registration.
-function Store:Load(snapshot, source)
+function Store:Load(snapshot, source, kind)
 	local count = 0
 	for flag, raw in pairs(snapshot or {}) do
 		local value = decode(raw)
 		if value ~= nil then
 			count += 1
 			self.Loaded[flag] = true
+			if kind then
+				self.LoadedKind[flag] = kind
+			end
 			if self.Meta[flag] then
 				self:Set(flag, value, source or "config")
 			else

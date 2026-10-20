@@ -71,6 +71,13 @@ local function constructor(section, opts)
 	chevron.Frame.LayoutOrder = 3
 	chevron.Frame.Parent = button
 	Motion.pressable(button, nil, 0.97, self.Maid)
+	-- long values are cut with "…"; the full text is in a tooltip
+	local function truncated()
+		return not self.ValueLabel.TextFits
+	end
+	self.Window.Tooltip:Attach(button, function()
+		return self:DisplayText()
+	end, self.Maid, nil, truncated)
 
 	self.Maid:Add(button.Activated:Connect(function()
 		if self.Enabled then

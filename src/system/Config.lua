@@ -64,11 +64,11 @@ function Config.new(window)
 
 	-- Interface flags first, then the autoload profile (before any control
 	-- exists: controls pick the values up when they register).
-	self.Store:Load(self.Meta.ui or {}, "config")
+	self.Store:Load(self.Meta.ui or {}, "config", "ui")
 	local autoload = self.Meta.autoload or self.Current
 	local profile = self:_read(autoload)
 	if profile and opts.AutoLoad ~= false then
-		self.Store:Load(profile.values or {}, "config")
+		self.Store:Load(profile.values or {}, "config", "profile")
 		self.Current = autoload
 	end
 
@@ -315,7 +315,7 @@ function Config:Load(name)
 	end
 	self._pending.profile = nil
 	self.Current = name
-	local count = self.Store:Load(data.values or {}, "config")
+	local count = self.Store:Load(data.values or {}, "config", "profile")
 	self._pending.profile = nil
 	self:_writeMeta()
 	self.Changed:Fire("list")

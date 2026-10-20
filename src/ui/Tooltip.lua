@@ -48,7 +48,7 @@ function Tooltip:Show(anchor, spec, vars)
 		local vp = Device.viewport()
 		local size = frame.AbsoluteSize
 		local ap, as = anchor.AbsolutePosition, anchor.AbsoluteSize
-		local x = math.clamp(ap.X + as.X / 2 - size.X / 2, 8, vp.X - size.X - 8)
+		local x = math.clamp(ap.X + as.X / 2 - size.X / 2, 8, math.max(8, vp.X - size.X - 8))
 		local y = ap.Y - size.Y - 8
 		if y < Device.inset() + 4 then
 			y = ap.Y + as.Y + 8
@@ -73,10 +73,11 @@ function Tooltip:Hide()
 end
 
 -- Attach hover (PC) / tap-on-anchor (touch) behaviour.
-function Tooltip:Attach(anchor, spec, maid, vars)
+-- condition (optional): only show when it returns true (e.g. text truncated)
+function Tooltip:Attach(anchor, spec, maid, vars, condition)
 	local token = 0
 	maid:Add(anchor.MouseEnter:Connect(function()
-		if Theme.Sizes.touch then
+		if Theme.Sizes.touch or (condition and not condition()) then
 			return
 		end
 		token += 1

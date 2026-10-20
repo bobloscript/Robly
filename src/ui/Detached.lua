@@ -234,8 +234,8 @@ function Detached.new(tab, options)
 		end,
 		onMove = function(_, _, total)
 			local vp = Device.viewport()
-			local w = math.clamp(startSize.X + total.X, 260, vp.X - frame.AbsolutePosition.X - 8)
-			local h = math.clamp(startSize.Y + total.Y, 200, vp.Y - frame.AbsolutePosition.Y - 8)
+			local w = math.clamp(startSize.X + total.X, 260, math.max(260, vp.X - frame.AbsolutePosition.X - 8))
+			local h = math.clamp(startSize.Y + total.Y, 200, math.max(200, vp.Y - frame.AbsolutePosition.Y - 8))
 			frame.Size = UDim2.fromOffset(w, h)
 		end,
 		onEnd = function()

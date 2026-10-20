@@ -37,6 +37,9 @@ local Slider = Control.extend("Slider")
 
 function Controls.Slider(section, opts)
 	local min, max = opts.Min or 0, opts.Max or 100
+	if min > max then
+		min, max = max, min
+	end
 	local step = opts.Step or opts.Increment or 1
 	local range = opts.Range == true
 	local default = opts.Default
@@ -291,6 +294,16 @@ function Controls.Stepper(section, opts)
 			end
 			holding += 1
 			local mine = holding
+			-- stop repeating when this touch/click ends anywhere on screen
+			local ended
+			ended = Services.UserInputService.InputEnded:Connect(function(other)
+				if other == input or other.UserInputType == Enum.UserInputType.MouseButton1 then
+					ended:Disconnect()
+					if holding == mine then
+						holding += 1
+					end
+				end
+			end)
 			bump()
 			task.delay(0.4, function()
 				while holding == mine and not self.Destroyed do
@@ -410,6 +423,9 @@ function Controls.Segmented(section, opts)
 			Create.flex().Parent = button
 		end
 		self.Loc:Bind(button, "Text", option.Text)
+		self.Window.Tooltip:Attach(button, option.Text, self.Maid, nil, function()
+			return not button.TextFits
+		end)
 		self.Maid:Add(button.Activated:Connect(function()
 			if self.Enabled then
 				self:Set(option.Value)
