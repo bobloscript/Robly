@@ -33,6 +33,14 @@ function Controls.Toggle(section, opts)
 		Parent = self.Right,
 	}, { Create.corner("full") })
 	self.TrackGradient = New("UIGradient", { Color = Theme.gradient(), Enabled = false, Parent = track })
+	-- glow ring around the switch while it is on
+	self.Glow = New("UIStroke", {
+		Color = C("accent"),
+		Thickness = 3,
+		Transparency = 1,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Parent = track,
+	})
 	self.Knob = New("Frame", {
 		Name = "Knob",
 		AnchorPoint = Vector2.new(0, 0.5),
@@ -59,6 +67,11 @@ end
 function Toggle:_render(on, animate)
 	-- on: white base × accent→accent2 gradient
 	self.TrackGradient.Enabled = on == true
+	if animate then
+		Motion.tween(self.Glow, { Transparency = on and 0.75 or 1 }, "fade")
+	else
+		self.Glow.Transparency = on and 0.75 or 1
+	end
 	self:_setActive(on == true, animate)
 	local trackColor = on and Theme.f(function()
 		return Color3.new(1, 1, 1)

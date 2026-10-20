@@ -170,6 +170,22 @@ __modules["controls/Base"] = function()
 			LayoutOrder = 2,
 			Parent = self.Holder,
 		})
+		-- hover: accent wash fading to the right
+		New("UIGradient", {
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Parent = self.Row,
+		})
+		self.Maid:Add(self.Row.MouseEnter:Connect(function()
+			if self.Enabled then
+				Motion.tween(self.Row, { BackgroundTransparency = 0.9 }, "fade")
+			end
+		end))
+		self.Maid:Add(self.Row.MouseLeave:Connect(function()
+			Motion.tween(self.Row, { BackgroundTransparency = 1 }, "fade")
+		end))
 		if spec.rowClick then
 			self.Hit = New("TextButton", {
 				Name = "Hit",
@@ -573,6 +589,14 @@ __modules["controls/Basic"] = function()
 			Parent = self.Right,
 		}, { Create.corner("full") })
 		self.TrackGradient = New("UIGradient", { Color = Theme.gradient(), Enabled = false, Parent = track })
+		-- glow ring around the switch while it is on
+		self.Glow = New("UIStroke", {
+			Color = C("accent"),
+			Thickness = 3,
+			Transparency = 1,
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			Parent = track,
+		})
 		self.Knob = New("Frame", {
 			Name = "Knob",
 			AnchorPoint = Vector2.new(0, 0.5),
@@ -599,6 +623,11 @@ __modules["controls/Basic"] = function()
 	function Toggle:_render(on, animate)
 		-- on: white base × accent→accent2 gradient
 		self.TrackGradient.Enabled = on == true
+		if animate then
+			Motion.tween(self.Glow, { Transparency = on and 0.75 or 1 }, "fade")
+		else
+			self.Glow.Transparency = on and 0.75 or 1
+		end
 		self:_setActive(on == true, animate)
 		local trackColor = on and Theme.f(function()
 			return Color3.new(1, 1, 1)
@@ -6325,6 +6354,17 @@ __modules["core/Theme"] = function()
 		end)
 	end
 
+	-- Card outline: accent in the top-left corner fading into the normal border.
+	function Theme.edge()
+		return Theme.f(function(c)
+			return ColorSequence.new({
+				ColorSequenceKeypoint.new(0, c.accent),
+				ColorSequenceKeypoint.new(0.35, c.border),
+				ColorSequenceKeypoint.new(1, c.border),
+			})
+		end)
+	end
+
 	Theme.Name = "RobScript"
 	Theme.Spec = table.clone(Theme.PresetSpecs.RobScript)
 	Theme.Colors = Theme.derive(Theme.Spec)
@@ -10616,7 +10656,10 @@ __modules["ui/Section"] = function()
 			Parent = parent,
 		}, {
 			Create.corner("rSection"),
-			Create.stroke("border"),
+			New("UIStroke", {
+				Color = Color3.new(1, 1, 1),
+				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+			}, { New("UIGradient", { Color = Theme.edge(), Rotation = 35 }) }),
 			Create.list("Vertical", 0),
 		}))
 

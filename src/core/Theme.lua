@@ -182,6 +182,17 @@ function Theme.gradient()
 	end)
 end
 
+-- Card outline: accent in the top-left corner fading into the normal border.
+function Theme.edge()
+	return Theme.f(function(c)
+		return ColorSequence.new({
+			ColorSequenceKeypoint.new(0, c.accent),
+			ColorSequenceKeypoint.new(0.35, c.border),
+			ColorSequenceKeypoint.new(1, c.border),
+		})
+	end)
+end
+
 Theme.Name = "RobScript"
 Theme.Spec = table.clone(Theme.PresetSpecs.RobScript)
 Theme.Colors = Theme.derive(Theme.Spec)

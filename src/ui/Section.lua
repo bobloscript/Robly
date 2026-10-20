@@ -47,7 +47,10 @@ function Section.new(body, opts)
 		Parent = parent,
 	}, {
 		Create.corner("rSection"),
-		Create.stroke("border"),
+		New("UIStroke", {
+			Color = Color3.new(1, 1, 1),
+			ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		}, { New("UIGradient", { Color = Theme.edge(), Rotation = 35 }) }),
 		Create.list("Vertical", 0),
 	}))
 

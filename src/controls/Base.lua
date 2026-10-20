@@ -145,6 +145,22 @@ function Control.new(section, opts, spec)
 		LayoutOrder = 2,
 		Parent = self.Holder,
 	})
+	-- hover: accent wash fading to the right
+	New("UIGradient", {
+		Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0),
+			NumberSequenceKeypoint.new(1, 1),
+		}),
+		Parent = self.Row,
+	})
+	self.Maid:Add(self.Row.MouseEnter:Connect(function()
+		if self.Enabled then
+			Motion.tween(self.Row, { BackgroundTransparency = 0.9 }, "fade")
+		end
+	end))
+	self.Maid:Add(self.Row.MouseLeave:Connect(function()
+		Motion.tween(self.Row, { BackgroundTransparency = 1 }, "fade")
+	end))
 	if spec.rowClick then
 		self.Hit = New("TextButton", {
 			Name = "Hit",
